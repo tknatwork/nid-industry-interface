@@ -1,6 +1,6 @@
 project: nid-industry-interface
-phase: milestone-1-complete
-status: foundations-scaffold-verified
+phase: milestone-2-in-progress
+status: recruiter-onboarding-slice-1-complete
 test_count: 0
 created: 2026-05-29
 last_updated: 2026-05-29
@@ -25,25 +25,18 @@ stack:
 milestones_completed:
   - foundations  # 2026-05-29
 
-next_milestone: recruiter-end-to-end-mock
+milestones_in_progress:
+  - recruiter-end-to-end-mock  # slice 1: onboarding done; next: thin admin queue
+
+next_milestone: still-recruiter-end-to-end-mock-then-jd-posting
 
 modules:
-  - foundations  # complete
-  # Upcoming, in order:
-  # - recruiter-onboarding   (Milestone 2 — Phase 4.1)
-  # - jd-posting             (Milestone 2 — Phase 4.2)
-  # - candidate-browse       (Milestone 2 — Phase 4.4)
-  # - slot-booking           (Milestone 2 — Phase 4.6)
-  # - interview-console-mobile (Milestone 2 — Phase 4.7)
-  # - offer-cascade          (Milestone 2 — Phase 4.8)
-  # - admin-jd-moderation    (Milestone 3 — Phase 5.1)
-  # - admin-health-scores    (Milestone 3 — Phase 5.11)
-  # - student-redressal      (Milestone 3 — Phase 5.7)
-  # - student-conduct        (Milestone 3 — Phase 5.10)
-  # - nda-jury-fork          (Milestone 3 — Phase 5.13)
-  # - institution-api        (Milestone 4)
-  # - recruiter-api          (Milestone 5 — Phase 2 capability)
-  # - observability-langfuse (cross-milestone)
-  # - shared-ui              (cross-milestone)
-  # - design-tokens          (complete as part of foundations)
-  # - traffic-resilience     (cross-milestone)
+  - foundations          # complete
+  - recruiter-onboarding # slice 1 complete (/apply + /track flows work end-to-end on mock data)
+  # Upcoming:
+  # - admin-recruiter-queue  (thin slice next, to close the onboarding loop)
+  # - jd-posting             (Phase 4.2)
+  # - candidate-browse       (Phase 4.4)
+  # - slot-booking           (Phase 4.6)
+  # - interview-console-mobile (Phase 4.7)
+  # - offer-cascade          (Phase 4.8)

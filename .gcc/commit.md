@@ -20,6 +20,8 @@ Append-only narrative of phase-level build progress. Do not rewrite past entries
 ## 2026-05-29 — Milestone 1 Foundations complete
 
 **Commit:** `ce9a746 chore: milestone 1 — foundations scaffold`
+**Commit:** `4120c3d chore: update GCC layer — milestone 1 complete`
+**Commit:** `2ccdc31 chore: pin dev server to port 3100 + fix Langfuse port`
 
 **What landed:**
 - Project root + `.gcc/` + 5 hand-written markdown contracts.
@@ -29,12 +31,31 @@ Append-only narrative of phase-level build progress. Do not rewrite past entries
 - `@nid/db` Drizzle schema + seed data (3 campuses, 20 disciplines, 12 job-title mappings, Spring 2026 cycle).
 - `apps/web` Next.js 15 + Tailwind v4 + landing page stub.
 - `.dependency-cruiser.cjs` boundary rules.
-- Dev server verified booting cleanly on port 3001 (port 3000 occupied by user's existing Langfuse instance).
+- Dev server pinned to port 3100 (3000 is Langfuse on the dev box).
 
-**Verification:**
-- `pnpm install` succeeded (4m20s, 366 packages added).
-- `pnpm --filter web dev` boots Next.js 15 with Turbopack.
-- Landing page renders with all design tokens applied, Raleway preloaded.
+---
+
+## 2026-05-29 — Milestone 2 Slice 1: Recruiter Onboarding
+
+**Commit:** `b945db2 feat(milestone-2): recruiter onboarding — /apply + token tracker`
+
+**What landed:**
+- First module under the modular monolith: `modules/recruiter-onboarding/` with its own hand-written 5-markdown contract.
+- JSON-backed mock store (`.dev-data/recruiter-onboarding.json`) pre-seeded with three demo tokens spanning the state machine.
+- `@nid/ui` atoms — Button, StatusPill, Field, PageShell.
+- `apps/web` routes — `/apply` (Server Action + Zod), `/track`, `/track/[token]` with full state-machine timeline rendering.
+
+**Decisions made in this phase:**
+- Server Action files (`"use server"`) cannot export non-functions. Pattern adopted: types + initial-state constants live in a sibling `state.ts`; `actions.ts` exports only async functions.
+- Turbopack workspace-package resolution treats `.js` extensions literally for TS source. Pattern: omit the extension in relative imports across the workspaces.
+- The module's mock store is hidden behind its public API; the DB-backed implementation can replace it later without callers changing.
+
+**Verified end-to-end:**
+- `/`, `/apply`, `/track` → 200
+- `/track/NID-2026-A-0001` (credentials-issued) → 200 with full timeline
+- `/track/NID-2026-A-0017` (fee-due) → 200 with current-step indicator
+- `/track/NID-2026-A-0042` (received) → 200 with awaiting-this-step rows
+- `/track/bogus` → 404
 
 **Next phase:**
-- Milestone 2 — Recruiter end-to-end (mock data). Start with `modules/recruiter-onboarding/` and the public `/track/<token>` flow (Phase 4.1).
+- Thin admin queue slice at `/admin/recruiters/queue` + `/admin/recruiters/<id>/credentials` so the end-to-end demo loop can run without hand-editing JSON. Then JD posting (Phase 4.2).

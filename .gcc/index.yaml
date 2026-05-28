@@ -4,4 +4,21 @@ entries:
     hash: ce9a746
     branch: main
     intent: Milestone 1 — foundations scaffold (project structure, GCC, markdowns, monorepo, ui tokens, core entities, db schema, web stub)
-    note: Dev server verified on port 3001. Plan approved at /Users/tusharkant/.claude/plans/this-is-a-demo-wiggly-parrot.md.
+    note: Plan approved at /Users/tusharkant/.claude/plans/this-is-a-demo-wiggly-parrot.md.
+  - id: 2
+    date: 2026-05-29
+    hash: 4120c3d
+    branch: main
+    intent: Update GCC layer — milestone 1 complete (dev server verified, port 3100 pinned)
+  - id: 3
+    date: 2026-05-29
+    hash: 2ccdc31
+    branch: main
+    intent: Pin dev server to port 3100 + fix Langfuse port in env.example
+    note: Port 3000 is the dev-box's existing Langfuse; document allocation in CONTEXT.md.
+  - id: 4
+    date: 2026-05-29
+    hash: b945db2
+    branch: main
+    intent: Milestone 2 slice 1 — recruiter-onboarding module, /apply form, /track + /track/[token] tracker pages, packages/ui atoms (Button/StatusPill/Field/PageShell)
+    note: First hand-written module contract under modules/. JSON-backed mock store. End-to-end verified on localhost:3100.
