@@ -1,6 +1,6 @@
 project: nid-industry-interface
 phase: milestone-2-in-progress
-status: jd-posting-slice-complete
+status: jd-loop-complete-recruiter-and-admin
 test_count: 0
 created: 2026-05-29
 last_updated: 2026-05-29
@@ -27,21 +27,21 @@ milestones_completed:
 
 milestones_in_progress:
   - recruiter-end-to-end-mock
-  # done: onboarding (/apply + /track) · admin recruiter queue · JD posting wizard
-  # next: admin JD moderation (/admin/jds), then candidate browse
+  # done: onboarding (/apply + /track) · admin recruiter queue · JD posting wizard · admin JD moderation
+  # next: candidate browse (Phase 4.4)
 
 next_milestone: still-recruiter-end-to-end-mock
 
 modules:
   - foundations          # complete
   - recruiter-onboarding # /apply + /track + admin queue; full onboarding loop runs end-to-end
-  - jd-posting           # structured wizard + deterministic stipend-floor gate (no AI analyzer yet)
-  # Admin UI for the recruiter queue lives in apps/web/app/admin (consumes the
-  # recruiter-onboarding module's public API; no separate module yet).
+  - jd-posting           # wizard + stipend gate + admin moderation + discipline mapping; JD loop complete
+  # Admin UI lives in apps/web/app/admin (consumes module public APIs; no separate module yet).
   # Upcoming:
-  # - admin-jd-moderation    (next — Phase 5.1; /admin/jds publishes in-moderation JDs)
-  # - candidate-browse       (Phase 4.4)
+  # - candidate-browse       (next — Phase 4.4; portfolio-first grid at /recruiter/jds/[id]/applicants)
   # - slot-booking           (Phase 4.6)
   # - interview-console-mobile (Phase 4.7)
+  # - offer-cascade          (Phase 4.8)
+  # - ai-jd-analyzer (Python ML worker)
   # - offer-cascade          (Phase 4.8)
   # - ai-jd-analyzer (Python ML worker) — supplies the real scope-creep multiplier

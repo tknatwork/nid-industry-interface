@@ -44,3 +44,14 @@ entries:
     branch: main
     intent: Milestone 2 slice 3 — JD posting wizard (structured schema) + deterministic stipend-floor gate
     note: modules/jd-posting (2nd module). RecruiterShell atom. /recruiter/jds + /recruiter/jds/new wizard. checkStipendFloor gate verified 4 cases. AI analyzer deferred to ML-worker slice.
+  - id: 9
+    date: 2026-05-29
+    hash: 1ef012f
+    branch: main
+    intent: Record JD-posting slice in GCC layer
+  - id: 10
+    date: 2026-05-29
+    hash: 5148460
+    branch: main
+    intent: Milestone 2 slice 4 — admin JD moderation + discipline mapping
+    note: publishJd/holdJd/gateReportFor + disciplines-ref. /admin/jds queue + /admin/jds/[jdId] review with gate-report card + discipline picker. Store seeds an in-moderation JD. Closes the JD loop.
