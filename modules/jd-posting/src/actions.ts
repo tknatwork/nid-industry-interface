@@ -3,6 +3,7 @@ import {
   jdDraftSchema,
   jdModerationSchema,
   type GateFailure,
+  type GateReport,
   type JdDraftInput,
   type JdRecord,
 } from './types';
@@ -89,6 +90,103 @@ export function listForRecruiter(recruiterId: string): readonly JdRecord[] {
 
 export function getJd(id: string): JdRecord | null {
   return getJdById(id);
+}
+
+// ── Admin moderation use cases ───────────────────────────────────────────────
+
+export interface PublishResult {
+  readonly ok: boolean;
+  readonly jd?: JdRecord;
+  readonly reason?: string;
+}
+
+/**
+ * Publish an in-moderation JD. The admin confirms the discipline mapping here —
+ * the institution-mediated translation from recruiter vocabulary to NID
+ * disciplines (Phase 4.2). At least one target discipline is required.
+ */
+export function publishJd(input: {
+  jdId: string;
+  targetDisciplineIds: readonly string[];
+  note?: string;
+}): PublishResult {
+  const jd = getJdById(input.jdId);
+  if (!jd) return { ok: false, reason: 'JD not found' };
+  if (jd.status !== 'in-moderation') {
+    return { ok: false, reason: `Cannot publish a JD in '${jd.status}' status` };
+  }
+  if (input.targetDisciplineIds.length === 0) {
+    return { ok: false, reason: 'Confirm at least one target discipline before publishing' };
+  }
+  const updated = updateJd(input.jdId, {
+    status: 'published',
+    targetDisciplineIds: [...input.targetDisciplineIds],
+    publishedAt: new Date().toISOString(),
+    ...(input.note ? { moderationNote: input.note } : {}),
+  });
+  return updated ? { ok: true, jd: updated } : { ok: false, reason: 'Update failed' };
+}
+
+/**
+ * Hold a JD for clarification — moves it back to draft so the recruiter can
+ * revise and resubmit. A note (the clarification request) is required.
+ */
+export function holdJd(input: { jdId: string; note: string }): PublishResult {
+  const jd = getJdById(input.jdId);
+  if (!jd) return { ok: false, reason: 'JD not found' };
+  if (jd.status !== 'in-moderation') {
+    return { ok: false, reason: `Cannot hold a JD in '${jd.status}' status` };
+  }
+  if (!input.note.trim()) {
+    return { ok: false, reason: 'A clarification note is required' };
+  }
+  const updated = updateJd(input.jdId, {
+    status: 'draft',
+    moderationNote: input.note.trim(),
+    heldAt: new Date().toISOString(),
+  });
+  return updated ? { ok: true, jd: updated } : { ok: false, reason: 'Update failed' };
+}
+
+/**
+ * Read-only gate report so the admin sees WHY a JD passed the stipend gate
+ * (transparency). Re-runs the same deterministic check the submit gate used.
+ */
+export function gateReportFor(jd: JdRecord): GateReport {
+  const programmes = jd.targetProgrammes as readonly Programme[];
+  const cycleFloor = strictestFloorPaise(programmes, jd.roleType);
+  const engSlugs = new Set(engineeringSkillSlugs());
+  const hasEngineering = jd.skills.some((s) => engSlugs.has(s.slug));
+  const multiplier = hasEngineering ? 1.4 : 1;
+
+  const rule: StipendFloorRule = {
+    cycleId: jd.cycleId as StipendFloorRule['cycleId'],
+    disciplineIds: [],
+    programme: programmes.includes('masters') ? 'masters' : 'bachelors',
+    roleType: jd.roleType,
+    floorPaise: cycleFloor,
+  };
+  const result = checkStipendFloor(
+    {
+      roleType: jd.roleType,
+      baseMinPaise: jd.baseMinPaise,
+      baseMaxPaise: jd.baseMaxPaise,
+      stipendPaise: jd.stipendPaise,
+    },
+    rule,
+    multiplier,
+  );
+
+  return {
+    stipendFloorPasses: result.passes,
+    cycleFloorPaise: cycleFloor,
+    adjustedFloorPaise: result.adjustedFloorPaise,
+    scopeCreepMultiplier: multiplier,
+    hasEngineeringSkills: hasEngineering,
+    ...(jd.baseMinPaise !== undefined ? { offeredLowPaise: jd.baseMinPaise } : {}),
+    ...(jd.baseMaxPaise !== undefined ? { offeredHighPaise: jd.baseMaxPaise } : {}),
+    ...(jd.stipendPaise !== undefined ? { offeredStipendPaise: jd.stipendPaise } : {}),
+  };
 }
 
 // ── internals ────────────────────────────────────────────────────────────────

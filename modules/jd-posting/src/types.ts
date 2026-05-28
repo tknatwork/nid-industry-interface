@@ -109,6 +109,8 @@ export interface JdRecord {
   readonly draftedAt: string;
   readonly submittedAt?: string;
   readonly publishedAt?: string;
+  readonly moderationNote?: string;
+  readonly heldAt?: string;
 }
 
 export interface GateFailure {
@@ -117,4 +119,16 @@ export interface GateFailure {
   readonly fieldErrors?: Record<string, string[]>;
   readonly floorPaise?: number;
   readonly violatedEndpoint?: 'low' | 'high' | 'single';
+}
+
+/** Read-only gate report for admin transparency during moderation. */
+export interface GateReport {
+  readonly stipendFloorPasses: boolean;
+  readonly cycleFloorPaise: number;
+  readonly adjustedFloorPaise: number;
+  readonly scopeCreepMultiplier: number;
+  readonly hasEngineeringSkills: boolean;
+  readonly offeredLowPaise?: number;
+  readonly offeredHighPaise?: number;
+  readonly offeredStipendPaise?: number;
 }

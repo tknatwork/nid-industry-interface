@@ -7,10 +7,14 @@ export {
   submitForModeration,
   listForRecruiter,
   getJd,
+  publishJd,
+  holdJd,
+  gateReportFor,
   type DraftResult,
   type SubmitResult,
   type CreateDraftResult,
   type ValidationFailure,
+  type PublishResult,
 } from './actions';
 
 export {
@@ -19,7 +23,10 @@ export {
   type JdRecord,
   type JdDraftInput,
   type GateFailure,
+  type GateReport,
 } from './types';
+
+export { DISCIPLINES_REF, disciplineName, type DisciplineRef } from './disciplines-ref';
 
 export {
   CANONICAL_SKILLS,
