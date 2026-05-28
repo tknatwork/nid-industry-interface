@@ -1,6 +1,6 @@
 project: nid-industry-interface
 phase: milestone-2-in-progress
-status: jd-loop-complete-recruiter-and-admin
+status: candidate-browse-complete
 test_count: 0
 created: 2026-05-29
 last_updated: 2026-05-29
@@ -36,12 +36,14 @@ modules:
   - foundations          # complete
   - recruiter-onboarding # /apply + /track + admin queue; full onboarding loop runs end-to-end
   - jd-posting           # wizard + stipend gate + admin moderation + discipline mapping; JD loop complete
+  - candidate-browse     # portfolio-first grid + individual shortlist; type-level guardrails
   # Admin UI lives in apps/web/app/admin (consumes module public APIs; no separate module yet).
   # Upcoming:
-  # - candidate-browse       (next — Phase 4.4; portfolio-first grid at /recruiter/jds/[id]/applicants)
-  # - slot-booking           (Phase 4.6)
+  # - slot-booking           (next — Phase 4.6; admin publishes slots, recruiter books for shortlist)
   # - interview-console-mobile (Phase 4.7)
-  # - offer-cascade          (Phase 4.8)
-  # - ai-jd-analyzer (Python ML worker)
-  # - offer-cascade          (Phase 4.8)
+  # - offer-cascade          (Phase 4.8; wave-based, rules already in @nid/core)
   # - ai-jd-analyzer (Python ML worker) — supplies the real scope-creep multiplier
+
+# GOTCHA: mock JSON stores write to process.cwd()/.dev-data → under
+# `pnpm --filter web dev` that is apps/web/.dev-data (NOT repo root).
+# Clear apps/web/.dev-data to reset demo data.

@@ -2,8 +2,8 @@
 name: nid-industry-interface-session-memory
 project: nid-industry-interface
 last_updated: 2026-05-29
-status: milestone-2-jd-loop-complete
-current_module: jd-posting + admin moderation (UI surface)
+status: milestone-2-candidate-browse-complete
+current_module: candidate-browse
 ---
 
 # Session Memory — NID Industry Interface (project-local)
@@ -14,44 +14,45 @@ Project-local session memory. Fully isolated from any global GCC layer.
 
 **Date:** 2026-05-29
 **Phase:** Milestone 2 — Recruiter end-to-end (mock data)
-**Latest commit:** `5148460 feat(milestone-2): admin JD moderation + discipline mapping`
+**Latest commit:** `ce04833 feat(milestone-2): candidate browse — portfolio-first, discipline-filtered`
 
 ## Milestone 2 progress
 
 1. Slice 1 — recruiter onboarding `/apply` + `/track/<token>` (b945db2)
-2. Slice 2 — admin recruiter queue closes onboarding loop (1811aa9)
-3. Slice 3 — JD posting wizard + stipend-floor gate (87ac884)
-4. Slice 4 (this step) — admin JD moderation + discipline mapping (5148460)
+2. Slice 2 — admin recruiter queue (1811aa9)
+3. Slice 3 — JD posting wizard + stipend gate (87ac884)
+4. Slice 4 — admin JD moderation + discipline mapping (5148460)
+5. Slice 5 (this step) — candidate browse, portfolio-first + guardrails (ce04833)
 
 ## What was accomplished this step
 
-1. **jd-posting module extended:**
-   - `disciplines-ref.ts` — minimal id/name/programme list mirroring the `@nid/db` seed, for the admin discipline-mapping picker on mock data (delete when DB-backed taxonomy lands).
-   - `publishJd({jdId, targetDisciplineIds, note})` — requires `in-moderation` status + ≥1 discipline; sets `published` + `publishedAt`.
-   - `holdJd({jdId, note})` — returns JD to `draft` with a required clarification note.
-   - `gateReportFor(jd)` — read-only re-run of the stipend gate for admin transparency.
-   - Store now **seeds one in-moderation JD** (Product Designer, Acme, ₹9-14L) + one draft (Motion Design Intern) so the queue has content.
-2. **Admin routes:**
-   - `/admin/jds` — moderation queue (awaiting-moderation + recently-published groups).
-   - `/admin/jds/[jdId]` — full structured-JD review, gate-report card, discipline-mapping checklist (suggestions filtered to the JD's target programmes), publish + hold Server Actions with `revalidatePath` cascade to the recruiter JD list.
+1. **`modules/candidate-browse/`** — third module, hand-written 5-markdown contract.
+   - 14 seeded students across disciplines; guardrails enforced at the **type level** (sort union = name|discipline|batch only; no bulk-shortlist function; note required to shortlist).
+   - `listEligibleCandidates(jd)` = discipline ∈ targetDisciplineIds AND opted into cycle.
+   - JSON-backed shortlist store (students are read-only seed).
+2. **Recruiter routes:**
+   - `/recruiter/jds/[jdId]/applicants` — portfolio-first grid (discipline-colored placeholder tiles until ingest lands), sort tabs (name/discipline/batch), shortlisted badge.
+   - `/recruiter/jds/[jdId]/applicants/[studentId]` — detail with external portfolio link-out + IPR note, CV, statement, individual shortlist form (note required) + remove.
+   - Published JDs in `/recruiter/jds` link to applicants.
+3. **jd-posting seed restructured:** jd_00001 published w/ disciplines [interaction-design, product-design]; jd_00003 in-moderation (admin-queue demo); jd_00002 draft.
 
-## Verified
+## Verified (fresh dev server)
 
-- `/admin/jds` → 200 (shows Product Designer in "Awaiting moderation").
-- `/admin/jds/jd_00001` → 200 with gate report ("Passes"), discipline picker (Interaction Design, etc.), Publish + Hold actions.
-- `/admin/jds/bogus` → 404.
-- Publish/hold logic confirmed by inspection (simple state transitions over the verified `updateJd`); they are plain form-action Server Actions that work via standard form POST in the browser.
+- 7 eligible candidates for jd_00001 (4 Interaction Design + 3 Product Design who opted in).
+- All non-target disciplines (Communication, Graphic, Animation) excluded; Dev Menon (Product but NOT opted in) excluded by the opt-in gate.
+- Detail renders portfolio link-out + IPR note + required-note shortlist.
+- Guardrail grep confirms **no** select-all / cgpa / fit-score / gender / caste / religion / bulk affordances anywhere.
 
-## Key decisions captured this step
+## Key decisions + gotchas captured this step
 
-- **Discipline mapping is an admin moderation action, not a recruiter input.** The recruiter picks programmes; the admin confirms disciplines. This is the institution-mediated translation layer (Phase 4.2). Publishing requires ≥1 discipline.
-- **Hold-for-clarification returns the JD to `draft`** (not a new "held" status) so the recruiter can edit + resubmit. A `moderationNote` + `heldAt` capture the round-trip. (Note: the JD-immutability rule applies to *published* JDs; a held JD reverts to editable draft, which is consistent.)
-- **`disciplines-ref.ts` deliberately duplicates the db seed** for the mock-data phase. Flagged in-file to keep in sync; both unify on the DB taxonomy later.
-- **Turbopack doesn't hot-register newly-created `app/api/*` route dirs** while the dev server runs — temp-route verification needs a server restart. Use direct `@nid/core`/module tsx tests or accept route+content smoke tests instead.
+- **Guardrails are type-level, not just UI.** `CandidateSort = 'name'|'discipline'|'batch'` — a ranking option is unrepresentable. No `shortlistMany`. Note is required. Makes "AI never ranks, recruiters judge individually" unbreakable.
+- **IMPORTANT GOTCHA — mock-store data path:** the JSON stores write to `process.cwd()/.dev-data`. Under `pnpm --filter web dev` the Next.js cwd is `apps/web`, so the real data lives at **`apps/web/.dev-data/`**, NOT the repo root. To reset demo data, clear `apps/web/.dev-data` (clearing repo-root `.dev-data` does nothing). Stale `apps/web/.dev-data/jd-posting.json` masked the new seed and cost a debug cycle.
+- **Multiple stale `next dev` processes** can linger across sessions and bind :3100 with old code. `pkill -9 -f next` before a clean verify.
+- Portfolio tiles are discipline-colored placeholders until the portfolio.nid.edu ingest pipeline lands; the detail links OUT to the external portfolio (no embed), matching portfolio.nid.edu reality.
 
 ## Next step (single, specific)
 
-**Candidate browse (Phase 4.4)** — the first surface where a recruiter views students against a published JD. New module `modules/candidate-browse/`. First slice: a seeded set of mock students (per discipline, opted into the cycle), and a **portfolio-first grid** at `/recruiter/jds/[jdId]/applicants` showing only students whose discipline is in the JD's `targetDisciplineIds`. Enforce the plan's guardrails from day one: no CGPA/fit-score/demographic sort, individual-only (no bulk), portfolio thumbnail first with CV secondary. (Publish jd_00001 first via the admin UI so it has disciplines + published status to browse against.)
+**Slot booking (Phase 4.6)** is the natural next surface (shortlist → invite → book slots). New module `modules/slot-booking/`: admin publishes interview-day slots for the cycle; recruiter books slots for shortlisted candidates; students get assignments. Alternatively the **AI JD analyzer (Python ML worker)** is a good standalone slice to exercise the two-language stack. Ask the user which to prioritize before starting.
 
 ## Open blockers
 
@@ -59,4 +60,4 @@ None.
 
 ## Session-start protocol reminder
 
-Per Phase 9.3: read this file, ask the user explicitly whether to continue (next: candidate browse) or start fresh; never auto-continue; honor session-bloat detection past ~50K tokens.
+Per Phase 9.3: read this file, ask the user explicitly whether to continue (next: slot booking or AI analyzer) or start fresh; never auto-continue; honor session-bloat detection past ~50K tokens. Remember the `apps/web/.dev-data` path gotcha.

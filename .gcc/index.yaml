@@ -55,3 +55,14 @@ entries:
     branch: main
     intent: Milestone 2 slice 4 — admin JD moderation + discipline mapping
     note: publishJd/holdJd/gateReportFor + disciplines-ref. /admin/jds queue + /admin/jds/[jdId] review with gate-report card + discipline picker. Store seeds an in-moderation JD. Closes the JD loop.
+  - id: 11
+    date: 2026-05-29
+    hash: cf8520e
+    branch: main
+    intent: Record JD moderation slice in GCC layer
+  - id: 12
+    date: 2026-05-29
+    hash: ce04833
+    branch: main
+    intent: Milestone 2 slice 5 — candidate browse (portfolio-first, discipline-filtered, type-level guardrails)
+    note: modules/candidate-browse (3rd module). 14 seeded students. /recruiter/jds/[id]/applicants grid + detail + individual shortlist (note required). Verified 7 eligible for jd_00001, all non-target/non-opted excluded. GOTCHA: mock data lives at apps/web/.dev-data (cwd-based).
