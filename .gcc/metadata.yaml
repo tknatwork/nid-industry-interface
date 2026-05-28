@@ -1,6 +1,6 @@
 project: nid-industry-interface
-phase: milestone-4-student-portal-complete
-status: recruiter-flow-complete + student-portal-light-complete
+phase: milestone-4-in-progress
+status: recruiter-flow + student-portal + ai-analyzer + native-harness complete; admin surfaces (task 39) remain
 test_count: 0
 created: 2026-05-29
 last_updated: 2026-05-29

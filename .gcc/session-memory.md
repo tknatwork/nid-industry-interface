@@ -13,8 +13,8 @@ Project-local session memory. Fully isolated from any global GCC layer.
 ## Last session
 
 **Date:** 2026-05-29
-**Phase:** Milestone 4 — Student portal + AI JD analyzer — COMPLETE
-**Latest feat commit:** `4f049d3 feat(milestone-4): AI JD analyzer — Python ML scope-creep worker + TS adapter`
+**Phase:** Milestone 4 — Student portal + AI JD analyzer + native harness — COMPLETE (Task 39 admin surfaces remains)
+**Latest commit:** `e4a1b20 chore(harness): runnable native boundary harness + CI + lean hooks (Phase 9.5)`
 
 ## AI JD analyzer (Task 37) — the first cross-language seam
 
@@ -89,19 +89,31 @@ StatusPill, Field, PageShell, AdminShell, RecruiterShell, StudentShell.
 - **Documented seam:** student-portal opt-in is NOT yet unified with recruiter-side candidate-browse opt-in (candidate-browse reads its own seed). Unify at the `@nid/db` layer. Not a bug — intentional for the slice.
 - **Git convention (project-local, isolated):** `git -c commit.gpgsign=false -c user.email='build@nid-industry-interface.local' -c user.name='NID Industry Interface Build'`. Conventional Commits. No Claude co-author trailer (matches the existing history + isolation mandate).
 
-## Next step — continue the remaining plan options, serially
+## Native harness (Task 38) — runnable, lean
 
-Per the user: "complete the rest options you have provided." Remaining, in order:
-1. **CI / native-harness polish** (Task 38) — `.github/workflows/ci.yml` past the security hook
-   (it was blocked earlier by a command-injection false positive — write the YAML carefully),
-   husky/lefthook hooks, ESLint flat config, make `pnpm boundaries` (dependency-cruiser) actually
-   run against the module graph. Lean by design (Phase 9.5): every hook must catch a real
-   architectural failure, not formatting nits.
-2. **Remaining admin surfaces** (Task 39) — health scores, redressal, blacklist, payment-cell
-   (Phase 5 supporting flows). Health-score math already exists in `@nid/core` (computeHealthScore /
-   bandFromScore); these are admin UIs over it + new redressal/blacklist stores.
+- `pnpm boundaries` = `scripts/check-boundaries.mjs` (dependency-free Node). dependency-cruiser
+  can't resolve TS under pnpm's isolated layout (JS-only parser → "Unexpected token '*'"), so the
+  runnable check is this script: no cross-module internal imports (public `@nid/*` only), core
+  purity, no circular `@nid/*` deps. Negative-tested (planted violations → exit 1).
+  `boundaries:depcruise` kept as a documented fallback for TS-resolvable CI.
+- `pnpm check:contracts` = every `modules/*` has all 5 non-empty markdown contracts.
+- `pnpm lint:ws` = root ESLint flat config (`no-explicit-any`, `consistent-type-imports`) over
+  modules + packages; apps/web keeps `next lint`. Clean at error severity.
+- `pnpm harness` = boundaries && check:contracts && typecheck (hook-facing, dependency-light).
+- `.github/workflows/ci.yml` — static `run:` steps only (no `${{ }}` → shell), clears the
+  command-injection scanner that blocked the earlier attempt. `lefthook.yml` is opt-in (no auto-install).
 
-Done this session: student portal (Task 36) + AI JD analyzer (Task 37).
+## Next step — last remaining plan option
+
+**Remaining admin surfaces** (Task 39) — Phase 5 supporting flows: health scores, student
+redressal, blacklist, payment-cell. Health-score math already exists in `@nid/core`
+(`computeHealthScore` / `bandFromScore`) — these are admin UIs over it + new redressal/blacklist
+stores (JSON-backed, same swap-later pattern). Likely a `modules/admin-accountability` module (gets
+its own 5-markdown contract, which the harness now enforces) + `/admin/health-scores`,
+`/admin/redressal`, `/admin/blacklist`, `/admin/payment-cell` routes. Mind: any new module under
+`modules/` MUST ship all 5 markdowns or `pnpm check:contracts` fails.
+
+Done this session: student portal (Task 36) + AI JD analyzer (Task 37) + native harness/CI (Task 38).
 
 ## Session-start protocol reminder
 

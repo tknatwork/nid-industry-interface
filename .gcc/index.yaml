@@ -104,3 +104,14 @@ entries:
     branch: main
     intent: Milestone 4 — AI JD analyzer (Python ML scope-creep worker + TS adapter)
     note: First cross-language seam. services/ml-jd-analyzer (stdlib http.server, rule-based, graduated ×1.3-1.7). @nid/core JdScopeAnalyzer port + jd-posting httpScopeAnalyzer adapter (Zod + 1.5s timeout + graceful fallback to 1.0/1.4 heuristic). Submit gate stays deterministic; admin moderation runs the analyzer. Seed jd_00004 design+dev bundle (×1.6 → below floor). Verified worker-up + worker-down both HTTP 200.
+  - id: 20
+    date: 2026-05-29
+    hash: "c2e3c47"
+    branch: main
+    intent: Record AI JD analyzer slice (milestone 4, task 37) in GCC layer
+  - id: 21
+    date: 2026-05-29
+    hash: "e4a1b20"
+    branch: main
+    intent: Native boundary harness + CI + lean hooks (Phase 9.5, task 38)
+    note: dependency-cruiser can't resolve TS under pnpm → replaced runnable check with scripts/check-boundaries.mjs (no-cross-module-internal, core purity, no-circular; negative-tested) + check-module-contracts.mjs (5-markdown presence). eslint.config.mjs (no-explicit-any, consistent-type-imports) clean. .github/workflows/ci.yml written to clear the command-injection scanner (static run: steps). lefthook.yml opt-in. pnpm scripts: boundaries/check:contracts/harness/lint:ws.
