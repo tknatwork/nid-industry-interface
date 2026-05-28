@@ -32,6 +32,7 @@ const config: NextConfig = {
     '@nid/module-recruiter-onboarding',
     '@nid/module-jd-posting',
     '@nid/module-candidate-browse',
+    '@nid/module-slot-booking',
   ],
 };
 

@@ -17,6 +17,7 @@
     "@nid/module-candidate-browse": "workspace:*",
     "@nid/module-jd-posting": "workspace:*",
     "@nid/module-recruiter-onboarding": "workspace:*",
+    "@nid/module-slot-booking": "workspace:*",
     "@nid/ui": "workspace:*",
     "next": "15.1.0",
     "react": "19.0.0",

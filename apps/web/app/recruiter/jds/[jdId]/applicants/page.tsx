@@ -76,6 +76,21 @@ export default async function ApplicantsPage({
                 Showing students in this JD&rsquo;s confirmed disciplines who opted into Spring 2026 ·{' '}
                 {shortlistedIds.size} shortlisted
               </p>
+              {shortlistedIds.size > 0 && (
+                <a
+                  href={`/recruiter/jds/${jdId}/slots`}
+                  style={{
+                    display: 'inline-block',
+                    marginTop: 'var(--space-3)',
+                    color: 'var(--accent)',
+                    fontWeight: 'var(--fw-600)',
+                    fontSize: 'var(--fs-14)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  Schedule interviews for shortlist →
+                </a>
+              )}
             </div>
             {jd.status === 'published' && candidates.length > 0 && (
               <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
