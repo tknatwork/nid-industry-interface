@@ -1,0 +1,20 @@
+# Lean git hooks (Phase 9.5). Opt-in by design: wire locally with
+#   pnpm dlx lefthook install
+# There is deliberately NO `prepare` auto-install, so the hooks never silently
+# intercept commits in an environment that hasn't opted in. Every hook here
+# catches a real architectural failure — boundary drift, a missing module
+# contract, a type break — not formatting nits (formatting is `pnpm fmt`, on save
+# or in CI, never a commit-time gate).
+
+pre-commit:
+  parallel: true
+  commands:
+    boundaries:
+      run: pnpm boundaries
+    contracts:
+      run: pnpm check:contracts
+
+pre-push:
+  commands:
+    typecheck:
+      run: pnpm -r typecheck

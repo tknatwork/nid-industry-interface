@@ -1,0 +1,56 @@
+name: CI
+
+# Phase 9.5 native harness in CI. All `run:` steps are static commands — no
+# `${{ github.* }}` interpolation into shell (that is the command-injection
+# vector); workflow context is only used in `with:`/`if:`, never piped to a shell.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  harness:
+    name: Boundaries · contracts · typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm boundaries
+      - run: pnpm check:contracts
+      - run: pnpm lint:ws
+      - run: pnpm -r typecheck
+      - name: Production dependency audit (advisory)
+        run: pnpm audit --prod --audit-level=high
+        continue-on-error: true
+
+  ml-worker:
+    name: Python ML worker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Syntax check
+        run: python -m py_compile services/ml-jd-analyzer/app.py
+      - name: Lint + type-check (advisory)
+        run: |
+          pip install ruff mypy
+          ruff check services/ml-jd-analyzer
+          mypy services/ml-jd-analyzer
+        continue-on-error: true
