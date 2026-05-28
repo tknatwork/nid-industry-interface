@@ -9,3 +9,4 @@ export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from '.
 export { StatusPill, type StatusPillProps, type StatusTone } from './atoms/StatusPill';
 export { Field, type FieldProps } from './atoms/Field';
 export { PageShell, type PageShellProps } from './atoms/PageShell';
+export { AdminShell, type AdminShellProps, type AdminNav } from './atoms/AdminShell';

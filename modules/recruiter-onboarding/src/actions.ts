@@ -2,6 +2,8 @@ import { applyFormSchema, type ApplicationTokenRecord, type RecruiterStatus } fr
 import {
   getTokenStatus as storeGetTokenStatus,
   listOutboxForToken as storeListOutbox,
+  listAllTokens as storeListAll,
+  listOutboxAll as storeListOutboxAll,
   submitApplication as storeSubmitApplication,
   advanceTokenStatus as storeAdvance,
   type SubmitResult,
@@ -45,6 +47,14 @@ export function lookup(tokenId: string): ApplicationTokenRecord | null {
 
 export function outboxFor(tokenId: string) {
   return storeListOutbox(tokenId.trim().toUpperCase());
+}
+
+export function listAll(): readonly ApplicationTokenRecord[] {
+  return storeListAll();
+}
+
+export function listOutboxAll() {
+  return storeListOutboxAll();
 }
 
 export function advance(input: {

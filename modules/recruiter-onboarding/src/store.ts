@@ -210,6 +210,18 @@ export function getTokenStatus(tokenId: string): ApplicationTokenRecord | null {
   return state.tokens[tokenId] ?? null;
 }
 
+export function listAllTokens(): readonly ApplicationTokenRecord[] {
+  const state = loadState();
+  const all = Object.values(state.tokens);
+  // Newest first by createdAt — admin queue most-recent-first ordering.
+  return all.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export function listOutboxAll(): readonly OutboxMessage[] {
+  const state = loadState();
+  return state.outbox.slice().sort((a, b) => b.queuedAt.localeCompare(a.queuedAt));
+}
+
 export function listOutboxForToken(tokenId: string): readonly OutboxMessage[] {
   const state = loadState();
   return state.outbox.filter((m) => m.tokenId === tokenId);
