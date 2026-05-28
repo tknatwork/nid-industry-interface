@@ -115,3 +115,14 @@ entries:
     branch: main
     intent: Native boundary harness + CI + lean hooks (Phase 9.5, task 38)
     note: dependency-cruiser can't resolve TS under pnpm → replaced runnable check with scripts/check-boundaries.mjs (no-cross-module-internal, core purity, no-circular; negative-tested) + check-module-contracts.mjs (5-markdown presence). eslint.config.mjs (no-explicit-any, consistent-type-imports) clean. .github/workflows/ci.yml written to clear the command-injection scanner (static run: steps). lefthook.yml opt-in. pnpm scripts: boundaries/check:contracts/harness/lint:ws.
+  - id: 22
+    date: 2026-05-29
+    hash: "6948a9f"
+    branch: main
+    intent: Record native-harness/CI slice (milestone 4, task 38) in GCC layer
+  - id: 23
+    date: 2026-05-29
+    hash: "6c6dbfe"
+    branch: main
+    intent: Milestone 4 — admin accountability (health scores · redressal · blacklist · payment-cell)
+    note: 8th module (admin-accountability), depends on @nid/core only. Score derived not stored (70 baseline + core delta). THE loop verified: deciding a redressal emits a HealthEvent → Pixel Forge 42 (watch) → 27 (restricted). Seed spans all 5 bands. AdminShell nav +blacklist +payment-cell (prior health-scores/redressal links now resolve). Harness (12 pkgs, 8 modules) + lint + typecheck clean; 6 admin routes 200. Completes all 4 post-recruiter plan options.

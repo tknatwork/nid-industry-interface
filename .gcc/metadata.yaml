@@ -1,6 +1,6 @@
 project: nid-industry-interface
-phase: milestone-4-in-progress
-status: recruiter-flow + student-portal + ai-analyzer + native-harness complete; admin surfaces (task 39) remain
+phase: milestone-4-complete
+status: recruiter-flow + student-portal + ai-analyzer + native-harness + admin-accountability all complete
 test_count: 0
 created: 2026-05-29
 last_updated: 2026-05-29
@@ -41,10 +41,13 @@ modules:
   - offer-cascade        # wave-based, strict 1:1; cascade math in @nid/core
   - student-portal       # opt-in + eligible feed + application tracker + REAL offer inbox (accept drives cascade)
   - ml-jd-analyzer       # Python worker (services/) + @nid/core JdScopeAnalyzer port + jd-posting adapter; graceful fallback
-  # Admin UI lives in apps/web/app/admin (consumes module public APIs; no separate module yet).
-  # Upcoming (remaining plan options, serial):
-  # - ci/native-harness polish (.github/workflows/ci.yml past the security hook, husky/lefthook, dep-cruiser run)
-  # - remaining admin surfaces (health scores, redressal, blacklist, payment-cell)
+  - admin-accountability # health scores · redressal (decision emits event → score moves) · blacklist · payment-cell
+  # native-harness: scripts/check-boundaries.mjs + check-module-contracts.mjs + eslint.config.mjs + .github/workflows/ci.yml + lefthook.yml
+  # Admin UI lives in apps/web/app/admin (consumes module public APIs).
+  # All 4 post-recruiter plan options are DONE. Future (not requested yet):
+  # - student-conduct (Phase 5.10, symmetric to redressal), recruiter /stats own-band view
+  # - Phase 2: recruiter/institution APIs, SDK packages, recruiter microsites
+  # - real DB swap (Drizzle), auth/SSO, Langfuse wiring, accessibility sweep
 
 # Two-language stack now live: services/ml-jd-analyzer is Python (stdlib
 # http.server for the demo; FastAPI/Pydantic noted for production). TS finds it

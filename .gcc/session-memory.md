@@ -13,8 +13,25 @@ Project-local session memory. Fully isolated from any global GCC layer.
 ## Last session
 
 **Date:** 2026-05-29
-**Phase:** Milestone 4 — Student portal + AI JD analyzer + native harness — COMPLETE (Task 39 admin surfaces remains)
-**Latest commit:** `e4a1b20 chore(harness): runnable native boundary harness + CI + lean hooks (Phase 9.5)`
+**Phase:** Milestone 4 — COMPLETE. All 4 post-recruiter plan options shipped (student portal · AI analyzer · native harness · admin accountability).
+**Latest commit:** `6c6dbfe feat(milestone-4): admin accountability — health scores, redressal, blacklist, payment-cell`
+
+## Admin accountability (Task 39) — the loop that makes guardrails enforceable
+
+`modules/admin-accountability` (8th module, depends on `@nid/core` only). Composes the pure
+health-score math with persisted events + adjudication state.
+
+- **Score is derived, never stored:** clean recruiter = **70 baseline** ("good"); events adjust via
+  core `computeHealthScore` + `bandFromScore`. (The baseline reconciles core's delta-sum with the
+  0–100 band scale — it lives in the module's `actions.ts`, not core.)
+- **THE loop:** `decideRedressal` sets the case status AND appends a `HealthEvent` in the same action
+  → the company's score recomputes → band can drop. Verified: upholding Pixel Forge's stipend case
+  moved it **42 (watch) → 27 (restricted)** on both surfaces, then reset to seed.
+- Surfaces: `/admin/health-scores` (worst-first + band distribution) + `[recruiterId]` ledger;
+  `/admin/redressal` queue + `[caseId]` decide; `/admin/blacklist` add/lift (logged, cooldown, never
+  deleted); `/admin/payment-cell` refund/dispute. AdminShell nav gained blacklist + payment-cell
+  (the pre-existing health-scores/redressal nav links resolved to 404 before this).
+- Seed spans all 5 bands: Acme excellent · Bauhaus good · Pixel Forge watch · GhostCorp blacklisted.
 
 ## AI JD analyzer (Task 37) — the first cross-language seam
 
@@ -103,17 +120,28 @@ StatusPill, Field, PageShell, AdminShell, RecruiterShell, StudentShell.
 - `.github/workflows/ci.yml` — static `run:` steps only (no `${{ }}` → shell), clears the
   command-injection scanner that blocked the earlier attempt. `lefthook.yml` is opt-in (no auto-install).
 
-## Next step — last remaining plan option
+## Next step — ALL requested options done; ask the user for direction
 
-**Remaining admin surfaces** (Task 39) — Phase 5 supporting flows: health scores, student
-redressal, blacklist, payment-cell. Health-score math already exists in `@nid/core`
-(`computeHealthScore` / `bandFromScore`) — these are admin UIs over it + new redressal/blacklist
-stores (JSON-backed, same swap-later pattern). Likely a `modules/admin-accountability` module (gets
-its own 5-markdown contract, which the harness now enforces) + `/admin/health-scores`,
-`/admin/redressal`, `/admin/blacklist`, `/admin/payment-cell` routes. Mind: any new module under
-`modules/` MUST ship all 5 markdowns or `pnpm check:contracts` fails.
+The user's "complete the rest options you have provided" is fully delivered:
+Task 36 student portal · Task 37 AI analyzer · Task 38 native harness/CI · Task 39 admin
+accountability. **Do not auto-continue** (Phase 9.3). Ask which direction next. Natural options,
+none requested yet:
 
-Done this session: student portal (Task 36) + AI JD analyzer (Task 37) + native harness/CI (Task 38).
+1. **Student-conduct** (Phase 5.10) — the symmetric student-side accountability surface
+   (no-show / ghost-after-acceptance); same event/decision pattern as redressal, student-keyed.
+2. **Recruiter `/recruiter/stats`** — the recruiter's transparent view of their OWN band + history
+   (reads the same `@nid/core` math the admin health-scores surface uses).
+3. **Real infrastructure swap** — Drizzle/Postgres behind the module APIs (the swap-later seam is
+   ready everywhere), auth/SSO (replaces the demo-recruiter/demo-student constants), Langfuse wiring.
+4. **Phase 2 APIs** — institution-side (read) + recruiter-side (read-only) federation APIs + SDKs.
+5. **Polish** — accessibility sweep, real tests (the harness has the slots), wire the lefthook hooks.
+
+## How to run the full demo
+
+- `pnpm --filter web dev` → http://localhost:3100 (landing has a "prototype surfaces" strip linking
+  all three portals). Reset demo data with `rm -f apps/web/.dev-data/*.json`.
+- Optional: `cd services/ml-jd-analyzer && python3 app.py` (PORT 8000) for the live ML scope analyzer
+  at `/admin/jds/jd_00004`; without it, that surface falls back to the deterministic heuristic.
 
 ## Session-start protocol reminder
 
