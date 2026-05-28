@@ -15,6 +15,7 @@
     "@nid/core": "workspace:*",
     "@nid/db": "workspace:*",
     "@nid/module-candidate-browse": "workspace:*",
+    "@nid/module-interview-console": "workspace:*",
     "@nid/module-jd-posting": "workspace:*",
     "@nid/module-recruiter-onboarding": "workspace:*",
     "@nid/module-slot-booking": "workspace:*",

@@ -33,6 +33,7 @@ const config: NextConfig = {
     '@nid/module-jd-posting',
     '@nid/module-candidate-browse',
     '@nid/module-slot-booking',
+    '@nid/module-interview-console',
   ],
 };
 

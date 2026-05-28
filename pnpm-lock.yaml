@@ -35,6 +35,9 @@ importers:
       '@nid/module-candidate-browse':
         specifier: workspace:*
         version: link:../../modules/candidate-browse
+      '@nid/module-interview-console':
+        specifier: workspace:*
+        version: link:../../modules/interview-console
       '@nid/module-jd-posting':
         specifier: workspace:*
         version: link:../../modules/jd-posting
@@ -93,6 +96,25 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      zod:
+        specifier: 3.23.8
+        version: 3.23.8
+    devDependencies:
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
+  modules/interview-console:
+    dependencies:
+      '@nid/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@nid/module-candidate-browse':
+        specifier: workspace:*
+        version: link:../candidate-browse
+      '@nid/module-slot-booking':
+        specifier: workspace:*
+        version: link:../slot-booking
       zod:
         specifier: 3.23.8
         version: 3.23.8
