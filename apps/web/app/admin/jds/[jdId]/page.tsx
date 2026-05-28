@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { AdminShell, Button, Field, StatusPill, type StatusTone } from '@nid/ui';
 import {
   getJd,
-  gateReportFor,
+  gateReportForAsync,
   skillLabel,
   DISCIPLINES_REF,
   type JdRecord,
@@ -35,7 +35,7 @@ export default async function AdminJdReview({
   const jd = getJd(jdId);
   if (!jd) notFound();
   const error = (await searchParams).error;
-  const report = gateReportFor(jd);
+  const report = await gateReportForAsync(jd);
 
   // Suggest disciplines whose programme matches the JD's target programmes.
   const suggested = DISCIPLINES_REF.filter(
@@ -191,7 +191,14 @@ function GateReportCard({ report, roleType }: { report: GateReport; roleType: Jd
         <Row label="Cycle floor" value={rupees(report.cycleFloorPaise)} />
         <Row
           label="Scope-creep multiplier"
-          value={`${report.scopeCreepMultiplier}× ${report.hasEngineeringSkills ? '(engineering skills bundled)' : ''}`}
+          value={
+            <span>
+              {report.scopeCreepMultiplier}×{' '}
+              <StatusPill tone={report.scopeSource === 'analyzer' ? 'info' : 'neutral'}>
+                {report.scopeSource === 'analyzer' ? 'ML analyzer' : report.scopeSource === 'fallback' ? 'fallback heuristic' : 'deterministic'}
+              </StatusPill>
+            </span>
+          }
         />
         <Row label="Adjusted floor" value={rupees(report.adjustedFloorPaise)} />
         {roleType === 'full-time' ? (
@@ -207,6 +214,27 @@ function GateReportCard({ report, roleType }: { report: GateReport; roleType: Jd
           <Row label="Offered stipend" value={report.offeredStipendPaise ? rupees(report.offeredStipendPaise) : '—'} />
         )}
       </div>
+
+      {report.flaggedSkillSlugs && report.flaggedSkillSlugs.length > 0 && (
+        <p style={{ fontSize: 'var(--fs-12)', color: 'var(--text-secondary)', marginTop: 'var(--space-3)' }}>
+          Flagged skills:{' '}
+          {report.flaggedSkillSlugs.map((s) => skillLabel(s)).join(', ')}
+        </p>
+      )}
+      {report.scopeRationale && (
+        <p
+          style={{
+            fontSize: 'var(--fs-14)',
+            color: 'var(--text-primary)',
+            marginTop: 'var(--space-2)',
+            paddingTop: 'var(--space-2)',
+            borderTop: '1px solid var(--border-default)',
+            lineHeight: 1.5,
+          }}
+        >
+          {report.scopeRationale}
+        </p>
+      )}
     </Section>
   );
 }

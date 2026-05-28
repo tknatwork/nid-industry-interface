@@ -10,12 +10,19 @@ export {
   publishJd,
   holdJd,
   gateReportFor,
+  gateReportForAsync,
   type DraftResult,
   type SubmitResult,
   type CreateDraftResult,
   type ValidationFailure,
   type PublishResult,
 } from './actions';
+
+export {
+  httpScopeAnalyzer,
+  analyzeScopeForJd,
+  scopeInputForJd,
+} from './scope-analyzer';
 
 export {
   jdDraftSchema,

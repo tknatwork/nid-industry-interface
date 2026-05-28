@@ -128,9 +128,47 @@ function seedInitialState(): StoreState {
       gpFeeAcknowledged: true,
       draftedAt: isoTwoHours,
     },
+    // Scope-creep demo: a "design" role that also demands frontend dev. The ML
+    // analyzer flags the bundle (×1.6 → adjusted floor ₹9.6L), and the offered
+    // low endpoint (₹8.0L) then falls below the adjusted floor. Surfaces in
+    // /admin/jds moderation as a flagged JD with the analyzer's rationale.
+    jd_00004: {
+      id: 'jd_00004',
+      recruiterId: 'NID-2026-A-0001',
+      cycleId: 'cycle_spring_2026',
+      status: 'in-moderation',
+      title: 'Product Designer (frontend-heavy)',
+      roleType: 'full-time',
+      location: 'Bengaluru',
+      workMode: 'hybrid',
+      positions: 1,
+      baseMinPaise: 80_000_000, // ₹8.0L
+      baseMaxPaise: 120_000_000, // ₹12.0L
+      targetProgrammes: ['masters'],
+      targetDisciplineIds: [],
+      skills: [
+        { slug: 'interaction-design', required: true },
+        { slug: 'design-systems', required: true },
+        { slug: 'html-css', required: true },
+        { slug: 'javascript', required: true },
+        { slug: 'react', required: true },
+      ],
+      responsibilities: {
+        design: ['Own product flows end to end'],
+        delivery: ['Ship production frontend alongside engineering'],
+      },
+      deliverables: ['Shipped UI', 'Design system in code'],
+      interviewRounds: [
+        { round: 1, focus: 'Portfolio + code review' },
+        { round: 2, focus: 'Pairing exercise' },
+      ],
+      gpFeeAcknowledged: false,
+      draftedAt: isoYesterday,
+      submittedAt: isoTwoHours,
+    },
   };
 
-  const state: StoreState = { jds, counter: 3 };
+  const state: StoreState = { jds, counter: 4 };
   persist(state);
   return state;
 }

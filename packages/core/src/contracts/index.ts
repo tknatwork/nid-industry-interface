@@ -7,4 +7,5 @@ export type * from './payment-provider';
 export type * from './comms-provider';
 export type * from './storage-provider';
 export type * from './ai-provider';
+export type * from './jd-analyzer';
 export type * from './analytics-provider';

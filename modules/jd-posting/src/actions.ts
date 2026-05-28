@@ -9,6 +9,7 @@ import {
 } from './types';
 import { strictestFloorPaise, type Programme } from './stipend-floors';
 import { engineeringSkillSlugs } from './skills';
+import { analyzeScopeForJd } from './scope-analyzer';
 import { getJdById, insertJd, listJdsForRecruiter, updateJd } from './store';
 
 export interface CreateDraftResult {
@@ -151,13 +152,34 @@ export function holdJd(input: { jdId: string; note: string }): PublishResult {
 /**
  * Read-only gate report so the admin sees WHY a JD passed the stipend gate
  * (transparency). Re-runs the same deterministic check the submit gate used.
+ * The multiplier here is the legacy 1.0/1.4 engineering heuristic.
  */
 export function gateReportFor(jd: JdRecord): GateReport {
-  const programmes = jd.targetProgrammes as readonly Programme[];
-  const cycleFloor = strictestFloorPaise(programmes, jd.roleType);
   const engSlugs = new Set(engineeringSkillSlugs());
   const hasEngineering = jd.skills.some((s) => engSlugs.has(s.slug));
-  const multiplier = hasEngineering ? 1.4 : 1;
+  return buildGateReport(jd, hasEngineering ? 1.4 : 1, hasEngineering);
+}
+
+/**
+ * Async gate report that consults the ML scope-creep analyzer (Python worker)
+ * for a graduated multiplier + rationale (Phase 6.11a). Falls back to the
+ * deterministic heuristic when the worker is unreachable, so this never blocks
+ * the moderation view. Used by the admin JD review page.
+ */
+export async function gateReportForAsync(jd: JdRecord): Promise<GateReport> {
+  const analysis = await analyzeScopeForJd(jd);
+  const base = buildGateReport(jd, analysis.scopeMultiplier, analysis.scopeCreepDetected);
+  return {
+    ...base,
+    scopeRationale: analysis.rationale,
+    scopeSource: analysis.source,
+    flaggedSkillSlugs: analysis.flaggedSkillSlugs,
+  };
+}
+
+function buildGateReport(jd: JdRecord, multiplier: number, hasEngineering: boolean): GateReport {
+  const programmes = jd.targetProgrammes as readonly Programme[];
+  const cycleFloor = strictestFloorPaise(programmes, jd.roleType);
 
   const rule: StipendFloorRule = {
     cycleId: jd.cycleId as StipendFloorRule['cycleId'],

@@ -131,4 +131,9 @@ export interface GateReport {
   readonly offeredLowPaise?: number;
   readonly offeredHighPaise?: number;
   readonly offeredStipendPaise?: number;
+  // Populated when the ML analyzer ran (gateReportForAsync). The sync
+  // gateReportFor leaves these undefined and uses the deterministic heuristic.
+  readonly scopeRationale?: string;
+  readonly scopeSource?: 'analyzer' | 'fallback';
+  readonly flaggedSkillSlugs?: readonly string[];
 }
