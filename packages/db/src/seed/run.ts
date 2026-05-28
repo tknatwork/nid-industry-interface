@@ -3,11 +3,11 @@
  * Requires DATABASE_URL set in env.
  */
 
-import { createDb } from '../client.js';
-import { campuses } from '../schema/campuses.js';
-import { disciplines, jobTitleMappings } from '../schema/disciplines.js';
-import { cycles } from '../schema/cycles.js';
-import { seedCampuses, seedDisciplines, seedJobTitleMappings, seedCycles } from './index.js';
+import { createDb } from '../client';
+import { campuses } from '../schema/campuses';
+import { disciplines, jobTitleMappings } from '../schema/disciplines';
+import { cycles } from '../schema/cycles';
+import { seedCampuses, seedDisciplines, seedJobTitleMappings, seedCycles } from './index';
 
 async function main() {
   const url = process.env['DATABASE_URL'];

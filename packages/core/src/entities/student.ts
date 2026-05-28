@@ -1,4 +1,4 @@
-import type { CampusId, CycleId, DisciplineId, StudentId } from './ids.js';
+import type { CampusId, CycleId, DisciplineId, StudentId } from './ids';
 
 export interface Student {
   readonly id: StudentId;

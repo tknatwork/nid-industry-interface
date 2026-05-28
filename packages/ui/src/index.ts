@@ -1,5 +1,11 @@
-// @nid/ui — design system entrypoint
-// Atoms, molecules, organisms will be exported from here as they are built.
-// Token CSS files are imported directly from ./tokens/*.css.
+// @nid/ui — design system entrypoint.
+//
+// Token CSS files are imported directly from ./tokens/*.css; React atoms
+// are exported here.
 
 export const UI_PACKAGE_NAME = '@nid/ui';
+
+export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './atoms/Button';
+export { StatusPill, type StatusPillProps, type StatusTone } from './atoms/StatusPill';
+export { Field, type FieldProps } from './atoms/Field';
+export { PageShell, type PageShellProps } from './atoms/PageShell';

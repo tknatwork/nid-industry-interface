@@ -1,4 +1,4 @@
-import type { NewCycleRow } from '../schema/cycles.js';
+import type { NewCycleRow } from '../schema/cycles';
 
 /**
  * One open cycle for the prototype demo. Dates roughly mirror NID's

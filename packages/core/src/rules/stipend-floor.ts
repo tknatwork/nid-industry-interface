@@ -1,5 +1,5 @@
-import type { StipendFloorRule } from '../entities/cycle.js';
-import type { Jd } from '../entities/jd.js';
+import type { StipendFloorRule } from '../entities/cycle';
+import type { Jd } from '../entities/jd';
 
 /**
  * Stipend floor compliance check (Phase 5.3).

@@ -1,4 +1,4 @@
-import type { CycleId, DisciplineId, JdId, RecruiterId } from './ids.js';
+import type { CycleId, DisciplineId, JdId, RecruiterId } from './ids';
 
 export type JdStatus = 'draft' | 'in-moderation' | 'published' | 'closed' | 'withdrawn';
 export type RoleType = 'full-time' | 'vacation-internship' | 'during-course-internship';

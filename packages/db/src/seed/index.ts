@@ -1,4 +1,4 @@
-export { seedCampuses } from './campuses.js';
-export { seedDisciplines } from './disciplines.js';
-export { seedJobTitleMappings } from './job-title-mappings.js';
-export { seedCycles } from './cycles.js';
+export { seedCampuses } from './campuses';
+export { seedDisciplines } from './disciplines';
+export { seedJobTitleMappings } from './job-title-mappings';
+export { seedCycles } from './cycles';

@@ -1,4 +1,4 @@
-import type { NewDisciplineRow } from '../schema/disciplines.js';
+import type { NewDisciplineRow } from '../schema/disciplines';
 
 /**
  * NID disciplines seeded for the prototype.

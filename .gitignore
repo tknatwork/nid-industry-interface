@@ -60,3 +60,7 @@ coverage/
 
 # Transfer prompts (per Phase 9.3 session-bloat handling) — gitignored, ephemeral
 .gcc/transfer-prompts/
+
+# Module mock-data (Milestone 2 prototype — JSON-backed token store)
+.dev-data/
+

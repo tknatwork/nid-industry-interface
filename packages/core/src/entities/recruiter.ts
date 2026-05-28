@@ -1,4 +1,4 @@
-import type { CycleId, RecruiterId, TokenId } from './ids.js';
+import type { CycleId, RecruiterId, TokenId } from './ids';
 
 export type RecruiterStatus =
   | 'application-received'

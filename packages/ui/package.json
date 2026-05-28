@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "NID Industry Interface design system — 3-tier tokens (primitives → semantics → components) with NID brand parity.",
+  "description": "NID Industry Interface design system — 3-tier tokens (primitives → semantics → components) + React atoms with NID brand parity.",
   "exports": {
     ".": "./src/index.ts",
     "./tokens/primitives.css": "./tokens/primitives.css",
@@ -16,7 +16,11 @@
     "lint": "echo 'lint placeholder'",
     "test": "echo 'no tests yet'"
   },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
   "devDependencies": {
+    "@types/react": "19.0.0",
     "typescript": "5.6.3"
   }
 }

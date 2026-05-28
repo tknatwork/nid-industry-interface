@@ -1,4 +1,4 @@
-import type { ApplicationId, JdId, ShortlistId, SlotId, StudentId } from './ids.js';
+import type { ApplicationId, JdId, ShortlistId, SlotId, StudentId } from './ids';
 
 export type ApplicationStatus = 'submitted' | 'shortlisted' | 'rejected' | 'withdrawn';
 

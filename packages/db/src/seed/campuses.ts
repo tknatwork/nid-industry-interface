@@ -1,4 +1,4 @@
-import type { NewCampusRow } from '../schema/campuses.js';
+import type { NewCampusRow } from '../schema/campuses';
 
 /**
  * The 3 legacy DPIIT campuses served by this portal.

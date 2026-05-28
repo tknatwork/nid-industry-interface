@@ -1,4 +1,4 @@
-import type { CampusId, CycleId, DisciplineId } from './ids.js';
+import type { CampusId, CycleId, DisciplineId } from './ids';
 
 export type CycleStatus = 'draft' | 'open' | 'in-progress' | 'closing' | 'closed' | 'archived';
 

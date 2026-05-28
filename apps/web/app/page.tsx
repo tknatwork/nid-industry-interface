@@ -1,87 +1,18 @@
+import { PageShell, Button } from '@nid/ui';
+
 /**
  * Public landing — `/` per Phase 3.2 sitemap.
  *
- * This is a foundational stub that proves out the design tokens. Real
- * landing-page content (cycles + disciplines + past recruiters wall) lands
- * in later milestones.
+ * Foundational stub that proves out the design tokens + shared PageShell.
+ * Real landing-page content (cycles, past recruiters wall, full discipline catalog)
+ * lands in later milestones.
  */
-
 export default function LandingPage() {
   return (
-    <main id="main" className="min-h-screen">
-      <header
-        style={{
-          padding: 'var(--layout-page-x)',
-          paddingBlock: 'var(--space-8)',
-          borderBottom: '1px solid var(--border-default)',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1140px',
-            margin: '0 auto',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div>
-            <p
-              style={{
-                fontSize: 'var(--fs-12)',
-                fontWeight: 'var(--fw-600)',
-                color: 'var(--text-secondary)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-              }}
-            >
-              National Institute of Design
-            </p>
-            <h1
-              style={{
-                fontSize: 'var(--fs-24)',
-                lineHeight: 'var(--lh-28)',
-                fontWeight: 'var(--fw-500)',
-                color: 'var(--text-strong)',
-                marginTop: 'var(--space-1)',
-              }}
-            >
-              Industry Interface
-            </h1>
-          </div>
-          <nav
-            aria-label="Primary"
-            style={{
-              display: 'flex',
-              gap: 'var(--space-6)',
-              fontSize: 'var(--fs-14)',
-              fontWeight: 'var(--fw-600)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-            }}
-          >
-            <a href="/recruiters/process" style={navLinkStyle}>
-              Process
-            </a>
-            <a href="/disciplines" style={navLinkStyle}>
-              Disciplines
-            </a>
-            <a href="/cycles" style={navLinkStyle}>
-              Cycles
-            </a>
-            <a href="/contact" style={navLinkStyle}>
-              Contact
-            </a>
-            <a href="/apply" style={{ ...navLinkStyle, color: 'var(--accent)' }}>
-              Apply
-            </a>
-          </nav>
-        </div>
-      </header>
-
+    <PageShell>
       <section
         style={{
-          padding: 'var(--layout-page-x)',
+          paddingInline: 'var(--layout-page-x)',
           paddingBlock: 'var(--layout-section-y)',
         }}
       >
@@ -98,17 +29,17 @@ export default function LandingPage() {
           >
             Hire from NID
           </p>
-          <h2
+          <h1
             style={{
               fontSize: 'var(--fs-48)',
               lineHeight: 'var(--lh-56)',
-              fontWeight: 'var(--type-h1-weight)',
+              fontWeight: 'var(--fw-500)',
               color: 'var(--text-strong)',
               maxWidth: '780px',
             }}
           >
             One portal. Three legacy campuses. Twenty disciplines. Designed students, ready for industry.
-          </h2>
+          </h1>
           <p
             style={{
               fontSize: 'var(--fs-18)',
@@ -120,46 +51,32 @@ export default function LandingPage() {
             }}
           >
             The Industry Interface portal connects recruiters with NID&rsquo;s Ahmedabad, Gandhinagar, and Bengaluru
-            R&amp;D campuses. Apply once, get a token, track your application through every step, and engage with our
-            placement cell on a single coherent surface.
+            R&amp;D campuses. Apply once, get a token, track your application through every step, and engage with
+            our placement cell on a single coherent surface.
           </p>
 
-          <div style={{ display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-8)' }}>
-            <a
-              href="/apply"
-              style={{
-                ...buttonStyle,
-                backgroundColor: 'var(--accent)',
-                color: 'var(--text-on-accent)',
-              }}
-            >
-              Apply to recruit
+          <div style={{ display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-8)', flexWrap: 'wrap' }}>
+            <a href="/apply" style={{ textDecoration: 'none' }}>
+              <Button size="lg">Apply to recruit</Button>
             </a>
-            <a
-              href="/track"
-              style={{
-                ...buttonStyle,
-                backgroundColor: 'transparent',
-                color: 'var(--text-strong)',
-                border: '1px solid var(--border-emphasized)',
-              }}
-            >
-              Track your application
+            <a href="/track" style={{ textDecoration: 'none' }}>
+              <Button size="lg" variant="secondary">
+                Track your application
+              </Button>
             </a>
           </div>
         </div>
       </section>
 
-      {/* Token sanity check: discipline accents render correctly */}
       <section
         style={{
           backgroundColor: 'var(--surface-panel)',
-          padding: 'var(--layout-page-x)',
+          paddingInline: 'var(--layout-page-x)',
           paddingBlock: 'var(--layout-section-y)',
         }}
       >
         <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
-          <h3
+          <h2
             style={{
               fontSize: 'var(--fs-24)',
               lineHeight: 'var(--lh-28)',
@@ -169,7 +86,7 @@ export default function LandingPage() {
             }}
           >
             Disciplines at a glance
-          </h3>
+          </h2>
           <div
             style={{
               display: 'grid',
@@ -200,7 +117,7 @@ export default function LandingPage() {
                 >
                   {d.programme}
                 </p>
-                <h4
+                <h3
                   style={{
                     fontSize: 'var(--fs-18)',
                     lineHeight: 'var(--lh-23)',
@@ -210,7 +127,7 @@ export default function LandingPage() {
                   }}
                 >
                   {d.name}
-                </h4>
+                </h3>
                 <p
                   style={{
                     fontSize: 'var(--fs-14)',
@@ -227,54 +144,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      <footer
-        style={{
-          backgroundColor: 'var(--surface-panel)',
-          padding: 'var(--layout-page-x)',
-          paddingBlock: 'var(--space-12)',
-          borderTop: '1px solid var(--border-default)',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1140px',
-            margin: '0 auto',
-            fontSize: 'var(--fs-12)',
-            color: 'var(--text-secondary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
-          <p>For any query please contact industry@nid.edu</p>
-          <p style={{ marginTop: 'var(--space-2)' }}>
-            &copy; NID Industry Interface · Prototype build, milestone 1.
-          </p>
-        </div>
-      </footer>
-    </main>
+    </PageShell>
   );
 }
-
-const navLinkStyle = {
-  color: 'var(--text-primary)',
-  textDecoration: 'none',
-  transition: 'color var(--motion-micro)',
-};
-
-const buttonStyle = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 'var(--btn-padding-y) var(--btn-padding-x)',
-  borderRadius: 'var(--btn-radius)',
-  fontSize: 'var(--fs-16)',
-  fontWeight: 'var(--fw-500)',
-  textTransform: 'uppercase' as const,
-  letterSpacing: '0.04em',
-  textDecoration: 'none',
-  transition: 'all var(--btn-motion)',
-};
 
 const DISCIPLINE_PREVIEW = [
   {

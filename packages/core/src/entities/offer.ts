@@ -1,4 +1,4 @@
-import type { JdId, OfferId, StudentId } from './ids.js';
+import type { JdId, OfferId, StudentId } from './ids';
 
 export type OfferStatus = 'pending' | 'on-hold' | 'accepted' | 'declined' | 'expired';
 

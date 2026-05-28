@@ -1,0 +1,22 @@
+{
+  "name": "@nid/module-recruiter-onboarding",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Recruiter onboarding module — public application + token tracker + state machine for Phase 4.1 of the plan.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'lint placeholder'",
+    "test": "echo 'no tests yet'"
+  },
+  "dependencies": {
+    "@nid/core": "workspace:*",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3"
+  }
+}

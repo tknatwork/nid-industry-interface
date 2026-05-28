@@ -1,4 +1,4 @@
-import type { CampusId } from './ids.js';
+import type { CampusId } from './ids';
 
 /**
  * The 3 legacy DPIIT campuses served by this portal (per Phase 1.5 rescope).

@@ -1,4 +1,4 @@
-import type { HealthBand } from '../entities/recruiter.js';
+import type { HealthBand } from '../entities/recruiter';
 
 /**
  * Company health score computation (Phase 5.11).

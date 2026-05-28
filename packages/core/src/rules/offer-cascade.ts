@@ -1,4 +1,4 @@
-import type { Offer } from '../entities/offer.js';
+import type { Offer } from '../entities/offer';
 
 /**
  * Wave-based offer cascade enforcement (Phase 4.8 + Phase 5.4).

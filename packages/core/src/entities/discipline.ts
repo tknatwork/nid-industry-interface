@@ -1,4 +1,4 @@
-import type { CampusId, DisciplineId } from './ids.js';
+import type { CampusId, DisciplineId } from './ids';
 
 /**
  * NID discipline taxonomy. Admin-edited, versioned (Phase 6.10).
