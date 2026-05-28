@@ -10,3 +10,8 @@ export { StatusPill, type StatusPillProps, type StatusTone } from './atoms/Statu
 export { Field, type FieldProps } from './atoms/Field';
 export { PageShell, type PageShellProps } from './atoms/PageShell';
 export { AdminShell, type AdminShellProps, type AdminNav } from './atoms/AdminShell';
+export {
+  RecruiterShell,
+  type RecruiterShellProps,
+  type RecruiterNav,
+} from './atoms/RecruiterShell';

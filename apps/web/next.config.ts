@@ -25,7 +25,13 @@ const config: NextConfig = {
   },
 
   // Transpile workspace packages
-  transpilePackages: ['@nid/core', '@nid/db', '@nid/ui', '@nid/module-recruiter-onboarding'],
+  transpilePackages: [
+    '@nid/core',
+    '@nid/db',
+    '@nid/ui',
+    '@nid/module-recruiter-onboarding',
+    '@nid/module-jd-posting',
+  ],
 };
 
 export default config;
