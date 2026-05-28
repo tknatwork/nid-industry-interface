@@ -15,3 +15,8 @@ export {
   type RecruiterShellProps,
   type RecruiterNav,
 } from './atoms/RecruiterShell';
+export {
+  StudentShell,
+  type StudentShellProps,
+  type StudentNav,
+} from './atoms/StudentShell';

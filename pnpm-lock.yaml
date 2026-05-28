@@ -50,6 +50,9 @@ importers:
       '@nid/module-slot-booking':
         specifier: workspace:*
         version: link:../../modules/slot-booking
+      '@nid/module-student-portal':
+        specifier: workspace:*
+        version: link:../../modules/student-portal
       '@nid/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -170,6 +173,25 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      zod:
+        specifier: 3.23.8
+        version: 3.23.8
+    devDependencies:
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
+  modules/student-portal:
+    dependencies:
+      '@nid/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@nid/module-candidate-browse':
+        specifier: workspace:*
+        version: link:../candidate-browse
+      '@nid/module-jd-posting':
+        specifier: workspace:*
+        version: link:../jd-posting
       zod:
         specifier: 3.23.8
         version: 3.23.8

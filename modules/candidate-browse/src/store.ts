@@ -17,14 +17,34 @@ function dataFilePath(): string {
   return resolve(process.cwd(), '.dev-data', 'candidate-browse.json');
 }
 
+/**
+ * Demo seed: the recruiter (Acme) has already shortlisted Aanya Roy (stu_0005)
+ * against the published jd_00001. This makes the recruiter shortlist + offers
+ * pages coherent and gives the student offer inbox a real pending offer to act
+ * on (see offer-cascade store seed). Swap for a real read model later.
+ */
+function seedInitialState(): StoreState {
+  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+  return {
+    shortlist: [
+      {
+        jdId: 'jd_00001',
+        studentId: 'stu_0005',
+        note: 'Strong hardware + software product portfolio — invite to interview.',
+        shortlistedAt: sixHoursAgo,
+      },
+    ],
+  };
+}
+
 function loadState(): StoreState {
   const file = dataFilePath();
-  if (!existsSync(file)) return { shortlist: [] };
+  if (!existsSync(file)) return seedInitialState();
   try {
     const parsed = JSON.parse(readFileSync(file, 'utf8')) as Partial<StoreState>;
     return { shortlist: parsed.shortlist ?? [] };
   } catch {
-    return { shortlist: [] };
+    return seedInitialState();
   }
 }
 

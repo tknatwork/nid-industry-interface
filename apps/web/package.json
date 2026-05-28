@@ -20,6 +20,7 @@
     "@nid/module-offer-cascade": "workspace:*",
     "@nid/module-recruiter-onboarding": "workspace:*",
     "@nid/module-slot-booking": "workspace:*",
+    "@nid/module-student-portal": "workspace:*",
     "@nid/ui": "workspace:*",
     "next": "15.1.0",
     "react": "19.0.0",

@@ -11,14 +11,39 @@ function dataFilePath(): string {
   return resolve(process.cwd(), '.dev-data', 'offer-cascade.json');
 }
 
+/**
+ * Demo seed: Wave 1 offer already floated to Aanya Roy (stu_0005) against the
+ * published full-time jd_00001 (₹9-14L band → ₹12L offer). Status pending, so
+ * the student offer inbox can exercise a real accept/decline through
+ * recordResponse, and the recruiter offers board shows a live wave. Swap for a
+ * real read model later.
+ */
+function seedInitialState(): StoreState {
+  const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+  return {
+    offers: [
+      {
+        id: 'offer_00001',
+        jdId: 'jd_00001',
+        studentId: 'stu_0005',
+        wave: 1,
+        status: 'pending',
+        ctcPaise: 120000000,
+        issuedAt: threeHoursAgo,
+      },
+    ],
+    counter: 1,
+  };
+}
+
 function loadState(): StoreState {
   const file = dataFilePath();
-  if (!existsSync(file)) return { offers: [], counter: 0 };
+  if (!existsSync(file)) return seedInitialState();
   try {
     const p = JSON.parse(readFileSync(file, 'utf8')) as Partial<StoreState>;
     return { offers: p.offers ?? [], counter: p.counter ?? 0 };
   } catch {
-    return { offers: [], counter: 0 };
+    return seedInitialState();
   }
 }
 

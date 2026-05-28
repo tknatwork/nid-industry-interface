@@ -65,6 +65,38 @@ export default function LandingPage() {
               </Button>
             </a>
           </div>
+
+          <div
+            style={{
+              marginTop: 'var(--space-10)',
+              paddingTop: 'var(--space-6)',
+              borderTop: '1px solid var(--border-default)',
+            }}
+          >
+            <p
+              style={{
+                fontSize: 'var(--fs-12)',
+                fontWeight: 'var(--fw-600)',
+                color: 'var(--text-secondary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                marginBottom: 'var(--space-3)',
+              }}
+            >
+              Prototype surfaces — explore the three portals
+            </p>
+            <div style={{ display: 'flex', gap: 'var(--space-5)', flexWrap: 'wrap', fontSize: 'var(--fs-16)', fontWeight: 'var(--fw-600)' }}>
+              <a href="/recruiter/dashboard" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                Recruiter portal →
+              </a>
+              <a href="/admin/recruiters/queue" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                Placement admin →
+              </a>
+              <a href="/student" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                Student portal →
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
