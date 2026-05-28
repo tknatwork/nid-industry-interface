@@ -66,3 +66,19 @@ entries:
     branch: main
     intent: Milestone 2 slice 5 — candidate browse (portfolio-first, discipline-filtered, type-level guardrails)
     note: modules/candidate-browse (3rd module). 14 seeded students. /recruiter/jds/[id]/applicants grid + detail + individual shortlist (note required). Verified 7 eligible for jd_00001, all non-target/non-opted excluded. GOTCHA: mock data lives at apps/web/.dev-data (cwd-based).
+  - id: 13
+    date: 2026-05-29
+    hash: "4f7c3ee"
+    branch: main
+    intent: Milestone 2 slice 6 — slot booking (admin publishes, recruiter books + assigns shortlist)
+  - id: 14
+    date: 2026-05-29
+    hash: "e8b4c82"
+    branch: main
+    intent: Milestone 2 slice 7 — interview-day mobile console (transport modes, anonymized conflict, DEMO mode)
+  - id: 15
+    date: 2026-05-29
+    hash: "994767a"
+    branch: main
+    intent: Milestone 2 slice 8 — offer cascade (wave-based, strict 1:1) + workspace-wide typecheck cleanup
+    note: 6 recruiter modules complete. pnpm -r typecheck clean. tsconfig.node.json added. exactOptionalPropertyTypes fixes at source signatures.
