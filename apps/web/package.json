@@ -14,6 +14,7 @@
   "dependencies": {
     "@nid/core": "workspace:*",
     "@nid/db": "workspace:*",
+    "@nid/module-admin-accountability": "workspace:*",
     "@nid/module-candidate-browse": "workspace:*",
     "@nid/module-interview-console": "workspace:*",
     "@nid/module-jd-posting": "workspace:*",

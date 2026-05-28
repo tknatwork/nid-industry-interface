@@ -13,6 +13,8 @@ export type AdminNav =
   | 'cycles'
   | 'health-scores'
   | 'redressal'
+  | 'blacklist'
+  | 'payment-cell'
   | 'content';
 
 export interface AdminShellProps {
@@ -27,6 +29,8 @@ const adminNavItems: ReadonlyArray<{ key: AdminNav; href: string; label: string 
   { key: 'cycles', href: '/admin/cycles', label: 'Cycles' },
   { key: 'health-scores', href: '/admin/health-scores', label: 'Health scores' },
   { key: 'redressal', href: '/admin/redressal', label: 'Redressal' },
+  { key: 'blacklist', href: '/admin/blacklist', label: 'Blacklist' },
+  { key: 'payment-cell', href: '/admin/payment-cell', label: 'Payment cell' },
   { key: 'content', href: '/admin/content', label: 'Content' },
 ];
 

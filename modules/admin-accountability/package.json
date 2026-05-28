@@ -1,0 +1,22 @@
+{
+  "name": "@nid/module-admin-accountability",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Admin accountability surfaces (Phase 5.7–5.11) — company health scores, student redressal, blacklist, payment-cell. Composes the pure health-score math from @nid/core.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'lint placeholder'",
+    "test": "echo 'no tests yet'"
+  },
+  "dependencies": {
+    "@nid/core": "workspace:*",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3"
+  }
+}
