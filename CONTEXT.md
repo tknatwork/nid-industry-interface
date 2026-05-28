@@ -89,6 +89,17 @@ When working on UI: Phase 4 flows 4.1–4.19 are the recruiter user flows. The f
 - **API routes:** kebab-case, RESTful where natural.
 - **Modules:** kebab-case under `/modules/`.
 
+## Local port allocation (dev convention)
+
+| Port | Used by |
+|---|---|
+| 3000 | **Langfuse** (existing self-hosted instance on the project owner's machine). Do NOT clash. |
+| 3100 | **Next.js web app** (this project, pinned via `apps/web/package.json` scripts so we don't auto-fallback into another tool's port). |
+| 8000 | **Python ML/LLM FastAPI worker** (this project). |
+| 5432 | **Postgres** (Drizzle target — Supabase local or docker compose). |
+
+A new contributor on a clean machine without Langfuse can run our app on 3100 without any port shuffling. If a new tool needs a port, document it here so future agents don't accidentally re-collide.
+
 ## Gotchas
 
 - **`portfolio.nid.edu` has no per-student profile pages.** It's a thumbnail directory that opens external Behance/Issuu URLs. Our recruiter portal becomes the rich canonical view via server-side ingest. See plan Phase 6.7 for the architecture.

@@ -5,9 +5,9 @@
   "type": "module",
   "description": "NID Industry Interface — Next.js 15 App Router web application.",
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbo --port 3100",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port 3100",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
