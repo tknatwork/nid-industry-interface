@@ -82,3 +82,14 @@ entries:
     branch: main
     intent: Milestone 2 slice 8 — offer cascade (wave-based, strict 1:1) + workspace-wide typecheck cleanup
     note: 6 recruiter modules complete. pnpm -r typecheck clean. tsconfig.node.json added. exactOptionalPropertyTypes fixes at source signatures.
+  - id: 16
+    date: 2026-05-29
+    hash: "8d1198e"
+    branch: main
+    intent: Record recruiter flow complete (milestone-2 slices 6-8) in GCC layer
+  - id: 17
+    date: 2026-05-29
+    hash: "79a6684"
+    branch: main
+    intent: Milestone 4 — student portal (light), opt-in + eligible feed + tracker + REAL offer inbox
+    note: 7th module (student-portal). De-fakes the offer accept/decline — student accept drives the wave cascade (verified outstanding 1 → filled 1/2). Composition root at the page. Seed coherence across 3 stores for stu_0005. Landing prototype-surfaces strip. pnpm -r typecheck clean across all 12 projects.

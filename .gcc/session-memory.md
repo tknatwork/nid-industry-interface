@@ -2,8 +2,8 @@
 name: nid-industry-interface-session-memory
 project: nid-industry-interface
 last_updated: 2026-05-29
-status: milestone-2-recruiter-flow-complete
-current_module: (recruiter flow end-to-end)
+status: milestone-4-student-portal-complete
+current_module: (recruiter flow + student portal end-to-end on mock data)
 ---
 
 # Session Memory — NID Industry Interface (project-local)
@@ -13,51 +13,81 @@ Project-local session memory. Fully isolated from any global GCC layer.
 ## Last session
 
 **Date:** 2026-05-29
-**Phase:** Milestone 2 — Recruiter end-to-end (mock data) — COMPLETE
-**Latest commit:** `994767a feat(milestone-2): offer cascade (wave-based) + workspace typecheck cleanup`
+**Phase:** Milestone 4 — Student portal (light) — COMPLETE
+**Latest feat commit:** `79a6684 feat(milestone-4): student portal (light) — opt-in, eligible feed, tracker, real offer inbox`
 
-## Milestone 2 — full recruiter flow now runs end-to-end
+## What just landed — the student portal de-fakes the offer loop
 
-Slices (commits): onboarding (b945db2) · admin recruiter queue (1811aa9) · JD wizard + stipend gate (87ac884) · admin JD moderation + discipline mapping (5148460) · candidate browse (ce04833) · slot booking (4f7c3ee) · interview console (e8b4c82) · offer cascade + typecheck cleanup (994767a).
+`modules/student-portal` (7th module). The headline: the recruiter offers page used to fake
+student accept/decline with demo buttons. Now the **student** accepts/declines in their own
+`/student/offers` inbox, routed through `offer-cascade.recordResponse`, which drives the real
+wave cascade. Verified end-to-end: outstanding 1 → filled 1/2 on the recruiter board, then
+reset to the pending seed.
 
-The complete recruiter journey:
+Module design:
+- **Owns only per-cycle opt-in** (mutable JSON store). Profile + eligible-JD feed are read
+  models composed from candidate-browse (`getCandidate`) + jd-posting (`listJdsByStatus`).
+- **Dependency direction:** student-portal → {candidate-browse, jd-posting}. Downstream, acyclic.
+- **Composition root = the page** (`/student/applications` stitches shortlist + slot + offer),
+  mirroring the recruiter offers page. Keeps module deps to two.
+- Routes: `/student` (dashboard), `/student/cycles` (opt-in toggle), `/student/jds` (eligible
+  feed), `/student/applications` (tracker), `/student/offers` (real inbox).
+- `StudentShell` atom (4th shell) + `apps/web/lib/demo-student.ts` (stu_0005, Aanya Roy) +
+  `apps/web/lib/money.ts`. Landing now has a prototype-surfaces strip linking all three portals.
+
+Seed coherence for stu_0005 across three stores: candidate-browse shortlist + offer-cascade
+pending Wave-1 offer (₹12L) + student-portal opt-in. So the inbox lands populated.
+
+## Full demo now runnable end-to-end
+
 ```
 /apply → token tracker → admin issues credentials
-  → /recruiter/jds/new (structured wizard, stipend gate)
-  → /admin/jds moderation (discipline mapping) → published
-  → /recruiter/jds/[id]/applicants (portfolio-first, discipline-filtered, individual shortlist)
-  → /recruiter/jds/[id]/slots (book admin-published slots)
-  → /recruiter/jds/[id]/interviews (mobile console, transport modes, DEMO mode)
-  → /recruiter/jds/[id]/offers (wave-based cascade, strict 1:1 to positions)
+  → recruiter posts JD (stipend gate) → admin moderates → published
+  → recruiter browses (discipline-filtered, individual shortlist) → books slots → interview console
+  → recruiter issues wave offer
+  → STUDENT opts in → sees eligible feed → tracks application → ACCEPTS offer in /student/offers
+  → recruiter offer board reflects filled 1/2  ← the loop is now real on both sides
 ```
 
-## Modules built (6)
+## Modules built (7)
 
-recruiter-onboarding · jd-posting · candidate-browse · slot-booking · interview-console · offer-cascade. Each with a hand-written 5-markdown contract. Admin UI lives in apps/web/app/admin (consumes module public APIs). UI atoms: Button, StatusPill, Field, PageShell, AdminShell, RecruiterShell.
+recruiter-onboarding · jd-posting · candidate-browse · slot-booking · interview-console ·
+offer-cascade · student-portal. Each has a hand-written 5-markdown contract. UI atoms: Button,
+StatusPill, Field, PageShell, AdminShell, RecruiterShell, StudentShell.
 
 ## Verified this session
 
-- All 8 recruiter + admin routes return 200.
-- `pnpm -r typecheck` passes clean across all 8 workspace projects (strict + exactOptionalPropertyTypes + noUnusedLocals).
-- Offer cascade gate (canIssueOffers) + stipend floor (checkStipendFloor) verified in @nid/core.
+- `pnpm -r typecheck` clean across all 12 workspace projects (strict + exactOptionalPropertyTypes + noUnusedLocals).
+- All `/student/*` routes + `/recruiter/jds/jd_00001/offers` + landing return 200.
+- Real accept path (`recordResponse`) drives the cascade; both student + recruiter surfaces reflect it.
 
 ## Key decisions + gotchas (carry forward)
 
-- **`exactOptionalPropertyTypes` discipline:** Zod `.optional()` yields `T | undefined`, which does NOT satisfy a `field?: T` target under this flag. Fix at the source type: declare `field?: T | undefined`. Applied across core/recruiter-onboarding/slot-booking/jd-posting/web. Remember this for every new module.
-- **node-using modules extend `tsconfig.node.json`** (base + `types: ["node"]`) so standalone `tsc` resolves `node:fs`/`process`. New server-side modules must extend it, not tsconfig.base.json.
-- **`apps/web/.dev-data/`** is where mock JSON stores live (cwd-based under `pnpm --filter web dev`). Clear THAT path to reset demo data, not the repo root.
-- **Kill stale `next dev` (`pkill -9 -f next`) before a clean verify** — they linger and serve old code on :3100.
-- **Turbopack doesn't hot-register new `app/api/*` route dirs** mid-run — restart to add API routes; or verify via direct @nid/core/module tsx tests.
-- Guardrails are type-level: candidate sort union has no cgpa/fit; offer cascade has no buffer; both unbreakable by construction.
+- **`exactOptionalPropertyTypes`:** declare optional fields `field?: T | undefined`; spread optionals conditionally. Applies to every new module + page.
+- **`z.coerce.boolean('false')` is truthy** — convert form strings to real booleans in the action before the schema (done in `/student/cycles/actions.ts`).
+- **node-using modules extend `tsconfig.node.json`** so standalone `tsc` resolves `node:fs`.
+- **Mock JSON stores live at `apps/web/.dev-data/`** (cwd-based). Clear ALL of them together to reset — clearing one desyncs the seed coherence (3 stores reference stu_0005).
+- **Kill stale `next dev` (`pkill -9 -f next`) before a clean verify**; restart to register new `app/api/*` route dirs (Turbopack).
+- **Relative imports omit `.js`** (Turbopack resolves TS workspace source literally).
+- **Documented seam:** student-portal opt-in is NOT yet unified with recruiter-side candidate-browse opt-in (candidate-browse reads its own seed). Unify at the `@nid/db` layer. Not a bug — intentional for the slice.
+- **Git convention (project-local, isolated):** `git -c commit.gpgsign=false -c user.email='build@nid-industry-interface.local' -c user.name='NID Industry Interface Build'`. Conventional Commits. No Claude co-author trailer (matches the existing history + isolation mandate).
 
-## Next step (options — ask the user)
+## Next step — continue the remaining plan options, serially
 
-Milestone 2 (recruiter flow) is complete. Natural next directions:
-1. **Student portal (light)** — Milestone 4: opt-in, eligible JD feed, application tracker, offer inbox (lets students drive the accept/decline the offers page currently fakes with demo controls).
-2. **AI JD analyzer (Python ML worker)** — exercises the two-language stack; supplies the real scope-creep multiplier the stipend gate currently hardcodes at 1.4×.
-3. **Polish pass** — wire the native-harness CI (`.github/workflows/ci.yml` was blocked earlier by a security hook; retry), add the dependency-cruiser boundary run, accessibility sweep, real tests.
-4. **Remaining admin surfaces** — health scores, redressal, blacklist, payment-cell (Phase 5 supporting flows).
+Per the user: "complete the rest options you have provided." Remaining, in order:
+1. **AI JD analyzer** (Task 37) — Python FastAPI ML worker (JD field extraction, scope-creep
+   classifier, skill/discipline matching) + a TS `AiProvider` adapter in `@nid/core` contracts
+   with Zod-validated responses + graceful fallback to the current deterministic
+   `scopeCreepMultiplier = 1`. Wire the gate report to show analyzer flags. Default to ML, not LLM
+   (Phase 6.11a). Keep the worker isolated; the web path must degrade to "admin-review" if the
+   worker is down (Phase 6.12b graceful degradation).
+2. **CI / native-harness polish** (Task 38) — `.github/workflows/ci.yml` past the security hook,
+   husky/lefthook hooks, ESLint flat config, make `pnpm boundaries` (dependency-cruiser) actually run.
+3. **Remaining admin surfaces** (Task 39) — health scores, redressal, blacklist, payment-cell.
 
 ## Session-start protocol reminder
 
-Per Phase 9.3: read this file, ask the user explicitly whether to continue (and which direction) or start fresh; never auto-continue; honor session-bloat detection past ~50K tokens. Mind the `apps/web/.dev-data` + stale-dev-server + exactOptionalPropertyTypes gotchas.
+Per Phase 9.3: read this file, ask the user explicitly whether to continue (and which direction)
+or start fresh; never auto-continue; honor session-bloat detection past ~50K tokens. Mind the
+`apps/web/.dev-data` reset-all, stale-dev-server, exactOptionalPropertyTypes, and
+z.coerce.boolean gotchas.
