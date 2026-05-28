@@ -1,0 +1,145 @@
+/*
+ * Tier 2 — Semantic tokens
+ *
+ * Named by usage. Reference primitives only (Tier 1). Includes responsive
+ * overrides for tablet (≥768px) and desktop (≥1180px). Discipline-themed
+ * accent overrides apply via [data-discipline="<name>"] attribute on a container.
+ *
+ * Components (Tier 3) reference these semantic tokens, never primitives directly.
+ */
+
+:root {
+  /* Surfaces */
+  --surface-page: var(--grey-50);
+  --surface-card: var(--grey-0);
+  --surface-elevated: var(--grey-0);
+  --surface-panel: var(--grey-100);
+  --surface-overlay: rgb(0 0 0 / 0.6);
+
+  /* Text */
+  --text-primary: var(--grey-500);
+  --text-strong: var(--grey-900);
+  --text-secondary: var(--grey-700);
+  --text-on-accent: var(--grey-0);
+  --text-on-alert: var(--grey-0);
+
+  /* Border */
+  --border-default: var(--grey-200);
+  --border-emphasized: var(--grey-300);
+  --border-focus: var(--navy-500);
+
+  /* Accent (portal default, swappable per discipline via [data-discipline]) */
+  --accent: var(--navy-500);
+  --accent-text: var(--grey-0);
+
+  /* Layout spacing — defaults for phone (mobile-first); overridden for tablet + desktop below */
+  --layout-page-x: var(--space-6);
+  --layout-section-y: var(--space-12);
+  --layout-stack-tight: var(--space-2);
+  --layout-stack-default: var(--space-4);
+  --layout-stack-loose: var(--space-8);
+
+  /* Type roles */
+  --type-display-family: var(--ff-sans);
+  --type-display-size: var(--fs-72);
+  --type-display-line: var(--lh-85);
+  --type-display-weight: var(--fw-500);
+
+  --type-h1-family: var(--ff-sans);
+  --type-h1-size: var(--fs-48);
+  --type-h1-line: var(--lh-56);
+  --type-h1-weight: var(--fw-500);
+
+  --type-h2-family: var(--ff-sans);
+  --type-h2-size: var(--fs-40);
+  --type-h2-line: var(--lh-48);
+  --type-h2-weight: var(--fw-500);
+
+  --type-h3-family: var(--ff-sans);
+  --type-h3-size: var(--fs-24);
+  --type-h3-line: var(--lh-28);
+  --type-h3-weight: var(--fw-500);
+
+  --type-body-lg-family: var(--ff-sans);
+  --type-body-lg-size: var(--fs-18);
+  --type-body-lg-line: var(--lh-30);
+  --type-body-lg-weight: var(--fw-300);
+
+  --type-body-family: var(--ff-sans);
+  --type-body-size: var(--fs-16);
+  --type-body-line: var(--lh-19);
+  --type-body-weight: var(--fw-500);
+
+  --type-caption-family: var(--ff-sans);
+  --type-caption-size: var(--fs-12);
+  --type-caption-line: var(--lh-14);
+  --type-caption-weight: var(--fw-400);
+
+  /* Motion roles */
+  --motion-micro: var(--dur-1) var(--ease-standard);
+  --motion-standard: var(--dur-2) var(--ease-standard);
+  --motion-enter: var(--dur-2) var(--ease-decelerate);
+  --motion-exit: var(--dur-2) var(--ease-accelerate);
+  --motion-modal: var(--dur-2) var(--ease-in-out-cubic);
+}
+
+/* Tablet (≥ 768px) */
+@media (min-width: 768px) {
+  :root {
+    --layout-page-x: var(--space-8);
+    --layout-section-y: var(--space-16);
+    --type-display-line: 80px;
+  }
+}
+
+/* Desktop (≥ 1180px) */
+@media (min-width: 1180px) {
+  :root {
+    --layout-page-x: var(--space-12);
+    --layout-section-y: var(--space-20);
+  }
+}
+
+/*
+ * Discipline-themed accent override.
+ * Mirrors NID main site's body classes (.red_color, .purple_color, etc.).
+ * The active discipline filter applies the matching attribute on the page container.
+ */
+[data-discipline='communication'] {
+  --accent: var(--red-500);
+}
+[data-discipline='industrial'] {
+  --accent: var(--navy-500);
+}
+[data-discipline='textile'] {
+  --accent: var(--purple-500);
+}
+[data-discipline='animation'] {
+  --accent: var(--yellow-500);
+}
+[data-discipline='ux'] {
+  --accent: var(--cyan-500);
+}
+[data-discipline='furniture'] {
+  --accent: var(--green-500);
+}
+
+/* Reduced motion — Phase 6.2b honoring prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-micro: 0ms;
+    --motion-standard: 0ms;
+    --motion-enter: 0ms;
+    --motion-exit: 0ms;
+    --motion-modal: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

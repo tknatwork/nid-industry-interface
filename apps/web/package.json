@@ -1,0 +1,34 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "NID Industry Interface — Next.js 15 App Router web application.",
+  "scripts": {
+    "dev": "next dev --turbo",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@nid/core": "workspace:*",
+    "@nid/db": "workspace:*",
+    "@nid/ui": "workspace:*",
+    "next": "15.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.0.0-beta.7",
+    "@types/node": "22.10.0",
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "eslint": "9.16.0",
+    "eslint-config-next": "15.1.0",
+    "postcss": "8.4.49",
+    "tailwindcss": "4.0.0-beta.7",
+    "typescript": "5.6.3"
+  }
+}

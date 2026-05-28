@@ -1,0 +1,7 @@
+entries:
+  - id: 1
+    date: 2026-05-29
+    hash: pending
+    branch: main
+    intent: Milestone 1 — project scaffold (directories, GCC layer, markdown contracts)
+    note: Foundation work; no code yet, structural setup only.

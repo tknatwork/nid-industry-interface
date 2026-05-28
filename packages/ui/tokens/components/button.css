@@ -1,0 +1,41 @@
+/*
+ * Tier 3 — Button component tokens
+ *
+ * Derived from semantic tokens. Includes states (rest / hover / active / disabled / focus).
+ */
+
+:root {
+  --btn-bg-primary: var(--accent);
+  --btn-fg-primary: var(--text-on-accent);
+  --btn-bg-primary-hover: color-mix(in oklch, var(--accent), black 10%);
+  --btn-bg-primary-active: color-mix(in oklch, var(--accent), black 18%);
+
+  --btn-bg-secondary: transparent;
+  --btn-fg-secondary: var(--text-strong);
+  --btn-border-secondary: var(--border-emphasized);
+  --btn-border-secondary-hover: var(--border-focus);
+
+  --btn-bg-ghost: transparent;
+  --btn-fg-ghost: var(--text-primary);
+  --btn-bg-ghost-hover: var(--surface-panel);
+
+  --btn-bg-disabled: var(--grey-200);
+  --btn-fg-disabled: var(--grey-700);
+
+  --btn-radius: var(--radius-full);
+  --btn-padding-y: var(--space-3);
+  --btn-padding-x: var(--space-6);
+  --btn-gap: var(--space-2);
+
+  --btn-focus-ring: 0 0 0 3px color-mix(in oklch, var(--accent), white 60%);
+  --btn-motion: var(--motion-standard);
+
+  /* Size variants */
+  --btn-sm-padding-y: var(--space-2);
+  --btn-sm-padding-x: var(--space-4);
+  --btn-sm-font-size: var(--fs-14);
+
+  --btn-lg-padding-y: var(--space-4);
+  --btn-lg-padding-x: var(--space-8);
+  --btn-lg-font-size: var(--fs-18);
+}

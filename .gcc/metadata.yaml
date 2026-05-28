@@ -1,0 +1,45 @@
+project: nid-industry-interface
+phase: milestone-1-foundations
+status: in-progress
+test_count: 0
+created: 2026-05-29
+last_updated: 2026-05-29
+
+# This project is fully isolated. It does NOT register with any
+# global GCC index (e.g. ~/CLAUDE CONTEXT/GCC/main.md). Its state
+# lives entirely within this folder.
+isolated: true
+
+stack:
+  frontend: nextjs-15-app-router
+  language_web: typescript-strict
+  language_ml: python-3.13
+  package_manager: pnpm
+  database: postgres-16
+  orm: drizzle
+  ui: tailwind-v4 + shadcn-ui
+  host_prototype: vercel-fluid-compute
+  host_production: self-hosted-docker-on-stqc-cleared-cloud
+  observability: langfuse-self-hosted
+
+modules:
+  - foundations  # current
+  # The following are placeholders for future milestones; do not
+  # create them until their milestone begins.
+  # - recruiter-onboarding
+  # - jd-posting
+  # - candidate-browse
+  # - slot-booking
+  # - interview-console-mobile
+  # - offer-cascade
+  # - admin-jd-moderation
+  # - admin-health-scores
+  # - student-redressal
+  # - student-conduct
+  # - nda-jury-fork
+  # - institution-api
+  # - recruiter-api
+  # - observability-langfuse
+  # - shared-ui
+  # - design-tokens
+  # - traffic-resilience

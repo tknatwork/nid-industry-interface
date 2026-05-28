@@ -1,0 +1,48 @@
+/*
+ * Global stylesheet for the NID Industry Interface web app.
+ *
+ * Import order matters:
+ * 1. Design system tokens (primitives → semantic → component) — single source of truth.
+ * 2. Tailwind v4 — utility classes derived from the @theme block declared in tokens/index.css.
+ * 3. App-level overrides if any.
+ */
+
+@import '@nid/ui/tokens/index.css';
+@import 'tailwindcss';
+
+/* Default page surface using the semantic tokens. */
+html,
+body {
+  background-color: var(--surface-page);
+  color: var(--text-primary);
+  font-family: var(--ff-sans);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  font-weight: var(--type-body-weight);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus-visible by default — accessibility fix relative to nid.edu main site (Phase 6.2). */
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-1);
+}
+
+/* Skip-link target landing — accessible jump-to-main pattern. */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-card);
+  color: var(--text-strong);
+  border-radius: var(--radius-2);
+  z-index: 1000;
+  transition: top var(--motion-standard);
+}
+
+.skip-link:focus-visible {
+  top: var(--space-4);
+}

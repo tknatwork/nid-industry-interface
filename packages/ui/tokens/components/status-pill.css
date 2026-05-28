@@ -1,0 +1,42 @@
+/*
+ * Tier 3 — Status pill tokens
+ *
+ * Used everywhere status matters: JD state (draft/in-moderation/published/closed),
+ * offer state (pending/on-hold/accepted/declined), ticket tracker state, health-score bands.
+ */
+
+:root {
+  --pill-radius: var(--radius-full);
+  --pill-padding-y: var(--space-1);
+  --pill-padding-x: var(--space-3);
+  --pill-font-size: var(--fs-12);
+  --pill-font-weight: var(--fw-600);
+
+  /* State variants */
+  --pill-neutral-bg: var(--grey-100);
+  --pill-neutral-fg: var(--text-secondary);
+
+  --pill-info-bg: color-mix(in oklch, var(--blue-500), white 80%);
+  --pill-info-fg: var(--blue-500);
+
+  --pill-success-bg: color-mix(in oklch, var(--green-500), white 80%);
+  --pill-success-fg: color-mix(in oklch, var(--green-500), black 20%);
+
+  --pill-warning-bg: color-mix(in oklch, var(--amber-500), white 75%);
+  --pill-warning-fg: color-mix(in oklch, var(--amber-500), black 35%);
+
+  --pill-danger-bg: color-mix(in oklch, var(--red-700), white 85%);
+  --pill-danger-fg: var(--red-700);
+
+  /* Health score bands */
+  --pill-excellent-bg: color-mix(in oklch, var(--green-500), white 80%);
+  --pill-excellent-fg: color-mix(in oklch, var(--green-500), black 30%);
+  --pill-good-bg: color-mix(in oklch, var(--cyan-500), white 80%);
+  --pill-good-fg: color-mix(in oklch, var(--cyan-500), black 20%);
+  --pill-watch-bg: color-mix(in oklch, var(--amber-500), white 75%);
+  --pill-watch-fg: color-mix(in oklch, var(--amber-500), black 35%);
+  --pill-restricted-bg: color-mix(in oklch, var(--red-500), white 80%);
+  --pill-restricted-fg: color-mix(in oklch, var(--red-500), black 25%);
+  --pill-blacklisted-bg: var(--grey-200);
+  --pill-blacklisted-fg: var(--grey-900);
+}

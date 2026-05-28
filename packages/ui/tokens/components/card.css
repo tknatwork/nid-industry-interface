@@ -1,0 +1,19 @@
+/*
+ * Tier 3 — Card component tokens
+ *
+ * Used for candidate tiles, JD summaries, admin queue rows.
+ */
+
+:root {
+  --card-bg: var(--surface-card);
+  --card-fg: var(--text-primary);
+  --card-radius: var(--radius-3);
+  --card-padding: var(--space-5);
+  --card-padding-tight: var(--space-4);
+  --card-padding-loose: var(--space-6);
+  --card-shadow: var(--shadow-1);
+  --card-shadow-hover: var(--shadow-2);
+  --card-border: var(--border-default);
+  --card-motion: var(--motion-enter);
+  --card-hover-scale: 1.01;
+}

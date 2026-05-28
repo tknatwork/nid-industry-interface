@@ -1,0 +1,111 @@
+/*
+ * Tier 1 — Primitives
+ *
+ * Raw values. No semantic meaning. NEVER referenced directly by components.
+ * Components reference semantic tokens (Tier 2); semantic tokens reference primitives here.
+ *
+ * Source: extracted from nid.edu/public/frontend/css/styles.css :root block (Phase 6.2)
+ * + project-specific extensions for the strict 4px spacing scale, motion durations, and shadows.
+ */
+
+:root {
+  /* Grey scale (lifted from NID main site) */
+  --grey-0: #ffffff;
+  --grey-50: #fbfbfb; /* NID --color-surface */
+  --grey-100: #f2f2f2; /* NID --footer-bg-color */
+  --grey-200: #dadada; /* NID --past-director-border */
+  --grey-300: #c4c4c4; /* NID --search-bg / dividers */
+  --grey-500: #636363; /* NID --body-color (primary text) */
+  --grey-700: #515151; /* NID --search-bg-color */
+  --grey-900: #000000; /* NID --black-color */
+
+  /* Discipline palette (six accents, mirrors NID's .red_color / .purple_color body classes) */
+  --red-500: #ff6969; /* NID --red-color */
+  --yellow-500: #ff9a3c; /* NID --yellow-color */
+  --cyan-500: #0099a5; /* NID --light-blue-color */
+  --green-500: #70aa62; /* NID --green-color */
+  --purple-500: #3b2854; /* NID --purple-color */
+  --navy-500: #345381; /* NID --navy-blue-color, recommended portal accent */
+
+  /* Functional palette */
+  --blue-500: #526efe; /* NID --news-event */
+  --amber-500: #ffbf1c; /* NID --career-color */
+  --red-700: #ff0000; /* NID --main-red-color, used for alerts */
+
+  /* Spacing primitives — strict 4px scale (Tailwind v4-compatible) */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Radii */
+  --radius-0: 0;
+  --radius-1: 4px;
+  --radius-2: 8px;
+  --radius-3: 10px; /* NID card radius */
+  --radius-4: 20px; /* NID panel radius */
+  --radius-full: 9999px;
+
+  /* Type size primitives */
+  --fs-12: 12px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-20: 20px;
+  --fs-24: 24px;
+  --fs-40: 40px;
+  --fs-48: 48px;
+  --fs-72: 72px;
+
+  /* Line heights */
+  --lh-14: 14px;
+  --lh-18: 18px;
+  --lh-19: 19px;
+  --lh-23: 23px;
+  --lh-28: 28px;
+  --lh-30: 30px;
+  --lh-48: 48px;
+  --lh-56: 56px;
+  --lh-85: 85px;
+
+  /* Weights */
+  --fw-300: 300;
+  --fw-400: 400;
+  --fw-500: 500;
+  --fw-600: 600;
+  --fw-700: 700;
+
+  /* Font families */
+  --ff-sans: 'Raleway', ui-sans-serif, system-ui, sans-serif;
+  --ff-hindi: 'Noto Sans Devanagari', 'Mukta', system-ui, sans-serif;
+
+  /* Motion durations (Ant Design–inspired, Phase 6.2b) */
+  --dur-1: 100ms; /* micro: hover, focus, click */
+  --dur-2: 200ms; /* small: tooltip, dropdown, button state */
+  --dur-3: 300ms; /* medium: card flip, list move, accordion */
+  --dur-4: 500ms; /* large: page transition, modal, drawer */
+
+  /* Easing curves */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out-cubic: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+
+  /* Shadow primitives */
+  --shadow-1: 0 2px 8px rgb(0 0 0 / 0.12);
+  --shadow-2: 0 4px 10px rgb(0 0 0 / 0.18);
+  --shadow-3: 0 8px 24px rgb(0 0 0 / 0.22);
+
+  /* Breakpoints (mirror NID responsive.css) */
+  --bp-md: 768px;
+  --bp-lg: 1180px;
+}

@@ -1,0 +1,25 @@
+/*
+ * Tier 3 — Input component tokens
+ *
+ * Form inputs across recruiter, admin, and student portals.
+ */
+
+:root {
+  --input-bg: var(--surface-card);
+  --input-fg: var(--text-strong);
+  --input-placeholder: var(--text-secondary);
+  --input-border: var(--border-default);
+  --input-border-hover: var(--border-emphasized);
+  --input-border-focus: var(--border-focus);
+  --input-error-border: var(--red-700);
+  --input-error-text: var(--red-700);
+
+  --input-radius: var(--radius-2);
+  --input-padding-y: var(--space-3);
+  --input-padding-x: var(--space-4);
+  --input-font-size: var(--fs-16);
+  --input-min-height: 44px; /* Touch-target baseline per Phase 6.2d mobile-first */
+
+  --input-focus-ring: 0 0 0 3px color-mix(in oklch, var(--accent), white 70%);
+  --input-motion: var(--motion-micro);
+}

@@ -1,0 +1,44 @@
+/*
+ * @nid/ui — design system token entrypoint
+ *
+ * Import order is significant: primitives first, then semantics, then component tokens.
+ * Each tier references the tier above it.
+ */
+
+@import './primitives.css';
+@import './semantic.css';
+@import './components/button.css';
+@import './components/card.css';
+@import './components/input.css';
+@import './components/status-pill.css';
+
+/* Tailwind v4 theme bridge — exposes our tokens as Tailwind utilities.
+   Tailwind v4 reads CSS @theme blocks at build time. */
+@theme {
+  --font-sans: var(--ff-sans);
+  --font-hindi: var(--ff-hindi);
+
+  --color-ink: var(--grey-900);
+  --color-body: var(--grey-500);
+  --color-muted: var(--grey-700);
+  --color-line: var(--grey-300);
+  --color-line-soft: var(--grey-200);
+  --color-surface: var(--grey-50);
+  --color-panel: var(--grey-100);
+  --color-white: var(--grey-0);
+
+  --color-discipline-red: var(--red-500);
+  --color-discipline-yellow: var(--yellow-500);
+  --color-discipline-cyan: var(--cyan-500);
+  --color-discipline-green: var(--green-500);
+  --color-discipline-purple: var(--purple-500);
+  --color-discipline-navy: var(--navy-500);
+
+  --color-news: var(--blue-500);
+  --color-career: var(--amber-500);
+  --color-alert: var(--red-700);
+
+  --radius-card: var(--radius-3);
+  --radius-panel: var(--radius-4);
+  --radius-pill: var(--radius-full);
+}

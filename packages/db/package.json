@@ -1,0 +1,31 @@
+{
+  "name": "@nid/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Drizzle ORM schema + migrations + seed data for the NID Industry Interface portal.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts",
+    "./seed": "./src/seed/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'lint placeholder'",
+    "test": "echo 'no tests yet'",
+    "generate": "pnpm exec drizzle-kit generate",
+    "migrate": "pnpm exec drizzle-kit migrate",
+    "studio": "pnpm exec drizzle-kit studio",
+    "seed": "tsx src/seed/run.ts"
+  },
+  "dependencies": {
+    "@nid/core": "workspace:*",
+    "drizzle-orm": "0.36.4",
+    "postgres": "3.4.5"
+  },
+  "devDependencies": {
+    "drizzle-kit": "0.30.0",
+    "tsx": "4.19.2",
+    "typescript": "5.6.3"
+  }
+}
