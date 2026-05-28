@@ -33,3 +33,14 @@ entries:
     branch: main
     intent: Milestone 2 slice 2 — admin recruiter queue closes the onboarding loop
     note: AdminShell atom + /admin/recruiters/queue + /admin/recruiters/[tokenId] with Server Action state transitions. Allowlist enforced server-side.
+  - id: 7
+    date: 2026-05-29
+    hash: e9cae1a
+    branch: main
+    intent: Record onboarding loop closure in GCC layer
+  - id: 8
+    date: 2026-05-29
+    hash: 87ac884
+    branch: main
+    intent: Milestone 2 slice 3 — JD posting wizard (structured schema) + deterministic stipend-floor gate
+    note: modules/jd-posting (2nd module). RecruiterShell atom. /recruiter/jds + /recruiter/jds/new wizard. checkStipendFloor gate verified 4 cases. AI analyzer deferred to ML-worker slice.

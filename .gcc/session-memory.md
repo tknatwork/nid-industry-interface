@@ -2,62 +2,63 @@
 name: nid-industry-interface-session-memory
 project: nid-industry-interface
 last_updated: 2026-05-29
-status: milestone-2-onboarding-loop-complete
-current_module: recruiter-onboarding + admin-recruiter-queue (UI surface)
+status: milestone-2-jd-posting-slice-complete
+current_module: jd-posting
 ---
 
 # Session Memory — NID Industry Interface (project-local)
 
-Project-local session memory. Fully isolated from any global GCC layer — nothing here propagates upward.
+Project-local session memory. Fully isolated from any global GCC layer.
 
 ## Last session
 
 **Date:** 2026-05-29
 **Phase:** Milestone 2 — Recruiter end-to-end (mock data)
-**Module:** recruiter-onboarding (+ admin UI surface in apps/web)
-**Latest commit:** `1811aa9 feat(milestone-2): admin recruiter queue closes the onboarding loop`
+**Module:** jd-posting
+**Latest commit:** `87ac884 feat(milestone-2): JD posting wizard with structured schema + stipend gate`
 
-## What was accomplished
+## Milestone 2 progress so far
 
-### Earlier this session (already in commit log)
-- Milestone 1 foundations + Milestone 2 slice 1 (recruiter `/apply` + `/track/<token>`).
+1. **Slice 1** — recruiter onboarding: `/apply` + `/track/<token>` (commit b945db2).
+2. **Slice 2** — admin recruiter queue closes the onboarding loop (commit 1811aa9).
+3. **Slice 3 (this step)** — JD posting wizard + stipend-floor gate (commit 87ac884).
 
-### This step — Milestone 2 slice 2 (admin queue)
-1. **Module API extended:** `listAll()` + `listOutboxAll()` added to `@nid/module-recruiter-onboarding` so admin surfaces can render every token without hitting the store directly.
-2. **`AdminShell` atom:** visually distinct chrome (dark top bar, accent border, role chip, separate admin nav). Lives in `@nid/ui` so future admin surfaces inherit the same layout.
-3. **`/admin/recruiters/queue`:** filter tabs (8 buckets including All), sortable table with company + sector + status pill + submitted-at + Review link.
-4. **`/admin/recruiters/[tokenId]`:** full company detail, status history, per-transition Server Action forms with note + optional fee-amount, sidebar comms log.
-5. **State-machine allowlist enforced server-side** in `actions.ts` — illegal transitions redirect with `error=illegal-transition`.
-6. **`revalidatePath` on success** refreshes queue, detail, and the recruiter's tracker page atomically.
+## What was accomplished this step
 
-## End-to-end verified (`http://localhost:3100`)
+1. **`modules/jd-posting/`** — second module, hand-written 5-markdown contract.
+   - Zod draft (permissive) + moderation (strict) schemas built on `@nid/core` `Jd`.
+   - JSON-backed mock store (`.dev-data/jd-posting.json`).
+   - Canonical skill taxonomy (25 skills / 6 groups; engineering group flagged for scope review) + stipend-floor matrix (programme × role-type).
+   - `submitForModeration` runs the pre-publish gate: strict schema → `checkStipendFloor` (`@nid/core`) with a **1.4× multiplier when an engineering skill is bundled** into a design role (the deterministic slice of scope-creep detection until the ML analyzer lands).
+2. **`RecruiterShell`** atom — authenticated-portal chrome with "acting as <company>" demo banner.
+3. **`apps/web/lib/demo-recruiter.ts`** — fixed demo recruiter (Acme Design Studio / NID-2026-A-0001) standing in for a session until auth lands.
+4. **Recruiter routes:** `/recruiter` → dashboard (stat cards), `/recruiter/jds` (list with status pills + comp summary), `/recruiter/jds/new` (full structured wizard — role basics, conditional compensation, target programmes, grouped skills with off/preferred/required toggles, categorized responsibilities, deliverables, prose, dynamic interview rounds). Save-draft + submit-for-moderation via `startTransition` server actions; gate failures render inline.
 
-- `/admin` → 307 → `/admin/recruiters/queue` ✓
-- `/admin/recruiters/queue` → 200 (all 3 demo tokens listed with status pills) ✓
-- `/admin/recruiters/queue?status=fee-due` → 200 (filter works) ✓
-- `/admin/recruiters/NID-2026-A-0042` → 200 (shows "Begin verification" + "Reject" forms) ✓
-- `/admin/recruiters/NID-2026-A-0001` → 200 (terminal state — "No further transition available") ✓
-- `/admin/recruiters/bogus` → 404 ✓
-- Recruiter-side `/apply`, `/track`, `/track/<token>` still work (unchanged) ✓
+## Verified
+
+- All recruiter routes render 200; wizard shows every section.
+- `checkStipendFloor` confirmed across 4 cases via direct `@nid/core` tsx test:
+  - below-floor full-time low endpoint → BLOCKED (endpoint=low)
+  - above-floor → PASS
+  - 1.4× engineering multiplier (₹6.5L vs ₹8.4L adjusted) → BLOCKED, adjusted=84000000
+  - internship single-value below floor → BLOCKED (endpoint=single)
+- `tsx` added at root for one-off verification scripts.
 
 ## Key decisions captured this step
 
-- **AdminShell is a separate atom**, not a variant of PageShell. Admins and recruiters should see clearly-distinct chrome so they always know which surface they're on. This will scale to student/coordinator shells later.
-- **Server-side transition allowlist** is duplicated between the module (`store.advanceTokenStatus` does no gating) and the admin action (which enforces the matrix). For Milestone 2 mock-data scope this is fine; when DB lands we'll move the allowlist into the module and have the admin action call a gated `transition()` use case.
-- **No auth on `/admin/*` yet.** Auth lands in a later module. The route is unauth'd for the demo only.
+- **The gate wraps a pure function.** `submitForModeration` → `@nid/core` `checkStipendFloor`. When the Python ML analyzer lands it supplies the real `scopeCreepMultiplier`; the gate structure doesn't change. The deterministic 1.4× on bundled engineering skills is the interim signal.
+- **Wizard uses client state + server actions called via `startTransition`** (not a form-action POST) so we don't fight FormData array-encoding for skills / responsibilities / rounds. The action receives a plain typed payload; on success the client `router.push`es to `/recruiter/jds`.
+- **Skills + stipend floors are seed data inside the module.** They move to per-cycle admin-editable tables when the DB lands (Phase 6.10).
+- **Verifying React Server Actions headlessly is impractical** (the action target is encoded in a `$ACTION_REF` token). We verify the load-bearing pure logic directly + smoke-test the routes; the wizard's full path works in a browser.
 
 ## Next step (single, specific)
 
-**Begin JD posting (Phase 4.2):** scaffold a new module `modules/jd-posting/` with its own 5-markdown contract, then build the multi-step JD wizard at `/recruiter/jds/new` for an active recruiter (Acme Design Studio is in `credentials-issued` state and ready to post). The first wizard slice should be the structured-schema form (Steps 1-6 from Phase 4.2 — role basics, compensation range, skills, responsibilities, deliverables, supplementary prose) without the AI analyzer yet (analyzer comes in a follow-on slice once the Python ML worker scaffolds land).
+**Admin JD moderation (Phase 5.1):** build `/admin/jds` — a queue of `in-moderation` JDs (the recruiter-onboarding queue pattern, reused) where the placement admin reviews the structured JD, sees the gate report, can edit the discipline mapping, and publishes (moving the JD to `published`) or holds for clarification. The module's `listJdsByStatus('in-moderation')` is already exported for this. After that, candidate browse (Phase 4.4) is the next recruiter-facing surface.
 
 ## Open blockers
 
-None. Mock data is sufficient for the JD wizard surface.
+None.
 
 ## Session-start protocol reminder
 
-Per Phase 9.3 of the plan: any agent (regardless of model) starting work here must:
-1. Read this file.
-2. Prompt the user explicitly: "Continue from the last session (onboarding loop complete; next is JD posting wizard at /recruiter/jds/new)? Or start fresh on a different concern?"
-3. Never auto-continue without asking.
-4. Honor session-bloat detection — recommend a fresh session if prior crossed the ~50K token threshold.
+Per Phase 9.3: any agent starting work here must read this file, then ask the user explicitly whether to continue (next: `/admin/jds` moderation queue) or start fresh. Never auto-continue. Honor session-bloat detection (recommend fresh session past ~50K tokens).
