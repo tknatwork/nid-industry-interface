@@ -15,9 +15,10 @@
  *   for skill/discipline matching, rule-based + classifier for scope-creep).
  * - LLM calls: self-hosted local LLM (vLLM) for natural-language tasks.
  * - Dev convenience: Vercel AI Gateway adapter (prototype only).
+ *
+ * Adapter implementations import Zod and validate the Python worker's JSON
+ * response at the boundary (Phase 6.12a). The contract here is types only.
  */
-
-import type { z } from 'zod';
 
 export type AiOperation = 'summarize' | 'translate' | 'explain' | 'draft';
 
@@ -90,10 +91,3 @@ export interface AiProvider {
   translate(text: string, targetLang: 'en' | 'hi', ctx: AiCallContext): Promise<{ translated: string }>;
   explain(question: string, scope: 'discipline-catalog' | 'cycle-stats', ctx: AiCallContext): Promise<{ answer: string }>;
 }
-
-/**
- * Zod schema declaration is the responsibility of the adapter implementation
- * (where Zod is imported and used to validate the Python worker's JSON response).
- * The `z` import here is type-only — kept for documentation / future use.
- */
-type _ZodHandle = z.ZodTypeAny; // eslint-disable-line @typescript-eslint/no-unused-vars

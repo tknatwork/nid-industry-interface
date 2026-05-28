@@ -5,7 +5,6 @@ import { getJd } from '@nid/module-jd-posting';
 import {
   listEligibleCandidates,
   listShortlist,
-  isShortlisted,
   type CandidateSort,
   type CandidateView,
 } from '@nid/module-candidate-browse';

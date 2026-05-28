@@ -1,5 +1,5 @@
 import type { StipendFloorRule } from '../entities/cycle';
-import type { Jd } from '../entities/jd';
+import type { RoleType } from '../entities/jd';
 
 /**
  * Stipend floor compliance check (Phase 5.3).
@@ -20,8 +20,20 @@ export interface StipendFloorCheck {
   readonly violatedEndpoint?: 'low' | 'high' | 'single';
 }
 
+/**
+ * Compensation slice the gate reads. Optionals are explicit `| undefined`
+ * so callers can pass `{ baseMinPaise: maybeUndefined }` under
+ * exactOptionalPropertyTypes without conditional spreads.
+ */
+export interface StipendFloorInput {
+  readonly roleType: RoleType;
+  readonly baseMinPaise?: number | undefined;
+  readonly baseMaxPaise?: number | undefined;
+  readonly stipendPaise?: number | undefined;
+}
+
 export function checkStipendFloor(
-  jd: Pick<Jd, 'roleType' | 'baseMinPaise' | 'baseMaxPaise' | 'stipendPaise'>,
+  jd: StipendFloorInput,
   applicableRule: StipendFloorRule,
   scopeCreepMultiplier: number,
 ): StipendFloorCheck {

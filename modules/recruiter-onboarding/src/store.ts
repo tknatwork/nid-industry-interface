@@ -18,8 +18,6 @@ interface StoreState {
   readonly outbox: readonly OutboxMessage[];
 }
 
-const DEFAULT_STATE: StoreState = { tokens: {}, counters: {}, outbox: [] };
-
 function dataFilePath(): string {
   const root = process.cwd();
   return resolve(root, '.dev-data', 'recruiter-onboarding.json');
@@ -137,7 +135,7 @@ export interface SubmitInput {
   readonly gst: string;
   readonly registrationNumber: string;
   readonly corporateEmail: string;
-  readonly websiteUrl?: string;
+  readonly websiteUrl?: string | undefined; // exactOptionalPropertyTypes: allow explicit undefined
   readonly contactName: string;
   readonly contactPhone: string;
 }
@@ -234,8 +232,8 @@ export function listOutboxForToken(tokenId: string): readonly OutboxMessage[] {
 export function advanceTokenStatus(input: {
   tokenId: string;
   toStatus: RecruiterStatus;
-  note?: string;
-  feeAmountPaise?: number;
+  note?: string | undefined;
+  feeAmountPaise?: number | undefined;
 }): ApplicationTokenRecord | null {
   const state = loadState();
   const current = state.tokens[input.tokenId];

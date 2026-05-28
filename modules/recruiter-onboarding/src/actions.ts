@@ -60,8 +60,8 @@ export function listOutboxAll() {
 export function advance(input: {
   tokenId: string;
   toStatus: RecruiterStatus;
-  note?: string;
-  feeAmountPaise?: number;
+  note?: string | undefined;
+  feeAmountPaise?: number | undefined;
 }): ApplicationTokenRecord | null {
   return storeAdvance({ ...input, tokenId: input.tokenId.trim().toUpperCase() });
 }

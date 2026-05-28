@@ -23,16 +23,16 @@ export interface JdWizardPayload {
   readonly location: string;
   readonly workMode: string;
   readonly positions: number;
-  readonly targetStartDate?: string;
-  readonly baseMinPaise?: number;
-  readonly baseMaxPaise?: number;
-  readonly stipendPaise?: number;
-  readonly variableComponent?: string;
+  readonly targetStartDate?: string | undefined;
+  readonly baseMinPaise?: number | undefined;
+  readonly baseMaxPaise?: number | undefined;
+  readonly stipendPaise?: number | undefined;
+  readonly variableComponent?: string | undefined;
   readonly targetProgrammes: string[];
   readonly skills: { slug: string; required: boolean }[];
   readonly responsibilities: Record<string, string[]>;
   readonly deliverables: string[];
-  readonly supplementaryProseMd?: string;
+  readonly supplementaryProseMd?: string | undefined;
   readonly interviewRounds: { round: number; focus: string }[];
   readonly gpFeeAcknowledged: boolean;
 }

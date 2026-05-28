@@ -35,7 +35,10 @@ export default async function InterviewConsole({ params }: { params: Promise<{ j
       {/* Mobile-first: constrained single column, the canonical phone surface. */}
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-8)' }}>
         <div style={{ maxWidth: '480px', margin: '0 auto' }}>
-          <a href={`/recruiter/jds/${jdId}/slots`} style={backLink}>← Slots</a>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <a href={`/recruiter/jds/${jdId}/slots`} style={backLink}>← Slots</a>
+            <a href={`/recruiter/jds/${jdId}/offers`} style={{ ...backLink, color: 'var(--accent)' }}>Offers →</a>
+          </div>
 
           {view.isDemo && (
             <div

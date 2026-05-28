@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { RecruiterShell, Button, StatusPill } from '@nid/ui';
+import { RecruiterShell, Button } from '@nid/ui';
 import { listForRecruiter } from '@nid/module-jd-posting';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
 

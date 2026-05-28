@@ -34,6 +34,7 @@ const config: NextConfig = {
     '@nid/module-candidate-browse',
     '@nid/module-slot-booking',
     '@nid/module-interview-console',
+    '@nid/module-offer-cascade',
   ],
 };
 
