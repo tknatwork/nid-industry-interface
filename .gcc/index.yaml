@@ -22,3 +22,14 @@ entries:
     branch: main
     intent: Milestone 2 slice 1 — recruiter-onboarding module, /apply form, /track + /track/[token] tracker pages, packages/ui atoms (Button/StatusPill/Field/PageShell)
     note: First hand-written module contract under modules/. JSON-backed mock store. End-to-end verified on localhost:3100.
+  - id: 5
+    date: 2026-05-29
+    hash: 46509af
+    branch: main
+    intent: Record milestone-2 slice-1 in session memory + commit log
+  - id: 6
+    date: 2026-05-29
+    hash: 1811aa9
+    branch: main
+    intent: Milestone 2 slice 2 — admin recruiter queue closes the onboarding loop
+    note: AdminShell atom + /admin/recruiters/queue + /admin/recruiters/[tokenId] with Server Action state transitions. Allowlist enforced server-side.

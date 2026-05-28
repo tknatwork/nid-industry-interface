@@ -59,3 +59,26 @@ Append-only narrative of phase-level build progress. Do not rewrite past entries
 
 **Next phase:**
 - Thin admin queue slice at `/admin/recruiters/queue` + `/admin/recruiters/<id>/credentials` so the end-to-end demo loop can run without hand-editing JSON. Then JD posting (Phase 4.2).
+
+---
+
+## 2026-05-29 — Milestone 2 Slice 2: Admin Recruiter Queue
+
+**Commit:** `1811aa9 feat(milestone-2): admin recruiter queue closes the onboarding loop`
+
+**What landed:**
+- `@nid/module-recruiter-onboarding` extended with `listAll()` + `listOutboxAll()`.
+- `@nid/ui` gained `AdminShell` — visually distinct chrome for the admin portal.
+- `apps/web` admin routes — `/admin` (redirect), `/admin/recruiters/queue` (filter tabs + table), `/admin/recruiters/[tokenId]` (full review + per-transition Server Action forms).
+- State-machine allowlist enforced server-side; revalidatePath fires on every successful transition.
+
+**Decisions made in this phase:**
+- AdminShell is its own atom, not a variant of PageShell. Distinct chrome by portal.
+- Transition allowlist currently lives in the admin Server Action; will move into the module's gated `transition()` use case when DB lands.
+- No auth on `/admin/*` yet — that lands in a dedicated auth module.
+
+**Verified end-to-end:**
+- The full onboarding loop runs from `/apply` → admin queue → click-through transitions → `/track/<token>` reflects every step.
+
+**Next phase:**
+- JD posting (Phase 4.2). New module `modules/jd-posting/`, multi-step structured-schema wizard at `/recruiter/jds/new`.

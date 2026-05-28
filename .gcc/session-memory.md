@@ -2,8 +2,8 @@
 name: nid-industry-interface-session-memory
 project: nid-industry-interface
 last_updated: 2026-05-29
-status: milestone-2-in-progress
-current_module: recruiter-onboarding
+status: milestone-2-onboarding-loop-complete
+current_module: recruiter-onboarding + admin-recruiter-queue (UI surface)
 ---
 
 # Session Memory — NID Industry Interface (project-local)
@@ -14,47 +14,50 @@ Project-local session memory. Fully isolated from any global GCC layer — nothi
 
 **Date:** 2026-05-29
 **Phase:** Milestone 2 — Recruiter end-to-end (mock data)
-**Module:** recruiter-onboarding
-**Commit:** `b945db2 feat(milestone-2): recruiter onboarding — /apply + token tracker`
+**Module:** recruiter-onboarding (+ admin UI surface in apps/web)
+**Latest commit:** `1811aa9 feat(milestone-2): admin recruiter queue closes the onboarding loop`
 
-## What was accomplished (Milestone 2, slice 1)
+## What was accomplished
 
-1. **`modules/recruiter-onboarding/`** — first module under the modular monolith.
-   - Hand-written 5-markdown contract (CLAUDE / AGENTS / CONTEXT / REFERENCES / SKILLS) scoped to onboarding concerns. Cross-references the root contracts via `[[../../FILE.md]]` links.
-   - `src/types.ts` — Zod schemas for the seven-state machine + apply form (including public-email-domain rejection at validation time).
-   - `src/tokens.ts` — NID-YYYY-CC-NNNN format with window letter derived from issuance month.
-   - `src/store.ts` — JSON-backed mock store at `.dev-data/recruiter-onboarding.json`, pre-seeded with three demo tokens at different status levels.
-   - `src/actions.ts` — submit / lookup / outboxFor / advance use cases, all input-validated.
-   - `src/index.ts` — sole public surface (no deep imports allowed from outside the module).
-2. **`packages/ui` atoms** — Button (3 variants × 3 sizes), StatusPill (5 tones), Field (label/help/error a11y), PageShell (shared header/footer with active-nav highlighting).
-3. **`apps/web` routes** — `/apply` Server Action form, `/track` token lookup entry, `/track/[token]` full state-machine timeline with next-step guidance and comms-log preview. Landing page refactored onto PageShell + Button atoms.
-4. **Infrastructure fixes:**
-   - Stripped `.js` extensions from relative imports across all workspaces — Turbopack treats them literally for TS source in workspace packages.
-   - Split `apps/web/app/apply/state.ts` out of `actions.ts` so `"use server"` only sees async functions.
-   - `.dev-data/` added to `.gitignore` (runtime artifact).
-5. **End-to-end verified** on `http://localhost:3100`:
-   - `/` and `/apply` and `/track` return 200
-   - `/track/NID-2026-A-0001` (credentials-issued) and `/track/NID-2026-A-0017` (fee-due) and `/track/NID-2026-A-0042` (received) all render their respective state-machine timelines
-   - `/track/bogus` returns 404 correctly
+### Earlier this session (already in commit log)
+- Milestone 1 foundations + Milestone 2 slice 1 (recruiter `/apply` + `/track/<token>`).
 
-## Key decisions captured this session
+### This step — Milestone 2 slice 2 (admin queue)
+1. **Module API extended:** `listAll()` + `listOutboxAll()` added to `@nid/module-recruiter-onboarding` so admin surfaces can render every token without hitting the store directly.
+2. **`AdminShell` atom:** visually distinct chrome (dark top bar, accent border, role chip, separate admin nav). Lives in `@nid/ui` so future admin surfaces inherit the same layout.
+3. **`/admin/recruiters/queue`:** filter tabs (8 buckets including All), sortable table with company + sector + status pill + submitted-at + Review link.
+4. **`/admin/recruiters/[tokenId]`:** full company detail, status history, per-transition Server Action forms with note + optional fee-amount, sidebar comms log.
+5. **State-machine allowlist enforced server-side** in `actions.ts` — illegal transitions redirect with `error=illegal-transition`.
+6. **`revalidatePath` on success** refreshes queue, detail, and the recruiter's tracker page atomically.
 
-- **The `.dev-data/` JSON-backed mock store** is the swappable implementation behind the module's public API. The DB-backed Drizzle implementation that lands in a later milestone replaces the file without callers seeing the difference.
-- **`tokens.ts` was blocked by a security-reminder hook** (false positive on the regex parser). Re-written with a hoisted const RegExp; works fine. Hook is precautionary, not blocking.
-- **Server Actions + non-async exports:** Next.js rejects any non-async export from a `"use server"` file. Pattern adopted: keep types + initial-state constants in a sibling `state.ts`; `actions.ts` exports only the async server functions.
+## End-to-end verified (`http://localhost:3100`)
+
+- `/admin` → 307 → `/admin/recruiters/queue` ✓
+- `/admin/recruiters/queue` → 200 (all 3 demo tokens listed with status pills) ✓
+- `/admin/recruiters/queue?status=fee-due` → 200 (filter works) ✓
+- `/admin/recruiters/NID-2026-A-0042` → 200 (shows "Begin verification" + "Reject" forms) ✓
+- `/admin/recruiters/NID-2026-A-0001` → 200 (terminal state — "No further transition available") ✓
+- `/admin/recruiters/bogus` → 404 ✓
+- Recruiter-side `/apply`, `/track`, `/track/<token>` still work (unchanged) ✓
+
+## Key decisions captured this step
+
+- **AdminShell is a separate atom**, not a variant of PageShell. Admins and recruiters should see clearly-distinct chrome so they always know which surface they're on. This will scale to student/coordinator shells later.
+- **Server-side transition allowlist** is duplicated between the module (`store.advanceTokenStatus` does no gating) and the admin action (which enforces the matrix). For Milestone 2 mock-data scope this is fine; when DB lands we'll move the allowlist into the module and have the admin action call a gated `transition()` use case.
+- **No auth on `/admin/*` yet.** Auth lands in a later module. The route is unauth'd for the demo only.
 
 ## Next step (single, specific)
 
-**Continue Milestone 2 by adding the admin-side queue stub** so we can advance tokens through the state machine without writing JSON by hand. Target route: `/admin/recruiters/queue` (read-only at first — list pending tokens with one-click advance buttons). Then add `/admin/recruiters/<id>/credentials` so we can mint credentials and complete the demo loop. This is technically Milestone 3 admin work, but a thin slice is needed here to demo the onboarding flow end-to-end before we move on to JD posting.
+**Begin JD posting (Phase 4.2):** scaffold a new module `modules/jd-posting/` with its own 5-markdown contract, then build the multi-step JD wizard at `/recruiter/jds/new` for an active recruiter (Acme Design Studio is in `credentials-issued` state and ready to post). The first wizard slice should be the structured-schema form (Steps 1-6 from Phase 4.2 — role basics, compensation range, skills, responsibilities, deliverables, supplementary prose) without the AI analyzer yet (analyzer comes in a follow-on slice once the Python ML worker scaffolds land).
 
 ## Open blockers
 
-None. The Server Action POST path tests cleanly in the browser; curl POST won't work directly because React encodes the action target inside a `$ACTION_REF_1` token — that's expected.
+None. Mock data is sufficient for the JD wizard surface.
 
 ## Session-start protocol reminder
 
 Per Phase 9.3 of the plan: any agent (regardless of model) starting work here must:
 1. Read this file.
-2. Prompt the user explicitly: "Continue from the last session (recruiter-onboarding module, next step: thin admin queue at `/admin/recruiters/queue` to demo the full state-machine loop)? Or start fresh on a different concern?"
+2. Prompt the user explicitly: "Continue from the last session (onboarding loop complete; next is JD posting wizard at /recruiter/jds/new)? Or start fresh on a different concern?"
 3. Never auto-continue without asking.
 4. Honor session-bloat detection — recommend a fresh session if prior crossed the ~50K token threshold.
