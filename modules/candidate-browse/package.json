@@ -1,0 +1,22 @@
+{
+  "name": "@nid/module-candidate-browse",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Candidate browse module — portfolio-first, discipline-filtered, merit-respecting individual shortlist (Phase 4.4/4.5).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'lint placeholder'",
+    "test": "echo 'no tests yet'"
+  },
+  "dependencies": {
+    "@nid/core": "workspace:*",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3"
+  }
+}

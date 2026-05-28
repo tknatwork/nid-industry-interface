@@ -43,7 +43,7 @@ function seedInitialState(): StoreState {
       id: 'jd_00001',
       recruiterId: 'NID-2026-A-0001',
       cycleId: 'cycle_spring_2026',
-      status: 'in-moderation',
+      status: 'published',
       title: 'Product Designer',
       roleType: 'full-time',
       location: 'Bengaluru',
@@ -52,7 +52,7 @@ function seedInitialState(): StoreState {
       baseMinPaise: 90_000_000, // ₹9.0L p.a. in paise
       baseMaxPaise: 140_000_000, // ₹14.0L p.a. in paise
       targetProgrammes: ['masters'],
-      targetDisciplineIds: [],
+      targetDisciplineIds: ['disc_interaction_design', 'disc_product_design'],
       skills: [
         { slug: 'user-research', required: true },
         { slug: 'interaction-design', required: true },
@@ -70,6 +70,39 @@ function seedInitialState(): StoreState {
         { round: 1, focus: 'Portfolio review' },
         { round: 2, focus: 'Design exercise' },
         { round: 3, focus: 'Culture + leadership' },
+      ],
+      gpFeeAcknowledged: false,
+      draftedAt: isoYesterday,
+      submittedAt: isoTwoHours,
+      publishedAt: isoTwoHours,
+      moderationNote: 'Mapped to Interaction Design + Product Design.',
+    },
+    jd_00003: {
+      id: 'jd_00003',
+      recruiterId: 'NID-2026-A-0001',
+      cycleId: 'cycle_spring_2026',
+      status: 'in-moderation',
+      title: 'Communication Designer',
+      roleType: 'full-time',
+      location: 'Ahmedabad',
+      workMode: 'onsite',
+      positions: 1,
+      baseMinPaise: 70_000_000, // ₹7.0L
+      baseMaxPaise: 100_000_000, // ₹10.0L
+      targetProgrammes: ['masters'],
+      targetDisciplineIds: [],
+      skills: [
+        { slug: 'visual-design', required: true },
+        { slug: 'typography', required: true },
+        { slug: 'design-systems', required: false },
+      ],
+      responsibilities: {
+        design: ['Own brand + editorial systems', 'Produce campaign collateral'],
+      },
+      deliverables: ['Brand guidelines', 'Campaign assets'],
+      interviewRounds: [
+        { round: 1, focus: 'Portfolio review' },
+        { round: 2, focus: 'Brand exercise' },
       ],
       gpFeeAcknowledged: false,
       draftedAt: isoYesterday,
@@ -97,7 +130,7 @@ function seedInitialState(): StoreState {
     },
   };
 
-  const state: StoreState = { jds, counter: 2 };
+  const state: StoreState = { jds, counter: 3 };
   persist(state);
   return state;
 }

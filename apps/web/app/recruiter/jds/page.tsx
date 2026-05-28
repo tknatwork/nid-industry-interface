@@ -131,6 +131,21 @@ function JdCard({ jd }: { jd: JdRecord }) {
       <div style={{ textAlign: 'right', fontSize: 'var(--fs-12)', color: 'var(--text-secondary)' }}>
         <p>{compLabel(jd)}</p>
         <p style={{ marginTop: 'var(--space-1)' }}>{jd.interviewRounds.length} interview rounds</p>
+        {jd.status === 'published' && (
+          <a
+            href={`/recruiter/jds/${jd.id}/applicants`}
+            style={{
+              display: 'inline-block',
+              marginTop: 'var(--space-3)',
+              color: 'var(--accent)',
+              fontWeight: 'var(--fw-600)',
+              fontSize: 'var(--fs-14)',
+              textDecoration: 'none',
+            }}
+          >
+            View applicants →
+          </a>
+        )}
       </div>
     </article>
   );
