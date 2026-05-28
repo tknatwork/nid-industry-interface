@@ -8,13 +8,33 @@ Append-only narrative of phase-level build progress. Do not rewrite past entries
 
 **What happened:**
 - The IA + Recruiter User Flows plan was approved (`/Users/tusharkant/.claude/plans/this-is-a-demo-wiggly-parrot.md`).
-- The plan covers: 9 design principles, full IA across 4 portals + Federation API, 19 recruiter flows, 15 supporting flows, 13 cross-cutting concerns, Phase 9 LLM-agnostic build architecture, stack decisions (TypeScript strict + Python 3.13+ ML/LLM workers, Next.js 15 App Router, Vercel for prototype / portable for production, pnpm with strict executor rules).
 - Milestone 1 — Foundations begun.
 
 **Decisions made in this phase:**
 - Project is fully isolated within this folder. No propagation to or from the user's global GCC layer.
-- 5-markdown contracts are hand-written, not template-generated (per user feedback during plan review).
-- Skills are source-referenced — each SKILLS.md entry includes the skill ID and a fetchable fallback URL so any LLM can resolve.
+- 5-markdown contracts are hand-written, not template-generated.
+- Skills are source-referenced — each SKILLS.md entry includes the skill ID and a fetchable fallback URL.
+
+---
+
+## 2026-05-29 — Milestone 1 Foundations complete
+
+**Commit:** `ce9a746 chore: milestone 1 — foundations scaffold`
+
+**What landed:**
+- Project root + `.gcc/` + 5 hand-written markdown contracts.
+- pnpm monorepo with Node 24, TS 5.6 strict, Python 3.13 pinned.
+- `@nid/ui` 3-tier design tokens (primitives → semantics → components) + W3C tokens.json + Tailwind v4 `@theme` bridge.
+- `@nid/core` pure domain layer (adapter contracts, entities, rules).
+- `@nid/db` Drizzle schema + seed data (3 campuses, 20 disciplines, 12 job-title mappings, Spring 2026 cycle).
+- `apps/web` Next.js 15 + Tailwind v4 + landing page stub.
+- `.dependency-cruiser.cjs` boundary rules.
+- Dev server verified booting cleanly on port 3001 (port 3000 occupied by user's existing Langfuse instance).
+
+**Verification:**
+- `pnpm install` succeeded (4m20s, 366 packages added).
+- `pnpm --filter web dev` boots Next.js 15 with Turbopack.
+- Landing page renders with all design tokens applied, Raleway preloaded.
 
 **Next phase:**
-- Complete Milestone 1: root markdown contracts, monorepo init, apps/web scaffold, packages/ui tokens, packages/core adapter interfaces, packages/db schema + seed, git init, dev server boot verification.
+- Milestone 2 — Recruiter end-to-end (mock data). Start with `modules/recruiter-onboarding/` and the public `/track/<token>` flow (Phase 4.1).

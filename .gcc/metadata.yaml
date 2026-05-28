@@ -1,6 +1,6 @@
 project: nid-industry-interface
-phase: milestone-1-foundations
-status: in-progress
+phase: milestone-1-complete
+status: foundations-scaffold-verified
 test_count: 0
 created: 2026-05-29
 last_updated: 2026-05-29
@@ -14,7 +14,7 @@ stack:
   frontend: nextjs-15-app-router
   language_web: typescript-strict
   language_ml: python-3.13
-  package_manager: pnpm
+  package_manager: pnpm-10.5.0
   database: postgres-16
   orm: drizzle
   ui: tailwind-v4 + shadcn-ui
@@ -22,24 +22,28 @@ stack:
   host_production: self-hosted-docker-on-stqc-cleared-cloud
   observability: langfuse-self-hosted
 
+milestones_completed:
+  - foundations  # 2026-05-29
+
+next_milestone: recruiter-end-to-end-mock
+
 modules:
-  - foundations  # current
-  # The following are placeholders for future milestones; do not
-  # create them until their milestone begins.
-  # - recruiter-onboarding
-  # - jd-posting
-  # - candidate-browse
-  # - slot-booking
-  # - interview-console-mobile
-  # - offer-cascade
-  # - admin-jd-moderation
-  # - admin-health-scores
-  # - student-redressal
-  # - student-conduct
-  # - nda-jury-fork
-  # - institution-api
-  # - recruiter-api
-  # - observability-langfuse
-  # - shared-ui
-  # - design-tokens
-  # - traffic-resilience
+  - foundations  # complete
+  # Upcoming, in order:
+  # - recruiter-onboarding   (Milestone 2 — Phase 4.1)
+  # - jd-posting             (Milestone 2 — Phase 4.2)
+  # - candidate-browse       (Milestone 2 — Phase 4.4)
+  # - slot-booking           (Milestone 2 — Phase 4.6)
+  # - interview-console-mobile (Milestone 2 — Phase 4.7)
+  # - offer-cascade          (Milestone 2 — Phase 4.8)
+  # - admin-jd-moderation    (Milestone 3 — Phase 5.1)
+  # - admin-health-scores    (Milestone 3 — Phase 5.11)
+  # - student-redressal      (Milestone 3 — Phase 5.7)
+  # - student-conduct        (Milestone 3 — Phase 5.10)
+  # - nda-jury-fork          (Milestone 3 — Phase 5.13)
+  # - institution-api        (Milestone 4)
+  # - recruiter-api          (Milestone 5 — Phase 2 capability)
+  # - observability-langfuse (cross-milestone)
+  # - shared-ui              (cross-milestone)
+  # - design-tokens          (complete as part of foundations)
+  # - traffic-resilience     (cross-milestone)

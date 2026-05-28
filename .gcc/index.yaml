@@ -1,7 +1,7 @@
 entries:
   - id: 1
     date: 2026-05-29
-    hash: pending
+    hash: ce9a746
     branch: main
-    intent: Milestone 1 — project scaffold (directories, GCC layer, markdown contracts)
-    note: Foundation work; no code yet, structural setup only.
+    intent: Milestone 1 — foundations scaffold (project structure, GCC, markdowns, monorepo, ui tokens, core entities, db schema, web stub)
+    note: Dev server verified on port 3001. Plan approved at /Users/tusharkant/.claude/plans/this-is-a-demo-wiggly-parrot.md.
