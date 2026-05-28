@@ -13,8 +13,25 @@ Project-local session memory. Fully isolated from any global GCC layer.
 ## Last session
 
 **Date:** 2026-05-29
-**Phase:** Milestone 4 — Student portal (light) — COMPLETE
-**Latest feat commit:** `79a6684 feat(milestone-4): student portal (light) — opt-in, eligible feed, tracker, real offer inbox`
+**Phase:** Milestone 4 — Student portal + AI JD analyzer — COMPLETE
+**Latest feat commit:** `4f049d3 feat(milestone-4): AI JD analyzer — Python ML scope-creep worker + TS adapter`
+
+## AI JD analyzer (Task 37) — the first cross-language seam
+
+`services/ml-jd-analyzer/` is a **Python** worker (stdlib `http.server`, zero-install; FastAPI/Pydantic
+is the documented production swap). It classifies JD scope creep from structured fields and returns a
+**graduated** multiplier (×1.3–1.7) + flagged skills + rationale — richer than the legacy binary 1.0/1.4.
+
+- `@nid/core` gained a types-only `JdScopeAnalyzer` port. `modules/jd-posting/src/scope-analyzer.ts`
+  implements it over HTTP: `fetch` + 1.5s `AbortController` timeout + Zod-validate the response +
+  **graceful fallback** to the deterministic 1.0/1.4 heuristic when the worker is down.
+- **Submit gate stays deterministic** (JD posting never hard-depends on the worker). The **admin
+  moderation view** (`/admin/jds/[jdId]`) runs `gateReportForAsync` → shows source (ML analyzer /
+  fallback), multiplier, flagged skills, rationale.
+- Seed `jd_00004` "Product Designer (frontend-heavy)" bundles 3 dev skills + delivery → ×1.6 → adjusted
+  floor ₹9.6L, offered low ₹8L → **below floor**. Verified: worker-up shows ML ×1.6; worker-down falls
+  back to ×1.4; both HTTP 200 (no crash).
+- Run the worker: `cd services/ml-jd-analyzer && python3 app.py` (PORT 8000). `ML_WORKER_URL` overrides.
 
 ## What just landed — the student portal de-fakes the offer loop
 
@@ -75,15 +92,16 @@ StatusPill, Field, PageShell, AdminShell, RecruiterShell, StudentShell.
 ## Next step — continue the remaining plan options, serially
 
 Per the user: "complete the rest options you have provided." Remaining, in order:
-1. **AI JD analyzer** (Task 37) — Python FastAPI ML worker (JD field extraction, scope-creep
-   classifier, skill/discipline matching) + a TS `AiProvider` adapter in `@nid/core` contracts
-   with Zod-validated responses + graceful fallback to the current deterministic
-   `scopeCreepMultiplier = 1`. Wire the gate report to show analyzer flags. Default to ML, not LLM
-   (Phase 6.11a). Keep the worker isolated; the web path must degrade to "admin-review" if the
-   worker is down (Phase 6.12b graceful degradation).
-2. **CI / native-harness polish** (Task 38) — `.github/workflows/ci.yml` past the security hook,
-   husky/lefthook hooks, ESLint flat config, make `pnpm boundaries` (dependency-cruiser) actually run.
-3. **Remaining admin surfaces** (Task 39) — health scores, redressal, blacklist, payment-cell.
+1. **CI / native-harness polish** (Task 38) — `.github/workflows/ci.yml` past the security hook
+   (it was blocked earlier by a command-injection false positive — write the YAML carefully),
+   husky/lefthook hooks, ESLint flat config, make `pnpm boundaries` (dependency-cruiser) actually
+   run against the module graph. Lean by design (Phase 9.5): every hook must catch a real
+   architectural failure, not formatting nits.
+2. **Remaining admin surfaces** (Task 39) — health scores, redressal, blacklist, payment-cell
+   (Phase 5 supporting flows). Health-score math already exists in `@nid/core` (computeHealthScore /
+   bandFromScore); these are admin UIs over it + new redressal/blacklist stores.
+
+Done this session: student portal (Task 36) + AI JD analyzer (Task 37).
 
 ## Session-start protocol reminder
 

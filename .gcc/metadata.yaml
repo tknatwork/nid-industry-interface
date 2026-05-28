@@ -40,11 +40,15 @@ modules:
   - interview-console    # interview-day mobile console; transport modes, anonymized conflict, DEMO mode
   - offer-cascade        # wave-based, strict 1:1; cascade math in @nid/core
   - student-portal       # opt-in + eligible feed + application tracker + REAL offer inbox (accept drives cascade)
+  - ml-jd-analyzer       # Python worker (services/) + @nid/core JdScopeAnalyzer port + jd-posting adapter; graceful fallback
   # Admin UI lives in apps/web/app/admin (consumes module public APIs; no separate module yet).
   # Upcoming (remaining plan options, serial):
-  # - ai-jd-analyzer (Python FastAPI ML worker + TS AIProvider adapter) — real scope-creep multiplier
   # - ci/native-harness polish (.github/workflows/ci.yml past the security hook, husky/lefthook, dep-cruiser run)
   # - remaining admin surfaces (health scores, redressal, blacklist, payment-cell)
+
+# Two-language stack now live: services/ml-jd-analyzer is Python (stdlib
+# http.server for the demo; FastAPI/Pydantic noted for production). TS finds it
+# at ML_WORKER_URL (default http://127.0.0.1:8000); falls back gracefully if down.
 
 # GOTCHA: mock JSON stores write to process.cwd()/.dev-data → under
 # `pnpm --filter web dev` that is apps/web/.dev-data (NOT repo root).
