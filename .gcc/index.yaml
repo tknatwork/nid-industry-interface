@@ -254,3 +254,9 @@ entries:
     branch: main
     intent: Placement timetable + discipline brochure showcase (homepage + recruiter dashboard)
     note: PlacementTimetable (shared server cpt — open cycle milestones stepper) on pre-login / + recruiter dashboard. DisciplineBrochureGallery (client — horizontal scroll-snap slider + ‹ › arrows + top-right Download → Markdown Blob) on /disciplines#brochures + dashboard. Homepage Brochure CTA → /disciplines#brochures; nav = Process·Timetable·Brochures·Contact·Apply; cards theme via data-discipline. Verified LIVE on Vercel.
+  - id: 46
+    date: 2026-05-29
+    hash: "18f1238"
+    branch: main
+    intent: Recruiter "API & alerts" integrations showcase page
+    note: /recruiter/integrations (RecruiterShell nav + dashboard link). No-code calendar subscribe (webcal:// + /api/public/cycles.ics), webhooks (8 cycle events, HMAC, copy-paste simulate curl w/ JSON body), read-only REST (bearer + me/me-jds/cycles + OpenAPI). CopyField client atom; base URL from headers() so snippets are correct on localhost + Vercel. Verified LIVE: page renders prod URLs, .ics valid VCALENDAR, simulate returns HMAC-signed payload.
