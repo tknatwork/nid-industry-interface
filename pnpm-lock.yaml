@@ -248,12 +248,15 @@ importers:
         specifier: workspace:*
         version: link:../core
       drizzle-orm:
-        specifier: 0.36.4
-        version: 0.36.4(@types/react@19.0.0)(postgres@3.4.5)(react@19.0.0)
+        specifier: 0.38.4
+        version: 0.38.4(@types/react@19.0.0)(postgres@3.4.5)(react@19.0.0)
       postgres:
         specifier: 3.4.5
         version: 3.4.5
     devDependencies:
+      dotenv:
+        specifier: 16.4.7
+        version: 16.4.7
       drizzle-kit:
         specifier: 0.30.0
         version: 0.30.0
@@ -1779,15 +1782,19 @@ packages:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
 
+  dotenv@16.4.7:
+    resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
+    engines: {node: '>=12'}
+
   drizzle-kit@0.30.0:
     resolution: {integrity: sha512-zAf0qg/BX2lV/Xip4igXrtbDv+Ub8S39U6qSOEGNvqcHrnmaQjS4mkkFZOUsgXRbuH56QUeWZxfnLHefrKCV5g==}
     hasBin: true
 
-  drizzle-orm@0.36.4:
-    resolution: {integrity: sha512-1OZY3PXD7BR00Gl61UUOFihslDldfH4NFRH2MbP54Yxi0G/PKn4HfO65JYZ7c16DeP3SpM3Aw+VXVG9j6CRSXA==}
+  drizzle-orm@0.38.4:
+    resolution: {integrity: sha512-s7/5BpLKO+WJRHspvpqTydxFob8i1vo2rEx4pY6TGY7QSMuUfWUuzaY0DIpXCkgHOo37BaFC+SJQb99dDUXT3Q==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
-      '@cloudflare/workers-types': '>=3'
+      '@cloudflare/workers-types': '>=4'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -4282,6 +4289,8 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
+  dotenv@16.4.7: {}
+
   drizzle-kit@0.30.0:
     dependencies:
       '@drizzle-team/brocli': 0.10.2
@@ -4291,7 +4300,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.36.4(@types/react@19.0.0)(postgres@3.4.5)(react@19.0.0):
+  drizzle-orm@0.38.4(@types/react@19.0.0)(postgres@3.4.5)(react@19.0.0):
     optionalDependencies:
       '@types/react': 19.0.0
       postgres: 3.4.5
