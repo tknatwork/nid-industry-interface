@@ -64,6 +64,11 @@ export default function LandingPage() {
                 Track your application
               </Button>
             </a>
+            <a href="/playground" style={{ textDecoration: 'none' }}>
+              <Button size="lg" variant="ghost">
+                ▶ 3-up playground
+              </Button>
+            </a>
           </div>
 
           <div
@@ -94,6 +99,9 @@ export default function LandingPage() {
               </a>
               <a href="/student" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
                 Student portal →
+              </a>
+              <a href="/playground" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                All three at once (playground) →
               </a>
             </div>
           </div>
