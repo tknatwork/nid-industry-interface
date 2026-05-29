@@ -195,3 +195,26 @@ entries:
     hash: "0e02624"
     branch: main
     intent: Add .claude/launch.json (dev-server configs) — web :3100, ml-worker :8000, drizzle-studio :4983
+  - id: 36
+    date: 2026-05-29
+    hash: "5c6b166"
+    branch: main
+    intent: Record federation APIs + admin publishing + a11y + tests (slices 47-50) in GCC
+  - id: 37
+    date: 2026-05-29
+    hash: "2a004d5"
+    branch: main
+    intent: Make Drizzle Studio runnable against a throwaway Postgres (5433)
+    note: drizzle-orm 0.36.4→0.38.4 (fixes singlestore-core export crash); drizzle.config loads dotenv → packages/db/.env (gitignored, 5433 because Langfuse holds 5432). migrate created 21 tables; seed loaded campuses/disciplines/cycle/mappings; `preview_start drizzle-studio` runs on :4983. Throwaway container: nid-pg-throwaway.
+  - id: 38
+    date: 2026-05-29
+    hash: "6adb04f"
+    branch: main
+    intent: Federation Phase-2 — institution write endpoints + HMAC-signed webhooks (background agent)
+    note: PUT /institution/{disciplines,coordinators} + POST /content-overrides (x-api-key, Zod). Recruiter GET /webhooks/events + POST /webhooks/simulate (Bearer) → HMAC-SHA256 signed sample via node:crypto in lib/webhooks.ts. Verified 200/401/400.
+  - id: 39
+    date: 2026-05-29
+    hash: "ed29877"
+    branch: main
+    intent: Editable cycle + content admin — @nid/module-admin-cms (10th module)
+    note: Persisted cycle config + 6 CMS content blocks (Phase 3.4). /admin/cycles edit form + /admin/content editable blocks. Edits persist (verified fee 15000→18000, FAQ title). Boundaries 14 pkgs / 10 modules clean.

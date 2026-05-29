@@ -13,8 +13,28 @@ Project-local session memory. Fully isolated from any global GCC layer.
 ## Last session
 
 **Date:** 2026-05-29
-**Phase:** DEMO-COMPLETE + Phase-2 federation APIs + admin publishing + a11y + tests. 10 modules + Python ML worker.
-**Latest commit:** `0e02624 chore: add .claude/launch.json — dev server configs`
+**Phase:** DEMO-COMPLETE + federation read/write APIs + webhooks + LIVE Postgres (Drizzle Studio) + editable admin. **11 modules** + Python ML worker.
+**Latest commit:** `ed29877 feat(demo): editable cycle + content admin (admin-cms module)`
+
+## Latest round — Drizzle Studio (live DB) + federation Phase-2 + editable admin
+
+- **Drizzle Studio runs** against a throwaway Postgres. The launch.json entry failed on two
+  counts: no `DATABASE_URL` + a drizzle-kit↔orm mismatch (`singlestore-core` export). Fixes:
+  drizzle-orm `0.36.4 → 0.38.4`; `drizzle.config.ts` now `import 'dotenv/config'` → reads
+  `packages/db/.env` (gitignored; `.env.example` committed). **Throwaway DB: docker container
+  `nid-pg-throwaway`, host port 5433** (Langfuse holds 5432). Bring-up:
+  `docker run -d --name nid-pg-throwaway -e POSTGRES_USER=nid -e POSTGRES_PASSWORD=nid -e POSTGRES_DB=nid_industry_interface -p 5433:5432 postgres:16`
+  then `pnpm --filter @nid/db exec drizzle-kit migrate && pnpm --filter @nid/db seed` (21 tables,
+  seeded). Studio: `preview_start drizzle-studio` → :4983. NOTE: drizzle-kit `push` hangs on its
+  TUI prompt under a pipe — use `generate` + `migrate` (non-interactive) instead.
+- **Federation Phase-2** (background agent): institution writes `PUT /api/v1/institution/{disciplines,
+  coordinators}` + `POST /content-overrides` (x-api-key, Zod) + recruiter `GET /webhooks/events` +
+  `POST /webhooks/simulate` → HMAC-SHA256 signed sample (`apps/web/lib/webhooks.ts`, node:crypto).
+- **Editable admin** (11th module `@nid/module-admin-cms`): persisted cycle config + 6 CMS content
+  blocks. `/admin/cycles` edit form + `/admin/content` editable blocks; edits persist (verified).
+
+GOTCHA: module STORES are still JSON `.dev-data` — the live Postgres powers Studio/tooling only;
+a full Postgres-backed store swap across modules is still future (NOT done).
 
 ## Latest round (federation + publishing + a11y + tests)
 
@@ -168,21 +188,26 @@ StatusPill, Field, PageShell, AdminShell, RecruiterShell, StudentShell.
 - `.github/workflows/ci.yml` — static `run:` steps only (no `${{ }}` → shell), clears the
   command-injection scanner that blocked the earlier attempt. `lefthook.yml` is opt-in (no auto-install).
 
-## Next step — demo + Phase-2 read APIs + publishing + a11y + tests all done; ask the user
+## Next step — slices 36–53 done; remaining are the larger/heavier efforts. Ask the user.
 
-Slices 36–50 are complete: the whole 4-portal demo, federation read APIs (+ one write endpoint),
-admin publishing, a11y (reduced-motion), and a vitest unit-test pass. **Do not auto-continue**
-(Phase 9.3). Ask which direction next. Candidates, none requested yet:
+Done: whole 4-portal demo · federation read APIs + Phase-2 writes + HMAC webhooks · admin
+publishing + editable cycle/content admin · a11y · vitest (16) · live Postgres + Drizzle Studio.
+**Do not auto-continue** (Phase 9.3). The genuinely-remaining items are bigger and were deliberately
+NOT rushed:
 
-1. **Real infrastructure swap** — Drizzle/Postgres behind the module stores (swap-later seam ready),
-   auth/SSO (replaces demo-recruiter/demo-student constants), Langfuse on the AIProvider adapter.
-2. **Federation Phase-2 writes + SDKs** — institution-side write endpoints beyond /announcements,
-   webhooks (HMAC), and the `@nid/industry-embed` / `@nid/industry-recruiter-sdk` packages.
-3. **Deeper tests** — module integration tests (the JSON stores), a light Playwright E2E over the
-   5 critical recruiter paths; raise coverage on `packages/core`.
-4. **Editable cycle/content admin** — make `/admin/cycles` + `/admin/content` truly editable
-   (currently display-only), and wire the lefthook hooks locally.
-5. **Production ML** — replace the stdlib `services/ml-jd-analyzer` with FastAPI + Pydantic + ruff/mypy.
+1. **Full Postgres-backed store swap** — migrate the module JSON `.dev-data` stores to the live
+   Drizzle/Postgres (DB + 21 tables already exist + seeded). This is a per-module migration across
+   all 11 modules — substantial; do it module-by-module with verification, not wholesale.
+2. **Auth / SSO** — replace the demo-recruiter/demo-student constants with a real session; gate the
+   portals. Large.
+3. **SDK packages** — `@nid/industry-embed` (React/Vue/vanilla widget) + `@nid/industry-recruiter-sdk`
+   (typed client over the federation API). New workspace packages.
+4. **Browser E2E** — Playwright over the 5 critical recruiter paths (needs browser install).
+5. **Production ML** — swap stdlib `services/ml-jd-analyzer` → FastAPI + Pydantic + ruff/mypy (pip install).
+6. **Langfuse** wiring on the AIProvider adapter; wire the lefthook hooks locally.
+
+Each is a focused effort on its own; I deferred them rather than risk destabilizing the verified demo
+in one batch. Pick one and I'll do it with proper care.
 
 ## How to run the full demo
 

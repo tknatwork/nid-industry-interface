@@ -1,7 +1,7 @@
 project: nid-industry-interface
-phase: demo-complete
-status: all discussed plan flows built as functioning mock-data surfaces (public + recruiter + admin + student)
-test_count: 0
+phase: demo-complete + federation-Phase2 + live-DB + editable-admin
+status: 11 modules; full 4-portal demo + federation read/write APIs + webhooks + Drizzle Studio on live Postgres + editable cycle/content admin
+test_count: 16
 created: 2026-05-29
 last_updated: 2026-05-29
 
@@ -45,6 +45,15 @@ modules:
   - ml-jd-analyzer       # Python worker (services/) + JdScopeAnalyzer port + adapter; graceful fallback
   - admin-accountability # health · redressal (+student fileRedressal + transparencyFor) · blacklist · payment-cell · conduct · offer-adjustments · api-keys
   - recruiter-engagement # PPT (4.3) + placement-head meetings (4.12); book + admin publish (supply)
+  - admin-cms            # editable cycle config + CMS content blocks (Phase 3.4); persisted
+
+# DB now LIVE for tooling: throwaway Postgres (docker nid-pg-throwaway, host 5433 —
+# Langfuse holds 5432). packages/db: drizzle-orm 0.38.4, drizzle.config loads dotenv
+# from packages/db/.env (gitignored; .env.example committed). `drizzle-kit migrate`
+# created 21 tables; `seed` populated them; Drizzle Studio runs on :4983. The module
+# STORES are still JSON-backed (.dev-data) — full Postgres-backed store swap is future.
+# Federation Phase-2: institution writes (PUT disciplines/coordinators, POST content-
+# overrides) + recruiter webhooks (events + HMAC-signed simulate) live under /api/v1.
   # native-harness: scripts/check-boundaries.mjs + check-module-contracts.mjs + eslint.config.mjs + .github/workflows/ci.yml + lefthook.yml
   # Web pages cover all 4 portals (public/recruiter/admin/student). 10 workspace modules + ml worker.
 
