@@ -150,6 +150,49 @@ export function holdJd(input: { jdId: string; note: string }): PublishResult {
 }
 
 /**
+ * Close a published JD (Phase 4.16). A collective justification for the
+ * not-selected students is MANDATORY — the close is blocked without it. This
+ * is NID's professional-communication baseline, codified in product.
+ */
+export function closeJd(input: { jdId: string; collectiveMessage: string }): PublishResult {
+  const jd = getJdById(input.jdId);
+  if (!jd) return { ok: false, reason: 'JD not found' };
+  if (jd.status !== 'published') {
+    return { ok: false, reason: `Cannot close a JD in '${jd.status}' status` };
+  }
+  if (!input.collectiveMessage.trim()) {
+    return { ok: false, reason: 'A collective justification is required to close the JD.' };
+  }
+  const updated = updateJd(input.jdId, {
+    status: 'closed',
+    closeMessageMd: input.collectiveMessage.trim(),
+    closedAt: new Date().toISOString(),
+  });
+  return updated ? { ok: true, jd: updated } : { ok: false, reason: 'Update failed' };
+}
+
+/**
+ * Withdraw a JD (Phase 5.12). Treated as a commitment break — a reason category
+ * + detail are required. Force-majeure is accepted without score impact at
+ * moderation; other reasons carry a health-score signal (handled admin-side).
+ */
+export function withdrawJd(input: { jdId: string; category: string; reason: string }): PublishResult {
+  const jd = getJdById(input.jdId);
+  if (!jd) return { ok: false, reason: 'JD not found' };
+  if (jd.status !== 'published' && jd.status !== 'in-moderation') {
+    return { ok: false, reason: `Cannot withdraw a JD in '${jd.status}' status` };
+  }
+  if (!input.reason.trim()) return { ok: false, reason: 'A reason is required to withdraw.' };
+  const updated = updateJd(input.jdId, {
+    status: 'withdrawn',
+    withdrawnCategory: input.category,
+    withdrawnReason: input.reason.trim(),
+    withdrawnAt: new Date().toISOString(),
+  });
+  return updated ? { ok: true, jd: updated } : { ok: false, reason: 'Update failed' };
+}
+
+/**
  * Read-only gate report so the admin sees WHY a JD passed the stipend gate
  * (transparency). Re-runs the same deterministic check the submit gate used.
  * The multiplier here is the legacy 1.0/1.4 engineering heuristic.

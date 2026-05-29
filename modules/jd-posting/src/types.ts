@@ -111,6 +111,12 @@ export interface JdRecord {
   readonly publishedAt?: string;
   readonly moderationNote?: string;
   readonly heldAt?: string;
+  // Close (4.16 rejection-with-collective-justification) + withdraw (5.12)
+  readonly closeMessageMd?: string;
+  readonly closedAt?: string;
+  readonly withdrawnCategory?: string;
+  readonly withdrawnReason?: string;
+  readonly withdrawnAt?: string;
 }
 
 export interface GateFailure {

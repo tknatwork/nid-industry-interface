@@ -9,6 +9,8 @@ export {
   getJd,
   publishJd,
   holdJd,
+  closeJd,
+  withdrawJd,
   gateReportFor,
   gateReportForAsync,
   type DraftResult,

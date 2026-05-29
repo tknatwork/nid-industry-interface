@@ -43,11 +43,16 @@ export default async function OffersPage({
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <a href={`/recruiter/jds/${jdId}/interviews`} style={backLink}>← Interview day</a>
-          <header style={{ marginBottom: 'var(--space-6)' }}>
-            <p style={label}>{jd.title} · offers</p>
-            <h1 style={{ fontSize: 'var(--fs-40)', lineHeight: 'var(--lh-48)', fontWeight: 'var(--fw-500)', color: 'var(--text-strong)' }}>
-              Offers
-            </h1>
+          <header style={{ marginBottom: 'var(--space-6)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+            <div>
+              <p style={label}>{jd.title} · offers</p>
+              <h1 style={{ fontSize: 'var(--fs-40)', lineHeight: 'var(--lh-48)', fontWeight: 'var(--fw-500)', color: 'var(--text-strong)' }}>
+                Offers
+              </h1>
+            </div>
+            <a href={`/recruiter/jds/${jdId}/close`} style={{ ...label, color: 'var(--accent)', textDecoration: 'none' }}>
+              Close / withdraw this JD →
+            </a>
           </header>
 
           {error && <p role="alert" style={errorBanner}>{decodeURIComponent(error)}</p>}
