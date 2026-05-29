@@ -34,6 +34,7 @@ jobs:
       - run: pnpm check:contracts
       - run: pnpm lint:ws
       - run: pnpm -r typecheck
+      - run: pnpm -r test
       - name: Production dependency audit (advisory)
         run: pnpm audit --prod --audit-level=high
         continue-on-error: true

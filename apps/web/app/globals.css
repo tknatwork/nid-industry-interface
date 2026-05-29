@@ -43,6 +43,22 @@ body {
   transition: top var(--motion-standard);
 }
 
+.skip-link:focus,
 .skip-link:focus-visible {
   top: var(--space-4);
+}
+
+/*
+ * Honor reduced-motion (Phase 6.2b): users who ask for less motion get
+ * near-instant transitions, no animation/transforms, no shimmer or parallax.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
