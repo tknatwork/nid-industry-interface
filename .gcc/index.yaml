@@ -242,3 +242,9 @@ entries:
     branch: main
     intent: Playground refit — recruiter live (max space) + admin/student WRITTEN reference + DEMO.md
     note: Admin/student no longer live iframes; written reference cards stacked vertically (open-live escape hatch). Landing shows only Recruiter + playground (dropped standalone admin/student links). Chrome uses design tokens (navy --accent + discipline palette). DEMO.md = written demo build. Redeployed LIVE; verified markers + trimmed strip in prod.
+  - id: 44
+    date: 2026-05-29
+    hash: "be580f4"
+    branch: main
+    intent: Brand match to the live industryinterface.nid.edu + II logo
+    note: Extracted real ii2025.css → Open Sans font + #59A0DB accent (added --ii-blue primitives, repointed semantic --accent/--border-focus). New <Logo> atom (vector II monogram + INDUSTRY/INTERFACE wordmark, currentColor) wired into all 4 shells + playground; app/icon.svg favicon. Verified LIVE: Open Sans linked, logo renders, favicon 200, #59a0db in prod CSS bundle.
