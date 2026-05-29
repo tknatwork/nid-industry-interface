@@ -248,3 +248,9 @@ entries:
     branch: main
     intent: Brand match to the live industryinterface.nid.edu + II logo
     note: Extracted real ii2025.css → Open Sans font + #59A0DB accent (added --ii-blue primitives, repointed semantic --accent/--border-focus). New <Logo> atom (vector II monogram + INDUSTRY/INTERFACE wordmark, currentColor) wired into all 4 shells + playground; app/icon.svg favicon. Verified LIVE: Open Sans linked, logo renders, favicon 200, #59a0db in prod CSS bundle.
+  - id: 45
+    date: 2026-05-29
+    hash: "bd1b279"
+    branch: main
+    intent: Placement timetable + discipline brochure showcase (homepage + recruiter dashboard)
+    note: PlacementTimetable (shared server cpt — open cycle milestones stepper) on pre-login / + recruiter dashboard. DisciplineBrochureGallery (client — horizontal scroll-snap slider + ‹ › arrows + top-right Download → Markdown Blob) on /disciplines#brochures + dashboard. Homepage Brochure CTA → /disciplines#brochures; nav = Process·Timetable·Brochures·Contact·Apply; cards theme via data-discipline. Verified LIVE on Vercel.
