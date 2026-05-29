@@ -1,6 +1,8 @@
 import {
   bookMeetingSchema,
   bookPptSchema,
+  publishMeetingSlotSchema,
+  publishPptWindowSchema,
   type ActionResult,
   type Meeting,
   type MeetingSlot,
@@ -9,7 +11,9 @@ import {
 } from './types';
 import {
   insertMeeting,
+  insertMeetingSlot,
   insertPptBooking,
+  insertPptWindow,
   listMeetings as storeListMeetings,
   listMeetingSlots as storeListMeetingSlots,
   listPptBookings as storeListPptBookings,
@@ -59,5 +63,21 @@ export function bookMeeting(input: unknown): ActionResult {
     agenda: parsed.data.agenda,
     ...(parsed.data.note ? { note: parsed.data.note } : {}),
   });
+  return { ok: true };
+}
+
+// ── Admin publishing (the supply side) ───────────────────────────────────────
+
+export function publishPptWindow(input: unknown): ActionResult {
+  const parsed = publishPptWindowSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, reason: parsed.error.issues[0]?.message ?? 'Invalid' };
+  insertPptWindow(parsed.data);
+  return { ok: true };
+}
+
+export function publishMeetingSlot(input: unknown): ActionResult {
+  const parsed = publishMeetingSlotSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, reason: parsed.error.issues[0]?.message ?? 'Invalid' };
+  insertMeetingSlot(parsed.data);
   return { ok: true };
 }

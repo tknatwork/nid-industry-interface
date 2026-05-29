@@ -8,9 +8,11 @@ export {
   listPptWindows,
   listPptBookings,
   bookPpt,
+  publishPptWindow,
   listMeetingSlots,
   listMeetings,
   bookMeeting,
+  publishMeetingSlot,
 } from './actions';
 
 export {

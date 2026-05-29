@@ -60,6 +60,23 @@ export const bookMeetingSchema = z.object({
   note: z.string().trim().max(500).optional(),
 });
 
+// Admin publishing — the supply side (admin opens the windows/slots recruiters book).
+export const publishPptWindowSchema = z.object({
+  cycleId: z.string().min(1),
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Day must be YYYY-MM-DD'),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Start must be HH:MM'),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, 'End must be HH:MM'),
+  mode: z.enum(['virtual', 'on-campus']),
+  campus: z.string().trim().min(1, 'Campus is required'),
+});
+
+export const publishMeetingSlotSchema = z.object({
+  placementHead: z.string().trim().min(1, 'Placement head is required'),
+  campus: z.string().trim().min(1, 'Campus is required'),
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Day must be YYYY-MM-DD'),
+  time: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be HH:MM'),
+});
+
 /** The default agenda template auto-attached to a placement-head meeting (4.12). */
 export const DEFAULT_MEETING_AGENDA: readonly string[] = [
   'Confirm cycle dates relevant to your hire',

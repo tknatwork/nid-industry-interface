@@ -14,7 +14,7 @@ export default async function AdminSlotsPage({ searchParams }: { searchParams: P
   const byDay = groupByDay(slots);
 
   return (
-    <AdminShell roleLabel="Placement head · NID Ahmedabad">
+    <AdminShell activeNav="slots" roleLabel="Placement head · NID Ahmedabad">
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <header style={{ marginBottom: 'var(--space-8)' }}>

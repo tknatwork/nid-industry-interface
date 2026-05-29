@@ -18,6 +18,8 @@ export type AdminNav =
   | 'offer-adjustments'
   | 'api-keys'
   | 'student-conduct'
+  | 'slots'
+  | 'engagement'
   | 'content';
 
 export interface AdminShellProps {
@@ -37,6 +39,8 @@ const adminNavItems: ReadonlyArray<{ key: AdminNav; href: string; label: string 
   { key: 'payment-cell', href: '/admin/payment-cell', label: 'Payment cell' },
   { key: 'offer-adjustments', href: '/admin/offer-adjustments', label: 'Offer adj.' },
   { key: 'api-keys', href: '/admin/api-keys', label: 'API keys' },
+  { key: 'slots', href: '/admin/slots', label: 'Interview slots' },
+  { key: 'engagement', href: '/admin/engagement', label: 'PPT & meetings' },
   { key: 'content', href: '/admin/content', label: 'Content' },
 ];
 

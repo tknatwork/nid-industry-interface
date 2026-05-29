@@ -92,6 +92,24 @@ export function insertMeeting(m: Omit<Meeting, 'id' | 'scheduledAt'>): Meeting {
   return meeting;
 }
 
+/** Admin opens a new PPT window (the supply recruiters book). */
+export function insertPptWindow(w: Omit<PptWindow, 'id' | 'status'>): PptWindow {
+  const s = loadState();
+  const n = s.counter + 1;
+  const window: PptWindow = { ...w, id: `ppt_w_${n}`, status: 'open' };
+  persist({ ...s, counter: n, pptWindows: [...s.pptWindows, window] });
+  return window;
+}
+
+/** Admin opens a new placement-head meeting slot. */
+export function insertMeetingSlot(sl: Omit<MeetingSlot, 'id' | 'status'>): MeetingSlot {
+  const s = loadState();
+  const n = s.counter + 1;
+  const slot: MeetingSlot = { ...sl, id: `mtg_s_${n}`, status: 'open' };
+  persist({ ...s, counter: n, meetingSlots: [...s.meetingSlots, slot] });
+  return slot;
+}
+
 export function pptWindowById(id: string): PptWindow | null {
   return loadState().pptWindows.find((w) => w.id === id) ?? null;
 }
