@@ -1,0 +1,21 @@
+{
+  "name": "@nid/module-admin-cms",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Admin-editable content: per-cycle config + CMS content blocks (Phase 3.4). Replaces the current portal's hand-edited HTML + static PDFs.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'lint placeholder'",
+    "test": "echo 'no tests yet'"
+  },
+  "dependencies": {
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3"
+  }
+}
