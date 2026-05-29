@@ -236,3 +236,9 @@ entries:
     branch: main
     intent: LIVE on Vercel — public repo + https://nid-industry-interface.vercel.app
     note: github.com/tknatwork/nid-industry-interface (public). vercel.json experimentalServices web rooted at apps/web (pnpm monorepo). Verified LIVE in prod: routes 200, /tmp store seeds (student inbox shows seeded ₹12L offer), federation auth gate (active 200 / revoked 401), no frame-blocking headers. GitHub auto-connect unavailable (Vercel GitHub app not installed) → redeploy via `vercel deploy --prod --scope tushar-kant-naiks-projects`.
+  - id: 43
+    date: 2026-05-29
+    hash: "58cf127"
+    branch: main
+    intent: Playground refit — recruiter live (max space) + admin/student WRITTEN reference + DEMO.md
+    note: Admin/student no longer live iframes; written reference cards stacked vertically (open-live escape hatch). Landing shows only Recruiter + playground (dropped standalone admin/student links). Chrome uses design tokens (navy --accent + discipline palette). DEMO.md = written demo build. Redeployed LIVE; verified markers + trimmed strip in prod.
