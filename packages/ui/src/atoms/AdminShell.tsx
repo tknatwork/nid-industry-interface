@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Logo } from './Logo';
 
 /**
  * AdminShell — placement-cell portal chrome. Visually distinct from PageShell
@@ -67,28 +68,21 @@ export function AdminShell({ children, activeNav, roleLabel }: AdminShellProps) 
             gap: 'var(--space-4)',
           }}
         >
-          <a href="/admin" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <p
+          <a href="/admin" style={{ textDecoration: 'none', color: 'var(--grey-0)', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+            <Logo height={30} />
+            <span
               style={{
                 fontSize: 'var(--fs-12)',
                 fontWeight: 'var(--fw-600)',
                 color: 'var(--grey-300)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
-              }}
-            >
-              NID Industry Interface
-            </p>
-            <p
-              style={{
-                fontSize: 'var(--fs-20)',
-                fontWeight: 'var(--fw-500)',
-                color: 'var(--grey-0)',
-                marginTop: 'var(--space-1)',
+                paddingLeft: 'var(--space-4)',
+                borderLeft: '1px solid var(--grey-700)',
               }}
             >
               Placement Cell · Admin
-            </p>
+            </span>
           </a>
           {roleLabel && (
             <span

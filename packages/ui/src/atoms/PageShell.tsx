@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Logo } from './Logo';
 
 /**
  * PageShell — shared header + footer layout for public pages.
@@ -40,8 +41,8 @@ export function PageShell({ children, activeNav }: PageShellProps) {
             gap: 'var(--space-4)',
           }}
         >
-          <a href="/" style={{ textDecoration: 'none' }}>
-            <p
+          <a href="/" style={{ textDecoration: 'none', color: 'var(--text-strong)', display: 'inline-flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+            <span
               style={{
                 fontSize: 'var(--fs-12)',
                 fontWeight: 'var(--fw-600)',
@@ -51,18 +52,8 @@ export function PageShell({ children, activeNav }: PageShellProps) {
               }}
             >
               National Institute of Design
-            </p>
-            <p
-              style={{
-                fontSize: 'var(--fs-20)',
-                lineHeight: 'var(--lh-23)',
-                fontWeight: 'var(--fw-500)',
-                color: 'var(--text-strong)',
-                marginTop: 'var(--space-1)',
-              }}
-            >
-              Industry Interface
-            </p>
+            </span>
+            <Logo height={32} />
           </a>
           <nav
             aria-label="Primary"

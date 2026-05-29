@@ -23,8 +23,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Open Sans matches the live industryinterface.nid.edu site font. */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
         {/* Devanagari fallback for Hindi content — fixes the gap on the main NID site. */}

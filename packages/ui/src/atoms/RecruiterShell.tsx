@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Logo } from './Logo';
 
 /**
  * RecruiterShell — authenticated recruiter-portal chrome. Distinct from the
@@ -69,28 +70,33 @@ export function RecruiterShell({
             gap: 'var(--space-4)',
           }}
         >
-          <a href="/recruiter/dashboard" style={{ textDecoration: 'none' }}>
-            <p
-              style={{
-                fontSize: 'var(--fs-12)',
-                fontWeight: 'var(--fw-600)',
-                color: 'var(--text-secondary)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-              }}
-            >
-              NID Industry Interface · Recruiter
-            </p>
-            <p
-              style={{
-                fontSize: 'var(--fs-20)',
-                fontWeight: 'var(--fw-500)',
-                color: 'var(--text-strong)',
-                marginTop: 'var(--space-1)',
-              }}
-            >
-              {companyName}
-            </p>
+          <a href="/recruiter/dashboard" style={{ textDecoration: 'none', color: 'var(--text-strong)', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+            <Logo height={30} />
+            <span style={{ paddingLeft: 'var(--space-4)', borderLeft: '1px solid var(--border-default)' }}>
+              <span
+                style={{
+                  display: 'block',
+                  fontSize: 'var(--fs-12)',
+                  fontWeight: 'var(--fw-600)',
+                  color: 'var(--text-secondary)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                }}
+              >
+                Recruiter
+              </span>
+              <span
+                style={{
+                  display: 'block',
+                  fontSize: 'var(--fs-20)',
+                  fontWeight: 'var(--fw-500)',
+                  color: 'var(--text-strong)',
+                  marginTop: 'var(--space-1)',
+                }}
+              >
+                {companyName}
+              </span>
+            </span>
           </a>
           <nav
             aria-label="Recruiter"

@@ -25,7 +25,13 @@
   --cyan-500: #0099a5; /* NID --light-blue-color */
   --green-500: #70aa62; /* NID --green-color */
   --purple-500: #3b2854; /* NID --purple-color */
-  --navy-500: #345381; /* NID --navy-blue-color, recommended portal accent */
+  --navy-500: #345381; /* NID --navy-blue-color */
+
+  /* Industry Interface brand (extracted from live industryinterface.nid.edu/css/ii2025.css) */
+  --ii-blue: #59a0db; /* II primary — step boxes + footer */
+  --ii-blue-strong: #3a86c8; /* darker for hover/active */
+  --ii-blue-light: #94d3e4; /* II page-header / side-nav hover accent */
+  --ii-green: #1fc356; /* II wizard success state */
 
   /* Functional palette */
   --blue-500: #526efe; /* NID --news-event */
@@ -84,8 +90,8 @@
   --fw-600: 600;
   --fw-700: 700;
 
-  /* Font families */
-  --ff-sans: 'Raleway', ui-sans-serif, system-ui, sans-serif;
+  /* Font families — Open Sans matches the live industryinterface.nid.edu (ii2025.css body). */
+  --ff-sans: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
   --ff-hindi: 'Noto Sans Devanagari', 'Mukta', system-ui, sans-serif;
 
   /* Motion durations (Ant Design–inspired, Phase 6.2b) */

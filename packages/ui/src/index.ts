@@ -5,6 +5,7 @@
 
 export const UI_PACKAGE_NAME = '@nid/ui';
 
+export { Logo, type LogoProps } from './atoms/Logo';
 export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './atoms/Button';
 export { StatusPill, type StatusPillProps, type StatusTone } from './atoms/StatusPill';
 export { Field, type FieldProps } from './atoms/Field';

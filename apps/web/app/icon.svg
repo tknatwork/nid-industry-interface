@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Industry Interface">
+  <rect width="64" height="64" rx="12" fill="#59a0db" />
+  <g transform="translate(14,16) scale(0.8)" fill="#ffffff">
+    <rect x="2" y="0" width="10" height="23" />
+    <circle cx="7" cy="34" r="6" />
+    <rect x="22" y="0" width="12" height="12" />
+    <rect x="24" y="16" width="10" height="24" />
+  </g>
+</svg>

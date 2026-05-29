@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Logo } from '@nid/ui';
 
 /**
  * Demo playground (showcase). The RECRUITER portal is live + interactive and
@@ -36,8 +37,8 @@ export default function PlaygroundPage() {
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--surface-page)', overflow: 'hidden' }}>
       {/* Top chrome — institutional dark bar with the navy accent underline (matches AdminShell) */}
       <header style={topBar}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-3)', flexWrap: 'wrap', minWidth: 0 }}>
-          <strong style={{ fontSize: 'var(--fs-14)', letterSpacing: '0.04em' }}>NID Industry Interface</strong>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap', minWidth: 0 }}>
+          <Logo height={24} />
           <span style={{ fontSize: 'var(--fs-12)', color: 'var(--grey-300)' }}>
             Recruiter demo (live) · institution &amp; student shown as reference
           </span>

@@ -26,10 +26,12 @@
   /* Border */
   --border-default: var(--grey-200);
   --border-emphasized: var(--grey-300);
-  --border-focus: var(--navy-500);
+  --border-focus: var(--ii-blue);
 
-  /* Accent (portal default, swappable per discipline via [data-discipline]) */
-  --accent: var(--navy-500);
+  /* Accent — the live Industry Interface brand blue (#59A0DB). Swappable per
+     discipline via [data-discipline] on discipline pages. */
+  --accent: var(--ii-blue);
+  --accent-strong: var(--ii-blue-strong);
   --accent-text: var(--grey-0);
 
   /* Layout spacing — defaults for phone (mobile-first); overridden for tablet + desktop below */
