@@ -8,7 +8,7 @@ interface StoreState {
 }
 
 function dataFilePath(): string {
-  return resolve(process.cwd(), '.dev-data', 'offer-cascade.json');
+  return resolve(process.env['VERCEL'] ? '/tmp/nid-dev-data' : resolve(process.cwd(), '.dev-data'), 'offer-cascade.json');
 }
 
 /**

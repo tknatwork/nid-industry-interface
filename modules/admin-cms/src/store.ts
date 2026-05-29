@@ -14,7 +14,7 @@ interface StoreState {
 }
 
 function dataFilePath(): string {
-  return resolve(process.cwd(), '.dev-data', 'admin-cms.json');
+  return resolve(process.env['VERCEL'] ? '/tmp/nid-dev-data' : resolve(process.cwd(), '.dev-data'), 'admin-cms.json');
 }
 
 function seedInitialState(): StoreState {

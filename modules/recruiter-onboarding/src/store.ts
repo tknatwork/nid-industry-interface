@@ -20,7 +20,7 @@ interface StoreState {
 
 function dataFilePath(): string {
   const root = process.cwd();
-  return resolve(root, '.dev-data', 'recruiter-onboarding.json');
+  return resolve(process.env['VERCEL'] ? '/tmp/nid-dev-data' : resolve(root, '.dev-data'), 'recruiter-onboarding.json');
 }
 
 function loadState(): StoreState {

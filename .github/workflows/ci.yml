@@ -1,13 +1,13 @@
 name: CI
 
-# Phase 9.5 native harness in CI. All `run:` steps are static commands — no
-# `${{ github.* }}` interpolation into shell (that is the command-injection
-# vector); workflow context is only used in `with:`/`if:`, never piped to a shell.
+# Phase 9.5 native harness, kept as a SHOWCASE ARTIFACT — it documents the gates
+# (boundaries · contracts · lint · typecheck · tests). It is intentionally
+# manual-only (`workflow_dispatch`) so it is NOT an active pipeline on a demo repo:
+# no auto-runs on push/PR, no red X, no Actions minutes. Run it on demand from the
+# Actions tab. All `run:` steps are static commands (no `${{ github.* }}` → shell).
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read

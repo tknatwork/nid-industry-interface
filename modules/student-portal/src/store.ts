@@ -27,7 +27,7 @@ function key(studentId: string, cycleId: string): string {
 }
 
 function dataFilePath(): string {
-  return resolve(process.cwd(), '.dev-data', 'student-portal.json');
+  return resolve(process.env['VERCEL'] ? '/tmp/nid-dev-data' : resolve(process.cwd(), '.dev-data'), 'student-portal.json');
 }
 
 function seedInitialState(): StoreState {

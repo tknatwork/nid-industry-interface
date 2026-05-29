@@ -11,7 +11,7 @@ interface StoreState {
 }
 
 function dataFilePath(): string {
-  return resolve(process.cwd(), '.dev-data', 'recruiter-engagement.json');
+  return resolve(process.env['VERCEL'] ? '/tmp/nid-dev-data' : resolve(process.cwd(), '.dev-data'), 'recruiter-engagement.json');
 }
 
 function seedInitialState(): StoreState {

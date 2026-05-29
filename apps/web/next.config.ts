@@ -3,9 +3,9 @@ import type { NextConfig } from 'next';
 const config: NextConfig = {
   reactStrictMode: true,
 
-  // Standalone output for production deployment.
-  // Vercel for prototype, self-hosted Docker for production (Phase 6.13.3 + 6.13.8).
-  output: 'standalone',
+  // Standalone output for self-hosted/Docker (Phase 6.13.8). Vercel runs its own
+  // serverless build, so skip standalone there to avoid monorepo output conflicts.
+  ...(process.env['VERCEL'] ? {} : { output: 'standalone' as const }),
 
   experimental: {
     // RSC + Server Actions reliability
@@ -35,6 +35,10 @@ const config: NextConfig = {
     '@nid/module-slot-booking',
     '@nid/module-interview-console',
     '@nid/module-offer-cascade',
+    '@nid/module-student-portal',
+    '@nid/module-admin-accountability',
+    '@nid/module-recruiter-engagement',
+    '@nid/module-admin-cms',
   ],
 };
 
