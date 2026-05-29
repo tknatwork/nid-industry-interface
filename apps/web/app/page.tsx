@@ -88,20 +88,14 @@ export default function LandingPage() {
                 marginBottom: 'var(--space-3)',
               }}
             >
-              Prototype surfaces — explore the three portals
+              Prototype surfaces
             </p>
             <div style={{ display: 'flex', gap: 'var(--space-5)', flexWrap: 'wrap', fontSize: 'var(--fs-16)', fontWeight: 'var(--fw-600)' }}>
               <a href="/recruiter/dashboard" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
                 Recruiter portal →
               </a>
-              <a href="/admin/recruiters/queue" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-                Placement admin →
-              </a>
-              <a href="/student" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-                Student portal →
-              </a>
               <a href="/playground" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-                All three at once (playground) →
+                3-up playground (recruiter live + admin/student reference) →
               </a>
             </div>
           </div>
