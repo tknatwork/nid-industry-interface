@@ -62,7 +62,7 @@ export default async function IntegrationsPage() {
               ))}
             </div>
             <p style={mini}>Send yourself a signed test event (uses your bearer token):</p>
-            <CopyField multiline value={`curl -X POST \\\n  -H "Authorization: Bearer ${token}" \\\n  ${base}/api/v1/recruiter/webhooks/simulate`} />
+            <CopyField multiline value={`curl -X POST ${base}/api/v1/recruiter/webhooks/simulate \\\n  -H "Authorization: Bearer ${token}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"event":"offer.status.changed"}'`} />
             <p style={{ ...mini, marginTop: 'var(--space-3)' }}>List the event catalogue:</p>
             <CopyField value={`${base}/api/v1/recruiter/webhooks/events`} href={`${base}/api/v1/recruiter/webhooks/events`} />
           </Card>
