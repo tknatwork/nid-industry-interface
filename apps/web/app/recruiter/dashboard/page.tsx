@@ -66,6 +66,24 @@ export default function RecruiterDashboard() {
               </Button>
             </a>
           </div>
+
+          <div style={{ marginTop: 'var(--space-10)', paddingTop: 'var(--space-6)', borderTop: '1px solid var(--border-default)' }}>
+            <p style={{ fontSize: 'var(--fs-12)', fontWeight: 'var(--fw-600)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 'var(--space-3)' }}>
+              More tools
+            </p>
+            <div style={{ display: 'flex', gap: 'var(--space-5)', flexWrap: 'wrap', fontSize: 'var(--fs-14)', fontWeight: 'var(--fw-600)' }}>
+              {[
+                ['/recruiter/calculator', 'Stipend calculator'],
+                ['/recruiter/candidates', 'Browse candidates'],
+                ['/recruiter/ppt', 'Pre-Placement Talks'],
+                ['/recruiter/meetings', 'Meet placement head'],
+                ['/recruiter/analytics', 'Analytics'],
+                ['/recruiter/stats', 'Your stats'],
+              ].map(([href, text]) => (
+                <a key={href} href={href} style={{ color: 'var(--accent)', textDecoration: 'none' }}>{text} →</a>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     </RecruiterShell>

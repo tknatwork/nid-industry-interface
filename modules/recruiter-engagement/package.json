@@ -1,0 +1,21 @@
+{
+  "name": "@nid/module-recruiter-engagement",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Recruiter ↔ placement-cell scheduling touchpoints (Phase 4.3 PPT + 4.12 placement-head meetings).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'lint placeholder'",
+    "test": "echo 'no tests yet'"
+  },
+  "dependencies": {
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3"
+  }
+}

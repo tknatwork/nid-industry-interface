@@ -19,6 +19,7 @@
     "@nid/module-interview-console": "workspace:*",
     "@nid/module-jd-posting": "workspace:*",
     "@nid/module-offer-cascade": "workspace:*",
+    "@nid/module-recruiter-engagement": "workspace:*",
     "@nid/module-recruiter-onboarding": "workspace:*",
     "@nid/module-slot-booking": "workspace:*",
     "@nid/module-student-portal": "workspace:*",

@@ -47,6 +47,9 @@ importers:
       '@nid/module-offer-cascade':
         specifier: workspace:*
         version: link:../../modules/offer-cascade
+      '@nid/module-recruiter-engagement':
+        specifier: workspace:*
+        version: link:../../modules/recruiter-engagement
       '@nid/module-recruiter-onboarding':
         specifier: workspace:*
         version: link:../../modules/recruiter-onboarding
@@ -163,6 +166,16 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      zod:
+        specifier: 3.23.8
+        version: 3.23.8
+    devDependencies:
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
+  modules/recruiter-engagement:
+    dependencies:
       zod:
         specifier: 3.23.8
         version: 3.23.8
