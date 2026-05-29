@@ -13,8 +13,8 @@ export interface PageShellProps {
 
 const navItems = [
   { key: 'process', href: '/recruiters/process', label: 'Process' },
-  { key: 'disciplines', href: '/disciplines', label: 'Disciplines' },
-  { key: 'cycles', href: '/cycles', label: 'Cycles' },
+  { key: 'cycles', href: '/cycles', label: 'Timetable' },
+  { key: 'disciplines', href: '/disciplines', label: 'Brochures' },
   { key: 'contact', href: '/contact', label: 'Contact' },
   { key: 'apply', href: '/apply', label: 'Apply' },
 ] as const;

@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { PageShell } from '@nid/ui';
 import { DISCIPLINES } from '~/lib/public-content';
+import { DisciplineBrochureGallery } from '~/components/DisciplineBrochureGallery';
 
 export const metadata: Metadata = {
-  title: 'Disciplines · NID Industry Interface',
-  description: 'What NID design graduates across ~20 disciplines actually produce.',
+  title: 'Discipline brochures · NID Industry Interface',
+  description: 'What NID design graduates across every discipline actually produce — browse and download the brochures.',
 };
 
 export default function DisciplinesPage() {
@@ -13,20 +14,27 @@ export default function DisciplinesPage() {
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--layout-section-y)' }}>
         <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
           <p style={kicker}>The institution translates recruiter vocabulary into disciplines</p>
-          <h1 style={h1}>Disciplines at NID</h1>
+          <h1 style={h1}>Discipline brochures</h1>
           <p style={lede}>
             Recruiters don&rsquo;t always know what a &ldquo;Furniture &amp; Interior&rdquo; graduate produces differently
-            from a &ldquo;Communication Design&rdquo; one. This catalog is the public face of NID&rsquo;s internal taxonomy —
+            from a &ldquo;Communication Design&rdquo; one. Slide through the brochures below, or download the full set —
             the institution maps your role to the disciplines whose graduates actually fit.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 'var(--space-4)', marginTop: 'var(--space-8)' }}>
+          {/* Horizontal sliding brochure showcase + Download (top-right). */}
+          <div id="brochures" style={{ marginTop: 'var(--space-10)', scrollMarginTop: 'var(--space-8)' }}>
+            <DisciplineBrochureGallery />
+          </div>
+
+          {/* Full catalog */}
+          <p style={{ ...kicker, marginTop: 'var(--space-16)' }}>All disciplines</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 'var(--space-4)', marginTop: 'var(--space-4)' }}>
             {DISCIPLINES.map((d) => (
               <a key={d.slug} href={`/disciplines/${d.slug}`} data-discipline={d.theme} style={card}>
                 <p style={accentKicker}>{d.programme}</p>
                 <h2 style={cardTitle}>{d.name}</h2>
                 <p style={cardBody}>{d.summary}</p>
-                <span style={{ ...accentKicker, marginTop: 'var(--space-3)', display: 'inline-block' }}>What graduates do →</span>
+                <span style={{ ...accentKicker, marginTop: 'var(--space-3)', display: 'inline-block' }}>Full brochure →</span>
               </a>
             ))}
           </div>

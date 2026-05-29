@@ -1,4 +1,5 @@
 import { PageShell, Button } from '@nid/ui';
+import { PlacementTimetable } from '~/components/PlacementTimetable';
 
 /**
  * Public landing — `/` per Phase 3.2 sitemap.
@@ -64,6 +65,11 @@ export default function LandingPage() {
                 Track your application
               </Button>
             </a>
+            <a href="/disciplines#brochures" style={{ textDecoration: 'none' }}>
+              <Button size="lg" variant="secondary">
+                Brochure
+              </Button>
+            </a>
             <a href="/playground" style={{ textDecoration: 'none' }}>
               <Button size="lg" variant="ghost">
                 ▶ 3-up playground
@@ -102,6 +108,19 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Placement timetable — first-glance schedule (mirrors the live II homepage). */}
+      <section
+        style={{
+          paddingInline: 'var(--layout-page-x)',
+          paddingBlock: 'var(--layout-section-y)',
+          borderTop: '1px solid var(--border-default)',
+        }}
+      >
+        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
+          <PlacementTimetable />
+        </div>
+      </section>
+
       <section
         style={{
           backgroundColor: 'var(--surface-panel)',
@@ -110,17 +129,21 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
-          <h2
-            style={{
-              fontSize: 'var(--fs-24)',
-              lineHeight: 'var(--lh-28)',
-              fontWeight: 'var(--fw-500)',
-              color: 'var(--text-strong)',
-              marginBottom: 'var(--space-6)',
-            }}
-          >
-            Disciplines at a glance
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-6)' }}>
+            <h2
+              style={{
+                fontSize: 'var(--fs-24)',
+                lineHeight: 'var(--lh-28)',
+                fontWeight: 'var(--fw-500)',
+                color: 'var(--text-strong)',
+              }}
+            >
+              Discipline brochures
+            </h2>
+            <a href="/disciplines#brochures" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 'var(--fw-600)', fontSize: 'var(--fs-14)' }}>
+              Browse &amp; download all brochures →
+            </a>
+          </div>
           <div
             style={{
               display: 'grid',
@@ -129,8 +152,9 @@ export default function LandingPage() {
             }}
           >
             {DISCIPLINE_PREVIEW.map((d) => (
-              <article
+              <a
                 key={d.slug}
+                href={`/disciplines/${d.slug}`}
                 data-discipline={d.theme}
                 style={{
                   backgroundColor: 'var(--card-bg)',
@@ -138,6 +162,8 @@ export default function LandingPage() {
                   padding: 'var(--card-padding)',
                   boxShadow: 'var(--card-shadow)',
                   borderTop: '3px solid var(--accent)',
+                  textDecoration: 'none',
+                  display: 'block',
                 }}
               >
                 <p
@@ -173,7 +199,7 @@ export default function LandingPage() {
                 >
                   {d.summary}
                 </p>
-              </article>
+              </a>
             ))}
           </div>
         </div>

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { RecruiterShell, Button } from '@nid/ui';
 import { listForRecruiter } from '@nid/module-jd-posting';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { PlacementTimetable } from '~/components/PlacementTimetable';
+import { DisciplineBrochureGallery } from '~/components/DisciplineBrochureGallery';
 
 export const metadata: Metadata = {
   title: 'Dashboard · Recruiter · NID Industry Interface',
@@ -65,6 +67,16 @@ export default function RecruiterDashboard() {
                 View your JDs
               </Button>
             </a>
+          </div>
+
+          {/* Placement timetable — the at-a-glance schedule, carried into the dashboard. */}
+          <div style={{ marginTop: 'var(--space-10)', paddingTop: 'var(--space-6)', borderTop: '1px solid var(--border-default)' }}>
+            <PlacementTimetable compact />
+          </div>
+
+          {/* Discipline brochures — the same sliding showcase + download, inside the dashboard. */}
+          <div style={{ marginTop: 'var(--space-10)', paddingTop: 'var(--space-6)', borderTop: '1px solid var(--border-default)' }}>
+            <DisciplineBrochureGallery />
           </div>
 
           <div style={{ marginTop: 'var(--space-10)', paddingTop: 'var(--space-6)', borderTop: '1px solid var(--border-default)' }}>
