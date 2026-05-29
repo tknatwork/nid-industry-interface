@@ -104,3 +104,95 @@ export interface ActionResult {
   readonly ok: boolean;
   readonly reason?: string;
 }
+
+// ── Student conduct (Phase 5.10) ─────────────────────────────────────────────
+
+export type ConductKind = 'no-show' | 'ghost-after-acceptance';
+export type ConductStatus = 'open' | 'dismissed' | 'warning' | 'visibility-reduced' | 'ineligible';
+
+export interface StudentConductCase {
+  readonly id: string;
+  readonly studentId: string;
+  readonly studentLabel: string;
+  readonly companyName: string;
+  readonly kind: ConductKind;
+  readonly description: string;
+  readonly status: ConductStatus;
+  readonly filedAt: string;
+  readonly decidedAt?: string;
+  readonly decisionNote?: string;
+  readonly appealNote?: string;
+}
+
+export const conductDecisionSchema = z.object({
+  caseId: z.string().min(1),
+  decision: z.enum(['dismissed', 'warning', 'visibility-reduced', 'ineligible']),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const conductAppealSchema = z.object({
+  caseId: z.string().min(1),
+  studentId: z.string().min(1),
+  appeal: z.string().trim().min(3, 'Describe your appeal'),
+});
+
+// ── Offer-adjustment / pay-differential adjudication (Phase 5.14) ─────────────
+
+export type AdjustmentStatus = 'open' | 'approved' | 'denied';
+
+export interface OfferAdjustmentCase {
+  readonly id: string;
+  readonly recruiterId: string;
+  readonly companyName: string;
+  readonly studentLabel: string;
+  readonly currentPaise: number;
+  readonly newPaise: number;
+  readonly category: string;
+  readonly status: AdjustmentStatus;
+  readonly filedAt: string;
+  readonly decidedAt?: string;
+  readonly decisionNote?: string;
+}
+
+export const adjustmentDecisionSchema = z.object({
+  caseId: z.string().min(1),
+  decision: z.enum(['approved', 'denied']),
+  note: z.string().trim().max(500).optional(),
+});
+
+// ── Recruiter-side API keys (Phase 5.9) ──────────────────────────────────────
+
+export type ApiKeyStatus = 'active' | 'revoked';
+
+export interface ApiKey {
+  readonly id: string;
+  readonly recruiterId: string;
+  readonly companyName: string;
+  readonly scope: string;
+  readonly status: ApiKeyStatus;
+  readonly issuedAt: string;
+  readonly revokedReason?: string;
+  readonly revokedAt?: string;
+}
+
+export const apiKeyRevokeSchema = z.object({
+  keyId: z.string().min(1),
+  reason: z.string().trim().min(3, 'A reason is required'),
+});
+
+// ── Student-filed redressal (Phase 5.7, student side of the existing queue) ──
+
+export const fileRedressalSchema = z.object({
+  recruiterId: z.string().min(1),
+  companyName: z.string().trim().min(1),
+  studentLabel: z.string().trim().min(1),
+  category: z.enum([
+    'stipend-not-paid',
+    'scope-creep-mid-internship',
+    'harassment',
+    'jd-term-breach',
+    'contract-dishonoured',
+  ]),
+  description: z.string().trim().min(10, 'Describe what happened (min 10 chars)'),
+  isInternship: z.coerce.boolean(),
+});

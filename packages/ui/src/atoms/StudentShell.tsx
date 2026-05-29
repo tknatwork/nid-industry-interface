@@ -7,7 +7,15 @@ import type { ReactNode } from 'react';
  * auth module lands).
  */
 
-export type StudentNav = 'dashboard' | 'cycles' | 'jds' | 'applications' | 'offers';
+export type StudentNav =
+  | 'dashboard'
+  | 'cycles'
+  | 'jds'
+  | 'applications'
+  | 'offers'
+  | 'profile'
+  | 'conduct'
+  | 'report';
 
 export interface StudentShellProps {
   readonly children: ReactNode;
@@ -22,6 +30,9 @@ const navItems: ReadonlyArray<{ key: StudentNav; href: string; label: string }> 
   { key: 'jds', href: '/student/jds', label: 'Openings' },
   { key: 'applications', href: '/student/applications', label: 'Applications' },
   { key: 'offers', href: '/student/offers', label: 'Offers' },
+  { key: 'profile', href: '/student/profile', label: 'Profile' },
+  { key: 'conduct', href: '/student/conduct', label: 'Conduct' },
+  { key: 'report', href: '/student/report-company', label: 'Report' },
 ];
 
 export function StudentShell({

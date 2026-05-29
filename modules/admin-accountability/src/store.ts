@@ -1,17 +1,20 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type {
+  ApiKey,
   BlacklistEntry,
   HealthEventRecord,
+  OfferAdjustmentCase,
   PaymentCase,
   RedressalCase,
+  StudentConductCase,
 } from './types';
 
 /**
- * JSON-backed accountability store. Holds the raw health *events*, redressal
- * cases, blacklist entries, and payment cases. The score itself is NOT stored —
- * it is recomputed from events by @nid/core every read (the score is a pure
- * function of history; Phase 5.11 "not predictive, deterministic sum").
+ * JSON-backed accountability store. Holds the raw health *events* + adjudication
+ * state (redressal, blacklist, payment, student conduct, offer adjustments, API
+ * keys). The score itself is NOT stored — it is recomputed from events by
+ * @nid/core every read (Phase 5.11 "not predictive, deterministic sum").
  */
 
 interface StoreState {
@@ -19,6 +22,9 @@ interface StoreState {
   readonly redressal: readonly RedressalCase[];
   readonly blacklist: readonly BlacklistEntry[];
   readonly payments: readonly PaymentCase[];
+  readonly conduct: readonly StudentConductCase[];
+  readonly adjustments: readonly OfferAdjustmentCase[];
+  readonly apiKeys: readonly ApiKey[];
 }
 
 function dataFilePath(): string {
@@ -138,7 +144,55 @@ function seedInitialState(): StoreState {
     },
   ];
 
-  return { events, redressal, blacklist, payments };
+  const conduct: StudentConductCase[] = [
+    {
+      id: 'con_00001',
+      studentId: 'stu_0009',
+      studentLabel: 'B.Des Comm · batch 2026',
+      companyName: 'Pixel Forge',
+      kind: 'ghost-after-acceptance',
+      description: 'Accepted the offer, then stopped responding two weeks before joining.',
+      status: 'open',
+      filedAt: daysAgo(4),
+    },
+  ];
+
+  const adjustments: OfferAdjustmentCase[] = [
+    {
+      id: 'adj_00001',
+      recruiterId: 'NID-2026-A-0001',
+      companyName: 'Acme Design Studio',
+      studentLabel: 'M.Des UX · batch 2025',
+      currentPaise: 120_000_000,
+      newPaise: 145_000_000,
+      category: 'Top-of-band raise (competitive)',
+      status: 'open',
+      filedAt: daysAgo(2),
+    },
+  ];
+
+  const apiKeys: ApiKey[] = [
+    {
+      id: 'key_acme_01',
+      recruiterId: 'NID-2026-A-0001',
+      companyName: 'Acme Design Studio',
+      scope: 'cycle:current:read me:read me:history:read',
+      status: 'active',
+      issuedAt: daysAgo(120),
+    },
+    {
+      id: 'key_ghost_01',
+      recruiterId: GHOST,
+      companyName: 'GhostCorp Studios',
+      scope: 'cycle:current:read me:read',
+      status: 'revoked',
+      issuedAt: daysAgo(220),
+      revokedReason: 'Upheld redressal — contract dishonoured.',
+      revokedAt: daysAgo(180),
+    },
+  ];
+
+  return { events, redressal, blacklist, payments, conduct, adjustments, apiKeys };
 }
 
 function loadState(): StoreState {
@@ -146,11 +200,15 @@ function loadState(): StoreState {
   if (!existsSync(file)) return seedInitialState();
   try {
     const p = JSON.parse(readFileSync(file, 'utf8')) as Partial<StoreState>;
+    const seed = seedInitialState();
     return {
       events: p.events ?? [],
       redressal: p.redressal ?? [],
       blacklist: p.blacklist ?? [],
       payments: p.payments ?? [],
+      conduct: p.conduct ?? seed.conduct,
+      adjustments: p.adjustments ?? seed.adjustments,
+      apiKeys: p.apiKeys ?? seed.apiKeys,
     };
   } catch {
     return seedInitialState();
@@ -216,5 +274,72 @@ export function updatePayment(caseId: string, patch: Partial<PaymentCase>): Paym
     return c;
   });
   if (updated) persist({ ...s, payments });
+  return updated;
+}
+
+/** Append a student-filed redressal case (Phase 5.7). Generates the next id. */
+export function insertRedressal(record: Omit<RedressalCase, 'id' | 'status' | 'filedAt'>): RedressalCase {
+  const s = loadState();
+  const n = s.redressal.length + 1;
+  const full: RedressalCase = {
+    ...record,
+    id: `red_${n.toString().padStart(5, '0')}`,
+    status: 'open',
+    filedAt: new Date().toISOString(),
+  };
+  persist({ ...s, redressal: [...s.redressal, full] });
+  return full;
+}
+
+// ── student conduct / offer adjustments / api keys ───────────────────────────
+
+export function allConduct(): readonly StudentConductCase[] {
+  return loadState().conduct;
+}
+export function updateConduct(caseId: string, patch: Partial<StudentConductCase>): StudentConductCase | null {
+  const s = loadState();
+  let updated: StudentConductCase | null = null;
+  const conduct = s.conduct.map((c) => {
+    if (c.id === caseId) {
+      updated = { ...c, ...patch, id: c.id };
+      return updated;
+    }
+    return c;
+  });
+  if (updated) persist({ ...s, conduct });
+  return updated;
+}
+
+export function allAdjustments(): readonly OfferAdjustmentCase[] {
+  return loadState().adjustments;
+}
+export function updateAdjustment(caseId: string, patch: Partial<OfferAdjustmentCase>): OfferAdjustmentCase | null {
+  const s = loadState();
+  let updated: OfferAdjustmentCase | null = null;
+  const adjustments = s.adjustments.map((c) => {
+    if (c.id === caseId) {
+      updated = { ...c, ...patch, id: c.id };
+      return updated;
+    }
+    return c;
+  });
+  if (updated) persist({ ...s, adjustments });
+  return updated;
+}
+
+export function allApiKeys(): readonly ApiKey[] {
+  return loadState().apiKeys;
+}
+export function updateApiKey(keyId: string, patch: Partial<ApiKey>): ApiKey | null {
+  const s = loadState();
+  let updated: ApiKey | null = null;
+  const apiKeys = s.apiKeys.map((k) => {
+    if (k.id === keyId) {
+      updated = { ...k, ...patch, id: k.id };
+      return updated;
+    }
+    return k;
+  });
+  if (updated) persist({ ...s, apiKeys });
   return updated;
 }

@@ -15,6 +15,9 @@ export type AdminNav =
   | 'redressal'
   | 'blacklist'
   | 'payment-cell'
+  | 'offer-adjustments'
+  | 'api-keys'
+  | 'student-conduct'
   | 'content';
 
 export interface AdminShellProps {
@@ -29,8 +32,11 @@ const adminNavItems: ReadonlyArray<{ key: AdminNav; href: string; label: string 
   { key: 'cycles', href: '/admin/cycles', label: 'Cycles' },
   { key: 'health-scores', href: '/admin/health-scores', label: 'Health scores' },
   { key: 'redressal', href: '/admin/redressal', label: 'Redressal' },
+  { key: 'student-conduct', href: '/admin/student-conduct', label: 'Conduct' },
   { key: 'blacklist', href: '/admin/blacklist', label: 'Blacklist' },
   { key: 'payment-cell', href: '/admin/payment-cell', label: 'Payment cell' },
+  { key: 'offer-adjustments', href: '/admin/offer-adjustments', label: 'Offer adj.' },
+  { key: 'api-keys', href: '/admin/api-keys', label: 'API keys' },
   { key: 'content', href: '/admin/content', label: 'Content' },
 ];
 

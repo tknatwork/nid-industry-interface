@@ -1,23 +1,38 @@
 import { bandFromScore, computeHealthScore, type HealthBand, type HealthEvent } from '@nid/core';
 import {
+  adjustmentDecisionSchema,
+  apiKeyRevokeSchema,
   blacklistAddSchema,
   blacklistLiftSchema,
+  conductAppealSchema,
+  conductDecisionSchema,
+  fileRedressalSchema,
   paymentDecisionSchema,
   redressalDecisionSchema,
   type ActionResult,
+  type ApiKey,
   type BlacklistEntry,
   type HealthEventRecord,
+  type OfferAdjustmentCase,
   type PaymentCase,
   type RecruiterScore,
   type RedressalCase,
   type RedressalStatus,
+  type StudentConductCase,
 } from './types';
 import {
+  allAdjustments,
+  allApiKeys,
   allBlacklist,
+  allConduct,
   allEvents,
   allPayments,
   allRedressal,
   appendEvent,
+  insertRedressal,
+  updateAdjustment,
+  updateApiKey,
+  updateConduct,
   updatePayment,
   updateRedressal,
   upsertBlacklist,
@@ -187,4 +202,101 @@ export function decidePaymentCase(input: unknown): ActionResult {
     ...(note ? { decisionNote: note } : {}),
   });
   return updated ? { ok: true } : { ok: false, reason: 'Payment case not found.' };
+}
+
+// ── Student-filed redressal (Phase 5.7 — student side files into the queue) ──
+
+/** A student files a complaint against a company → lands open in the admin queue. */
+export function fileRedressal(input: unknown): ActionResult {
+  const parsed = fileRedressalSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, reason: parsed.error.issues[0]?.message ?? 'Invalid' };
+  insertRedressal({
+    recruiterId: parsed.data.recruiterId,
+    companyName: parsed.data.companyName,
+    studentLabel: parsed.data.studentLabel,
+    category: parsed.data.category,
+    description: parsed.data.description,
+    isInternship: parsed.data.isInternship,
+  });
+  return { ok: true };
+}
+
+/** Anonymised redressal stats for a company's public transparency tab (Phase 5.7). */
+export function transparencyFor(companyName: string): {
+  total: number;
+  byCategory: Readonly<Record<string, number>>;
+  upheld: number;
+} {
+  const cases = allRedressal().filter((c) => c.companyName === companyName);
+  const byCategory: Record<string, number> = {};
+  let upheld = 0;
+  for (const c of cases) {
+    byCategory[c.category] = (byCategory[c.category] ?? 0) + 1;
+    if (c.status === 'upheld-score' || c.status === 'upheld-revoke') upheld += 1;
+  }
+  return { total: cases.length, byCategory, upheld };
+}
+
+// ── Student conduct (Phase 5.10) ─────────────────────────────────────────────
+
+export function listStudentConduct(): readonly StudentConductCase[] {
+  return [...allConduct()].sort((a, b) => b.filedAt.localeCompare(a.filedAt));
+}
+export function listStudentConductFor(studentId: string): readonly StudentConductCase[] {
+  return listStudentConduct().filter((c) => c.studentId === studentId);
+}
+export function decideStudentConduct(input: unknown): ActionResult {
+  const parsed = conductDecisionSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, reason: parsed.error.issues[0]?.message ?? 'Invalid' };
+  const { caseId, decision, note } = parsed.data;
+  const updated = updateConduct(caseId, {
+    status: decision,
+    decidedAt: new Date().toISOString(),
+    ...(note ? { decisionNote: note } : {}),
+  });
+  return updated ? { ok: true } : { ok: false, reason: 'Conduct case not found.' };
+}
+export function appealStudentConduct(input: unknown): ActionResult {
+  const parsed = conductAppealSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, reason: parsed.error.issues[0]?.message ?? 'Invalid' };
+  const existing = allConduct().find((c) => c.id === parsed.data.caseId);
+  if (!existing) return { ok: false, reason: 'Conduct case not found.' };
+  if (existing.studentId !== parsed.data.studentId) return { ok: false, reason: 'Not your case to appeal.' };
+  updateConduct(parsed.data.caseId, { appealNote: parsed.data.appeal });
+  return { ok: true };
+}
+
+// ── Offer-adjustment / pay-differential (Phase 5.14) ─────────────────────────
+
+export function listOfferAdjustments(): readonly OfferAdjustmentCase[] {
+  return [...allAdjustments()].sort((a, b) => b.filedAt.localeCompare(a.filedAt));
+}
+export function decideOfferAdjustment(input: unknown): ActionResult {
+  const parsed = adjustmentDecisionSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, reason: parsed.error.issues[0]?.message ?? 'Invalid' };
+  const { caseId, decision, note } = parsed.data;
+  const updated = updateAdjustment(caseId, {
+    status: decision,
+    decidedAt: new Date().toISOString(),
+    ...(note ? { decisionNote: note } : {}),
+  });
+  return updated ? { ok: true } : { ok: false, reason: 'Adjustment case not found.' };
+}
+
+// ── Recruiter API keys (Phase 5.9) ───────────────────────────────────────────
+
+export function listApiKeys(): readonly ApiKey[] {
+  return [...allApiKeys()].sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
+}
+export function revokeApiKey(input: unknown): ActionResult {
+  const parsed = apiKeyRevokeSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, reason: parsed.error.issues[0]?.message ?? 'Invalid' };
+  const key = allApiKeys().find((k) => k.id === parsed.data.keyId && k.status === 'active');
+  if (!key) return { ok: false, reason: 'No active key with that id.' };
+  updateApiKey(parsed.data.keyId, {
+    status: 'revoked',
+    revokedReason: parsed.data.reason,
+    revokedAt: new Date().toISOString(),
+  });
+  return { ok: true };
 }
