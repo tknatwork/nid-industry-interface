@@ -91,6 +91,7 @@ export default function RecruiterDashboard() {
                 ['/recruiter/meetings', 'Meet placement head'],
                 ['/recruiter/analytics', 'Analytics'],
                 ['/recruiter/stats', 'Your stats'],
+                ['/recruiter/integrations', 'API & alerts'],
               ].map(([href, text]) => (
                 <a key={href} href={href} style={{ color: 'var(--accent)', textDecoration: 'none' }}>{text} →</a>
               ))}

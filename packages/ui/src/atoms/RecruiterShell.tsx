@@ -8,7 +8,7 @@ import { Logo } from './Logo';
  * constant until the auth module lands).
  */
 
-export type RecruiterNav = 'dashboard' | 'jds' | 'candidates' | 'interviews' | 'offers' | 'stats';
+export type RecruiterNav = 'dashboard' | 'jds' | 'candidates' | 'interviews' | 'offers' | 'stats' | 'integrations';
 
 export interface RecruiterShellProps {
   readonly children: ReactNode;
@@ -24,6 +24,7 @@ const navItems: ReadonlyArray<{ key: RecruiterNav; href: string; label: string }
   { key: 'interviews', href: '/recruiter/interviews', label: 'Interviews' },
   { key: 'offers', href: '/recruiter/offers', label: 'Offers' },
   { key: 'stats', href: '/recruiter/stats', label: 'Your stats' },
+  { key: 'integrations', href: '/recruiter/integrations', label: 'API & alerts' },
 ];
 
 export function RecruiterShell({
