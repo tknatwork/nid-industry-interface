@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { AdminShell, StatusPill } from '@nid/ui';
 import {
   listAll,
-  type ApplicationTokenRecord,
+  type ApplicationTicketRecord,
   type RecruiterStatus,
 } from '@nid/module-recruiter-onboarding';
 
@@ -68,7 +68,7 @@ export default async function RecruiterQueuePage({
               }}
             >
               Vet new applications, issue invoices, mark payments, approve, and mint credentials.
-              Every action is recorded; the recruiter sees the same timeline at <code>/track/&lt;token&gt;</code>.
+              Every action is recorded; the recruiter sees the same timeline at <code>/track/&lt;ticket&gt;</code>.
             </p>
           </header>
 
@@ -76,7 +76,7 @@ export default async function RecruiterQueuePage({
 
           <div
             role="region"
-            aria-label="Application token table"
+            aria-label="Application ticket table"
             style={{
               backgroundColor: 'var(--surface-card)',
               borderRadius: 'var(--card-radius)',
@@ -103,7 +103,7 @@ export default async function RecruiterQueuePage({
                     fontWeight: 'var(--fw-600)',
                   }}
                 >
-                  <th style={cellStyle}>Token</th>
+                  <th style={cellStyle}>Ticket</th>
                   <th style={cellStyle}>Company</th>
                   <th style={cellStyle}>Sector</th>
                   <th style={cellStyle}>Status</th>
@@ -120,9 +120,9 @@ export default async function RecruiterQueuePage({
                   </tr>
                 )}
                 {filtered.map((record) => (
-                  <tr key={record.tokenId} style={{ borderTop: '1px solid var(--border-default)' }}>
+                  <tr key={record.ticketId} style={{ borderTop: '1px solid var(--border-default)' }}>
                     <td style={{ ...cellStyle, fontFamily: 'ui-monospace, monospace', color: 'var(--text-strong)' }}>
-                      {record.tokenId}
+                      {record.ticketId}
                     </td>
                     <td style={{ ...cellStyle, color: 'var(--text-strong)', fontWeight: 'var(--fw-500)' }}>
                       {record.companyName}
@@ -146,7 +146,7 @@ export default async function RecruiterQueuePage({
                     </td>
                     <td style={{ ...cellStyle, textAlign: 'right' }}>
                       <a
-                        href={`/admin/recruiters/${record.tokenId}`}
+                        href={`/admin/recruiters/${record.ticketId}`}
                         style={{
                           color: 'var(--accent)',
                           fontWeight: 'var(--fw-600)',
@@ -241,7 +241,7 @@ function FilterTabs({
   );
 }
 
-function bucketCounts(records: readonly ApplicationTokenRecord[]): Map<string, number> {
+function bucketCounts(records: readonly ApplicationTicketRecord[]): Map<string, number> {
   const m = new Map<string, number>();
   m.set('all', records.length);
   for (const r of records) {

@@ -1,6 +1,13 @@
 'use server';
 
-import { createDraft, submitForModeration, type GateFailure } from '@nid/module-jd-posting';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import {
+  createDraft,
+  submitForModeration,
+  discardDraft,
+  type GateFailure,
+} from '@nid/module-jd-posting';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
 
 export interface JdActionOk {
@@ -55,4 +62,21 @@ export async function submitJdAction(payload: JdWizardPayload): Promise<JdAction
   const result = submitForModeration(withContext(payload));
   if (!result.ok) return { ok: false, failure: result.failure };
   return { ok: true, jdId: result.jd.id, status: result.jd.status };
+}
+
+/**
+ * Discard a draft from the JD list (plan §M). Only `draft`-status JDs are
+ * discardable — the module rejects anything that has entered moderation or
+ * been published. On failure we bounce back to the list with the reason in a
+ * query param (same convention as the close/withdraw actions); on success we
+ * revalidate the list so the card disappears.
+ */
+export async function discardDraftAction(formData: FormData): Promise<void> {
+  const jdId = (formData.get('jdId') as string | null)?.trim() ?? '';
+  const result = discardDraft(jdId);
+  if (!result.ok) {
+    redirect(`/recruiter/jds?error=${encodeURIComponent(result.reason ?? 'Discard failed')}`);
+  }
+  revalidatePath('/recruiter/jds');
+  redirect('/recruiter/jds');
 }

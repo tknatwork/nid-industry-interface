@@ -64,3 +64,4 @@ coverage/
 # Module mock-data (Milestone 2 prototype — JSON-backed token store)
 .dev-data/
 
+.vercel

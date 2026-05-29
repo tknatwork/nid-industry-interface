@@ -215,6 +215,36 @@ function GateReportCard({ report, roleType }: { report: GateReport; roleType: Jd
         )}
       </div>
 
+      {report.perProgramme && report.perProgramme.length > 0 && (
+        <div style={{ marginTop: 'var(--space-3)', display: 'grid', gap: 'var(--space-2)' }}>
+          <p style={{ fontSize: 'var(--fs-12)', fontWeight: 'var(--fw-600)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Per-programme floors — each gated against its own floor
+          </p>
+          {report.perProgramme.map((p) => {
+            const offered =
+              roleType === 'full-time'
+                ? p.offeredLowPaise && p.offeredHighPaise
+                  ? `${rupees(p.offeredLowPaise)} – ${rupees(p.offeredHighPaise)}`
+                  : '—'
+                : p.offeredStipendPaise
+                  ? rupees(p.offeredStipendPaise)
+                  : '—';
+            return (
+              <Row
+                key={p.programme}
+                label={p.programme === 'masters' ? 'M.Des' : 'B.Des'}
+                value={
+                  <span style={{ display: 'inline-flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {offered} · floor {rupees(p.adjustedFloorPaise)}{' '}
+                    <StatusPill tone={p.passes ? 'success' : 'danger'}>{p.passes ? 'Passes' : 'Below floor'}</StatusPill>
+                  </span>
+                }
+              />
+            );
+          })}
+        </div>
+      )}
+
       {report.flaggedSkillSlugs && report.flaggedSkillSlugs.length > 0 && (
         <p style={{ fontSize: 'var(--fs-12)', color: 'var(--text-secondary)', marginTop: 'var(--space-3)' }}>
           Flagged skills:{' '}

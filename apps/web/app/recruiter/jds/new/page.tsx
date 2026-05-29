@@ -3,6 +3,7 @@ import { RecruiterShell } from '@nid/ui';
 import { CANONICAL_SKILLS, SKILL_GROUPS } from '@nid/module-jd-posting';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
 import { JdWizard } from './JdWizard';
+import { saveNewDraftAction, submitNewJdAction } from './actions';
 
 export const metadata: Metadata = {
   title: 'Post a JD · Recruiter · NID Industry Interface',
@@ -51,7 +52,12 @@ export default function NewJdPage() {
             and finish later, or submit for moderation when ready.
           </p>
 
-          <JdWizard skills={[...CANONICAL_SKILLS]} skillGroups={[...SKILL_GROUPS]} />
+          <JdWizard
+            skills={[...CANONICAL_SKILLS]}
+            skillGroups={[...SKILL_GROUPS]}
+            onSubmit={submitNewJdAction}
+            onSaveDraft={saveNewDraftAction}
+          />
         </div>
       </section>
     </RecruiterShell>

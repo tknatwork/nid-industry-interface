@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { RecruiterShell, Button, StatusPill, type StatusTone } from '@nid/ui';
 import { getJd } from '@nid/module-jd-posting';
-import { listShortlist } from '@nid/module-candidate-browse';
+import { getCandidate } from '@nid/module-candidate-browse';
+import { getInterviewsComplete, listSelected } from '@nid/module-interview-console';
 import { listOffers, cascadeFor, tallyFor, type OfferRecord } from '@nid/module-offer-cascade';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
 import { issueOfferAction, respondAction } from './actions';
@@ -24,19 +25,32 @@ export default async function OffersPage({
   if (!jd) notFound();
   const error = (await searchParams).error;
 
-  const shortlist = listShortlist(jdId);
+  // The Offers cascade is gated on the Interview tab's "Done & Dusted" flag
+  // (plan §S). Until interviews are marked complete, this page shows only a
+  // limited subset — no issue-offer / cascade controls.
+  const interviewsComplete = getInterviewsComplete(jdId);
+
+  // The offer pool is the candidates the recruiter SELECTED in the After phase,
+  // in selection order — not the raw shortlist (plan §S "issue offers to the
+  // selected candidates, ordered from the After phase").
+  const selected = listSelected(jdId);
+  const selectedCandidates = selected
+    .map((p) => {
+      const c = getCandidate(p.studentId);
+      return c ? { studentId: p.studentId, name: c.name, disciplineName: c.disciplineName } : null;
+    })
+    .filter((x): x is { studentId: string; name: string; disciplineName: string } => x !== null);
+
   const offers = listOffers(jdId);
   const offeredStudentIds = new Set(offers.map((o) => o.studentId));
   const declinedIds = new Set(offers.filter((o) => o.status === 'declined').map((o) => o.studentId));
 
-  // Candidates still eligible to receive an offer: shortlisted, not already offered.
-  const offerableShortlist = shortlist.filter((s) => !offeredStudentIds.has(s.candidate.studentId));
-  const shortlistRemaining = offerableShortlist.length;
+  // Selected candidates who don't yet hold an offer — the next-wave pool.
+  const offerablePool = selectedCandidates.filter((s) => !offeredStudentIds.has(s.studentId));
+  const selectedRemaining = offerablePool.length;
 
   const tally = tallyFor(jdId, jd.positions);
-  const cascade = cascadeFor(jdId, jd.positions, shortlistRemaining);
-
-  const nameByStudent = new Map(shortlist.map((s) => [s.candidate.studentId, s.candidate.name]));
+  const nameByStudent = new Map(selectedCandidates.map((s) => [s.studentId, s.name]));
 
   return (
     <RecruiterShell activeNav="offers" companyName={DEMO_RECRUITER.companyName}>
@@ -57,7 +71,7 @@ export default async function OffersPage({
 
           {error && <p role="alert" style={errorBanner}>{decodeURIComponent(error)}</p>}
 
-          {/* Tally */}
+          {/* Tally — always visible, both before and after unlock. */}
           <div
             style={{
               display: 'grid',
@@ -67,91 +81,187 @@ export default async function OffersPage({
             }}
           >
             <Stat label="Open positions" value={tally.positions} />
-            <Stat label="Accepted" value={tally.accepted} />
-            <Stat label="Outstanding" value={tally.outstanding} />
-            <Stat label="Declined" value={tally.declined} />
+            <Stat label="Selected" value={selectedCandidates.length} />
+            {interviewsComplete && <Stat label="Accepted" value={tally.accepted} />}
+            {interviewsComplete && <Stat label="Outstanding" value={tally.outstanding} />}
+            {interviewsComplete && <Stat label="Declined" value={tally.declined} />}
             <Stat label="Filled" value={`${tally.filled} / ${tally.positions}`} />
           </div>
 
-          {/* Cascade status */}
-          <div
-            style={{
-              backgroundColor: cascade.canFloatNextWave ? 'color-mix(in oklch, var(--green-500), white 85%)' : 'var(--surface-panel)',
-              border: '1px solid var(--border-default)',
-              borderRadius: 'var(--card-radius)',
-              padding: 'var(--card-padding)',
-              marginBottom: 'var(--space-6)',
-            }}
-          >
-            {cascade.canFloatNextWave ? (
-              <p style={{ fontSize: 'var(--fs-14)', color: 'var(--text-strong)' }}>
-                <strong>{cascade.availableSlots}</strong> position{cascade.availableSlots === 1 ? '' : 's'} open ·
-                you can float offers to up to <strong>{cascade.nextWaveSize}</strong> more shortlisted candidate
-                {cascade.nextWaveSize === 1 ? '' : 's'} below.
-              </p>
-            ) : (
-              <p style={{ fontSize: 'var(--fs-14)', color: 'var(--text-secondary)' }}>
-                {cascade.reasonIfBlocked ?? 'No further offers can be floated right now.'}
-              </p>
-            )}
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'var(--space-8)' }}>
-            {/* Issued offers */}
-            <div>
-              <p style={{ ...label, marginBottom: 'var(--space-3)' }}>Issued offers</p>
-              {offers.length === 0 ? (
-                <p style={notice}>No offers issued yet.</p>
-              ) : (
-                <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
-                  {offers.map((o) => (
-                    <OfferRow key={o.id} offer={o} jdId={jdId} name={nameByStudent.get(o.studentId) ?? o.studentId} />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Offerable shortlist */}
-            <div>
-              <p style={{ ...label, marginBottom: 'var(--space-3)' }}>Shortlist — not yet offered</p>
-              {offerableShortlist.length === 0 ? (
-                <p style={notice}>
-                  {shortlist.length === 0 ? (
-                    <>No shortlisted candidates. <a href={`/recruiter/jds/${jdId}/applicants`} style={{ color: 'var(--accent)' }}>Shortlist first.</a></>
-                  ) : (
-                    'Everyone shortlisted has an offer.'
-                  )}
-                </p>
-              ) : (
-                <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
-                  {offerableShortlist.map(({ candidate }) => (
-                    <form
-                      key={candidate.studentId}
-                      action={issueOfferAction}
-                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', backgroundColor: 'var(--surface-card)', border: '1px solid var(--card-border)', borderRadius: 'var(--radius-2)', padding: 'var(--space-3) var(--space-4)' }}
-                    >
-                      <input type="hidden" name="jdId" value={jdId} />
-                      <input type="hidden" name="studentId" value={candidate.studentId} />
-                      <input type="hidden" name="positions" value={jd.positions} />
-                      <input type="hidden" name="shortlistRemaining" value={shortlistRemaining} />
-                      {jd.baseMinPaise !== undefined && <input type="hidden" name="ctcPaise" value={jd.baseMinPaise} />}
-                      {jd.stipendPaise !== undefined && <input type="hidden" name="stipendPaise" value={jd.stipendPaise} />}
-                      <div>
-                        <p style={{ fontSize: 'var(--fs-16)', fontWeight: 'var(--fw-500)', color: 'var(--text-strong)' }}>{candidate.name}</p>
-                        {declinedIds.has(candidate.studentId) && <p style={{ fontSize: 'var(--fs-12)', color: 'var(--text-secondary)' }}>previously declined</p>}
-                      </div>
-                      <Button type="submit" size="sm" disabled={!cascade.canFloatNextWave}>
-                        Issue offer
-                      </Button>
-                    </form>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          {interviewsComplete ? (
+            <UnlockedOffers
+              jdId={jdId}
+              positions={jd.positions}
+              selectedRemaining={selectedRemaining}
+              offers={offers}
+              offerablePool={offerablePool}
+              declinedIds={declinedIds}
+              nameByStudent={nameByStudent}
+              {...(jd.baseMinPaise !== undefined ? { ctcPaise: jd.baseMinPaise } : {})}
+              {...(jd.stipendPaise !== undefined ? { stipendPaise: jd.stipendPaise } : {})}
+            />
+          ) : (
+            <LockedNotice jdId={jdId} selectedCount={selectedCandidates.length} />
+          )}
         </div>
       </section>
     </RecruiterShell>
+  );
+}
+
+/** Pre-complete: limited subset + the locked message (plan §S "before complete"). */
+function LockedNotice({ jdId, selectedCount }: { jdId: string; selectedCount: number }) {
+  return (
+    <div
+      style={{
+        backgroundColor: 'var(--surface-panel)',
+        border: '1px dashed var(--border-emphasized)',
+        borderRadius: 'var(--card-radius)',
+        padding: 'var(--space-8)',
+        textAlign: 'center',
+        display: 'grid',
+        gap: 'var(--space-3)',
+        justifyItems: 'center',
+      }}
+    >
+      <StatusPill tone="neutral">Offers locked</StatusPill>
+      <p style={{ fontSize: 'var(--fs-18)', fontWeight: 'var(--fw-600)', color: 'var(--text-strong)' }}>
+        Offers unlock once interviews are marked complete
+      </p>
+      <p style={{ fontSize: 'var(--fs-14)', color: 'var(--text-secondary)', maxWidth: '46ch' }}>
+        Finish recording round outcomes and confirm your selected candidates on the Interview tab. The
+        “Done &amp; Dusted” confirmation there opens the offer cascade — you’ll then float offers to your{' '}
+        {selectedCount === 0 ? 'selected candidates' : `${selectedCount} selected candidate${selectedCount === 1 ? '' : 's'}`}, in order.
+      </p>
+      <a href={`/recruiter/jds/${jdId}/interviews`} style={{ textDecoration: 'none' }}>
+        <Button size="sm">Go to the Interview tab →</Button>
+      </a>
+    </div>
+  );
+}
+
+/** Post-complete: the full cascade (plan §S "after complete" + 3-wave cap). */
+function UnlockedOffers({
+  jdId,
+  positions,
+  selectedRemaining,
+  offers,
+  offerablePool,
+  declinedIds,
+  nameByStudent,
+  ctcPaise,
+  stipendPaise,
+}: {
+  jdId: string;
+  positions: number;
+  selectedRemaining: number;
+  offers: readonly OfferRecord[];
+  offerablePool: readonly { studentId: string; name: string; disciplineName: string }[];
+  declinedIds: ReadonlySet<string>;
+  nameByStudent: ReadonlyMap<string, string>;
+  ctcPaise?: number;
+  stipendPaise?: number;
+}) {
+  const cascade = cascadeFor(jdId, positions, selectedRemaining);
+
+  return (
+    <>
+      {/* Cascade status — surfaces the wave cap (Wave X of 3 / waves exhausted), §S. */}
+      <div
+        style={{
+          backgroundColor: cascade.canFloatNextWave
+            ? 'color-mix(in oklch, var(--green-500), white 85%)'
+            : cascade.wavesExhausted
+              ? 'var(--pill-warning-bg)'
+              : 'var(--surface-panel)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--card-radius)',
+          padding: 'var(--card-padding)',
+          marginBottom: 'var(--space-6)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap', marginBottom: 'var(--space-2)' }}>
+          <StatusPill tone={cascade.wavesExhausted ? 'warning' : 'info'}>
+            Wave {Math.min(cascade.currentWave + (cascade.canFloatNextWave ? 1 : 0), cascade.maxWaves) || 1} of {cascade.maxWaves}
+          </StatusPill>
+          {cascade.currentWave > 0 && (
+            <span style={{ fontSize: 'var(--fs-12)', color: 'var(--text-secondary)' }}>
+              {cascade.currentWave} wave{cascade.currentWave === 1 ? '' : 's'} floated so far
+            </span>
+          )}
+        </div>
+        {cascade.canFloatNextWave ? (
+          <p style={{ fontSize: 'var(--fs-14)', color: 'var(--text-strong)' }}>
+            <strong>{cascade.availableSlots}</strong> position{cascade.availableSlots === 1 ? '' : 's'} open ·
+            you can float wave <strong>{cascade.nextWave}</strong> to up to <strong>{cascade.nextWaveSize}</strong>{' '}
+            more selected candidate{cascade.nextWaveSize === 1 ? '' : 's'} below.
+          </p>
+        ) : (
+          <p style={{ fontSize: 'var(--fs-14)', color: 'var(--text-secondary)' }}>
+            {cascade.reasonIfBlocked ?? 'No further offers can be floated right now.'}
+          </p>
+        )}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'var(--space-8)' }}>
+        {/* Issued offers */}
+        <div>
+          <p style={{ ...label, marginBottom: 'var(--space-3)' }}>Issued offers</p>
+          {offers.length === 0 ? (
+            <p style={notice}>No offers issued yet.</p>
+          ) : (
+            <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
+              {offers.map((o) => (
+                <OfferRow key={o.id} offer={o} jdId={jdId} name={nameByStudent.get(o.studentId) ?? o.studentId} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Selected pool — not yet offered */}
+        <div>
+          <p style={{ ...label, marginBottom: 'var(--space-3)' }}>Selected — not yet offered</p>
+          {offerablePool.length === 0 ? (
+            <p style={notice}>
+              {nameByStudent.size === 0 ? (
+                <>
+                  No selected candidates.{' '}
+                  <a href={`/recruiter/jds/${jdId}/interviews`} style={{ color: 'var(--accent)' }}>
+                    Select candidates on the Interview tab.
+                  </a>
+                </>
+              ) : (
+                'Everyone selected has an offer.'
+              )}
+            </p>
+          ) : (
+            <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
+              {offerablePool.map((candidate) => (
+                <form
+                  key={candidate.studentId}
+                  action={issueOfferAction}
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', backgroundColor: 'var(--surface-card)', border: '1px solid var(--card-border)', borderRadius: 'var(--radius-2)', padding: 'var(--space-3) var(--space-4)' }}
+                >
+                  <input type="hidden" name="jdId" value={jdId} />
+                  <input type="hidden" name="studentId" value={candidate.studentId} />
+                  <input type="hidden" name="positions" value={positions} />
+                  <input type="hidden" name="shortlistRemaining" value={selectedRemaining} />
+                  {ctcPaise !== undefined && <input type="hidden" name="ctcPaise" value={ctcPaise} />}
+                  {stipendPaise !== undefined && <input type="hidden" name="stipendPaise" value={stipendPaise} />}
+                  <div>
+                    <p style={{ fontSize: 'var(--fs-16)', fontWeight: 'var(--fw-500)', color: 'var(--text-strong)' }}>{candidate.name}</p>
+                    {declinedIds.has(candidate.studentId) && <p style={{ fontSize: 'var(--fs-12)', color: 'var(--text-secondary)' }}>previously declined</p>}
+                  </div>
+                  <Button type="submit" size="sm" disabled={!cascade.canFloatNextWave}>
+                    Issue offer
+                  </Button>
+                </form>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 

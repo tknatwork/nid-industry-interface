@@ -5,18 +5,20 @@
   "type": "module",
   "description": "JD posting module — structured-schema wizard, draft persistence, pre-publish stipend-floor gate (Phase 4.2).",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "echo 'lint placeholder'",
-    "test": "echo 'no tests yet'"
+    "test": "vitest run"
   },
   "dependencies": {
     "@nid/core": "workspace:*",
     "zod": "3.23.8"
   },
   "devDependencies": {
-    "typescript": "5.6.3"
+    "typescript": "5.6.3",
+    "vitest": "2.1.8"
   }
 }

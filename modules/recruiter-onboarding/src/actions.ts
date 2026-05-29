@@ -1,12 +1,14 @@
-import { applyFormSchema, type ApplicationTokenRecord, type RecruiterStatus } from './types';
+import { applyFormSchema, type ApplicationTicketRecord, type RecruiterStatus } from './types';
 import {
-  getTokenStatus as storeGetTokenStatus,
-  listOutboxForToken as storeListOutbox,
-  listAllTokens as storeListAll,
+  getTicketStatus as storeGetTicketStatus,
+  listOutboxForTicket as storeListOutbox,
+  listAllTickets as storeListAll,
   listOutboxAll as storeListOutboxAll,
   submitApplication as storeSubmitApplication,
-  advanceTokenStatus as storeAdvance,
+  advanceTicketStatus as storeAdvance,
+  payTicketFee as storePayFee,
   type SubmitResult,
+  type PayResult,
 } from './store';
 
 export interface SubmitOutcome {
@@ -40,16 +42,16 @@ export function submit(input: unknown): SubmitApplyResult {
   return { ok: true, result };
 }
 
-export function lookup(tokenId: string): ApplicationTokenRecord | null {
-  const cleaned = tokenId.trim().toUpperCase();
-  return storeGetTokenStatus(cleaned);
+export function lookup(ticketId: string): ApplicationTicketRecord | null {
+  const cleaned = ticketId.trim().toUpperCase();
+  return storeGetTicketStatus(cleaned);
 }
 
-export function outboxFor(tokenId: string) {
-  return storeListOutbox(tokenId.trim().toUpperCase());
+export function outboxFor(ticketId: string) {
+  return storeListOutbox(ticketId.trim().toUpperCase());
 }
 
-export function listAll(): readonly ApplicationTokenRecord[] {
+export function listAll(): readonly ApplicationTicketRecord[] {
   return storeListAll();
 }
 
@@ -58,10 +60,21 @@ export function listOutboxAll() {
 }
 
 export function advance(input: {
-  tokenId: string;
+  ticketId: string;
   toStatus: RecruiterStatus;
   note?: string | undefined;
   feeAmountPaise?: number | undefined;
-}): ApplicationTokenRecord | null {
-  return storeAdvance({ ...input, tokenId: input.tokenId.trim().toUpperCase() });
+}): ApplicationTicketRecord | null {
+  return storeAdvance({ ...input, ticketId: input.ticketId.trim().toUpperCase() });
+}
+
+/**
+ * Record a (mock) participation-fee payment for a `fee-due` ticket and
+ * generate its receipt. Used by the post-submit demo payment screen.
+ */
+export function pay(input: {
+  ticketId: string;
+  method?: string | undefined;
+}): PayResult | null {
+  return storePayFee({ ...input, ticketId: input.ticketId.trim().toUpperCase() });
 }

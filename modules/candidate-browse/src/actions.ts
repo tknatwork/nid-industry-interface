@@ -102,6 +102,8 @@ function toView(s: CandidateView): CandidateView {
     portfolioUrl: s.portfolioUrl,
     portfolioHost: s.portfolioHost,
     cvAvailable: s.cvAvailable,
+    ...(s.cvUrl ? { cvUrl: s.cvUrl } : {}),
+    ...(s.presentationUrl ? { presentationUrl: s.presentationUrl } : {}),
     ...(s.statementOfIntent ? { statementOfIntent: s.statementOfIntent } : {}),
   };
 }

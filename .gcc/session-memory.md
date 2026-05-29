@@ -1,14 +1,40 @@
 ---
 name: nid-industry-interface-session-memory
 project: nid-industry-interface
-last_updated: 2026-05-29
-status: demo-complete — all discussed plan flows functioning on mock data
-current_module: (whole 4-portal demo end-to-end on mock data)
+last_updated: 2026-05-30
+status: Round 2 redesign built + adversarially verified GREEN — on branch feat/recruiter-portal-round2 (Wave 3 commit)
+current_module: (Round 2 recruiter-portal redesign — pre-login, dashboard, interview ops, gated offers)
 ---
 
 # Session Memory — NID Industry Interface (project-local)
 
 Project-local session memory. Fully isolated from any global GCC layer.
+
+## Round 2 — recruiter-portal redesign + Wave 2 adversarial fix-loop (2026-05-30)
+
+**Branch:** `feat/recruiter-portal-round2` (106 changed files — all of Round 2; committed in Wave 3).
+**Drove from:** a deep walkthrough of the live app → a punch list across pre-login + post-login surfaces (plan Round 2 §A–S). Built via a dynamic multi-agent Workflow: Wave 0 froze shared contracts, Waves 1/1b fanned out the surfaces, Wave 2 = adversarial verification + fix-loop, Wave 3 = docs + commit.
+
+**What shipped (Waves 0/1/1b):**
+- **Pre-login:** nav relabel (Process · Timeline · Disciplines · Contact · Login); nid.edu-style footer; new `Overlay`/`Accordion`/`Tabs`/`Marquee`/`ProgressTracker`/`VoiceInput` atoms; homepage 2-col hero + auto-scrolling `RecruiterLogoWall` (simple-icons); Process guidelines section; Timeline (dual fee ₹15k + ₹5k GP, per-activity start/end, add-to-calendar, academic-calendar overlay, ghost Login); Disciplines→20 (tabbed brochure + bento hover); Contact simplified; **Apply** (asterisks + mock OTP + Token→**Ticket** rename + pay→receipt→track overlay); **Login** + demo session; Resources overlays keep logged-in recruiters in the dashboard.
+- **Dashboard:** live `cycle-phase` tag + rolling banner; brochure overlay; in-dashboard contacts (placement head + coordinator); institution-verified strike tag (0/3); profile/"your setup"; Stats+Analytics merge (`/analytics`→`/stats`); JD list side-panel + draft edit/discard; **JD wizard upgrade** — upload→parse→autofill, sticky gamified progress, voice, **split B.Des/M.Des compensation**, salary-predictor nudge, role-type→expected-work, evaluation task.
+- **Interview ops:** real per-round outcomes + coordination signals (`interview-console` round-progress store); per-candidate slot interviewers; scoped **student-coordinator** `/admin/coordinator/*` (first RBAC) with recruiter↔coordinator shared-store sync; Interview tab Before/During/After; gated **Offers** (locked until "Done & Dusted") + 3-wave cascade cap.
+
+**Wave 2 — adversarial verification + fix-loop (all confirmed findings fixed):**
+- **Split-compensation floor gate (HIGH+MEDIUM+LOW) — the crux.** Client predictor and server gate disagreed in opposite directions. Unified onto ONE invariant — **each programme gated against its OWN floor** — via a shared `evaluateProgrammeFloors` helper (server: `runStipendGate` + `buildGateReport`; admin report gains `perProgramme`) and a per-programme client `computePrediction`/`worsePrediction`. A 2nd re-verify pass caught a subtler gap: the client's `< 0.9×floor` block boundary ≠ the server's `< floor`. Fixed via an explicit `Prediction.blocks` flag — **the client now blocks at exactly the server's boundary**; mild/severe is message tone only. Regression test: `modules/jd-posting/test/stipend-split.test.ts` (4 cases). The M.Des→top-level mirror is now display-only (gate ignores it in split mode).
+- **Offers write-lock (§S):** `issueOfferAction` re-checks `getInterviewsComplete(jdId)` server-side (lock authoritative on the write path, not just render).
+- **Coordinator RBAC (§Q):** new `apps/web/middleware.ts` confines a coordinator (`NID_DEMO_ADMIN_ROLE=coordinator`) to `/admin/coordinator/*` — a layout can't read the path; middleware can. Reuses `isCoordinator()` (single role source of truth). Documented in `.env.example`.
+- **Demo-fidelity:** receipt now queues email **+ SMS**; stale `etaBack` cleared when conflict clears (runningLateMin independent); one slot assignment seeded (`jd_00001`/`slot_0001`/`stu_0005`) so the During-tab sync demo works out of the box; coordinator name aligned to the directory ('Aanya Kulkarni'); footer drops removed `/contact/*` links + "Brochures"; `activeNav` on Timeline/Disciplines; `stats` reads `readRecruiterSession()`.
+
+**Verification (green):** `tsc` 14 projects ✓ · vitest `@nid/core` 29/29 + `@nid/module-jd-posting` 4/4 ✓ · boundaries (14 pkgs) ✓ · contracts (10 modules) ✓ · residual renamed-`token` identifiers 0 ✓ · `next build` 67/67 + Middleware registered ✓. Two re-verify rounds (4 adversarial verifiers each); offers-lock + RBAC + demo-fidelity passed exhaustive tracing; the only blocking finding (client/server boundary) is fixed + numerically reconfirmed.
+
+**GOTCHA (carry forward):** the split-comp floor invariant lives in `evaluateProgrammeFloors` — the client predictor MUST mirror its boundary (`offered < adjustedFloor` blocks). If you touch one side, touch the other; the test pins the server side. New vitest surface: jd-posting now runs `vitest run` (devDep added) — `pnpm -r test` covers both core + jd-posting.
+
+**Next step:** Wave 3 commit on `feat/recruiter-portal-round2` (this). Then await the user for push/Vercel deploy (optional) or the deferred larger efforts below. Do NOT auto-continue.
+
+---
+
+### Prior milestone (2026-05-29) — demo-complete on mock data
 
 ## Last session
 

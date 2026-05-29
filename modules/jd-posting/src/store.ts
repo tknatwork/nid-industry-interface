@@ -197,6 +197,29 @@ export function updateJd(id: string, patch: Partial<JdRecord>): JdRecord | null 
   return updated;
 }
 
+/**
+ * Replace a record's content wholesale (preserving its id), rather than the
+ * shallow-merge `updateJd` does. Used for draft edits, where the new authored
+ * content must fully supersede the old — so optional fields the recruiter
+ * cleared (e.g. an evaluation task they turned off) don't linger via a merge.
+ */
+export function replaceJd(id: string, next: Omit<JdRecord, 'id'>): JdRecord | null {
+  const state = loadState();
+  if (!state.jds[id]) return null;
+  const replaced: JdRecord = { ...next, id };
+  persist({ ...state, jds: { ...state.jds, [id]: replaced } });
+  return replaced;
+}
+
+export function deleteJd(id: string): boolean {
+  const state = loadState();
+  if (!state.jds[id]) return false;
+  const next: Record<string, JdRecord> = { ...state.jds };
+  delete next[id];
+  persist({ ...state, jds: next });
+  return true;
+}
+
 export function getJdById(id: string): JdRecord | null {
   return loadState().jds[id] ?? null;
 }

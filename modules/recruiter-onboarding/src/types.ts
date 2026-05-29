@@ -63,8 +63,22 @@ export interface StatusHistoryEntry {
   readonly note?: string;
 }
 
-export interface ApplicationTokenRecord {
-  readonly tokenId: string;
+/**
+ * GST-compliant participation-fee receipt, generated when payment is recorded.
+ * Mocked for the prototype demo — no real gateway, no real PFMS settlement —
+ * but shaped like the PDF/A receipt the recruiter will ultimately download
+ * from `/recruiter/receipts` (plan Phase 3.3 + 6 payment-compliance notes).
+ */
+export interface PaymentReceipt {
+  readonly receiptId: string; // e.g. NID-RCPT-2026-A-0042
+  readonly amountPaise: number;
+  readonly paidAt: string; // ISO 8601
+  readonly method: string; // mock gateway label, e.g. "Demo gateway (UPI)"
+  readonly gatewayRef: string; // mock gateway transaction reference
+}
+
+export interface ApplicationTicketRecord {
+  readonly ticketId: string;
   readonly cycleId: string;
   readonly companyName: string;
   readonly sector: string;
@@ -74,15 +88,22 @@ export interface ApplicationTokenRecord {
   readonly websiteUrl?: string;
   readonly contactName: string;
   readonly contactPhone: string;
+  /** Mock phone-OTP verification at apply time (plan §G — demo, no real SMS). */
+  readonly phoneVerified: boolean;
   readonly status: RecruiterStatus;
   readonly statusHistory: readonly StatusHistoryEntry[];
   readonly createdAt: string;
+  /** Live participation-fee amount in paise — set when the invoice is issued. */
   readonly feeAmountPaise?: number;
+  /** Present once the fee is paid (mock). Mirrors the generated receipt's id. */
+  readonly receiptId?: string;
+  /** Full receipt record, generated on payment (mock). */
+  readonly receipt?: PaymentReceipt;
 }
 
 export interface OutboxMessage {
   readonly id: string;
-  readonly tokenId: string;
+  readonly ticketId: string;
   readonly channel: 'email' | 'sms' | 'whatsapp';
   readonly to: string;
   readonly templateId: string;
