@@ -44,9 +44,19 @@ modules:
   - student-portal       # opt-in + eligible feed + tracker + REAL offer inbox
   - ml-jd-analyzer       # Python worker (services/) + JdScopeAnalyzer port + adapter; graceful fallback
   - admin-accountability # health · redressal (+student fileRedressal + transparencyFor) · blacklist · payment-cell · conduct · offer-adjustments · api-keys
-  - recruiter-engagement # PPT (4.3) + placement-head meetings (4.12); book/flip-supply
+  - recruiter-engagement # PPT (4.3) + placement-head meetings (4.12); book + admin publish (supply)
   # native-harness: scripts/check-boundaries.mjs + check-module-contracts.mjs + eslint.config.mjs + .github/workflows/ci.yml + lefthook.yml
   # Web pages cover all 4 portals (public/recruiter/admin/student). 10 workspace modules + ml worker.
+
+# Phase-2 federation APIs live: apps/web/app/api/{public,v1} + apps/web/lib/federation.ts.
+#   public feeds (cycles.json/.ics, recruiters/past.json) · institution read (x-api-key,
+#   per-campus) + POST /announcements · recruiter read-only (Bearer keyId, validated against
+#   the live api-keys store → revoked key = 401) · /api/v1/openapi.json. No student PII on
+#   the recruiter side; no write API on the recruiter side (deliberate guardrail).
+# Admin publishing UIs: /admin/engagement opens PPT windows + meeting slots; /admin/slots
+#   opens interview slots. (Cycle/content editing still display-only — future.)
+# Tests: vitest in @nid/core (16 unit tests over the pure guardrails); `pnpm -r test` in CI.
+# A11y: skip-link + :focus-visible + prefers-reduced-motion + lang + Devanagari + aria + main-id; no zoom-lock.
 
 # Demo coverage now complete: every nav link in every shell resolves; the public
 # site (disciplines/cycles/campuses/recruiters/contact/reports/microsites),

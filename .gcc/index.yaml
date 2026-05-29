@@ -167,3 +167,31 @@ entries:
     branch: main
     intent: Demo-completeness — public + admin + student pages via 3 PARALLEL AGENTS (disjoint route trees), verified together
     note: 28 files. Public /recruiters+/contact+/reports+/r microsites+transparency; admin /cycles+/content+/offer-adjustments+/api-keys+/student-conduct; student /report-company (files into admin redressal — verified 2→3)+/conduct+/coordinator+/profile+/feedback. pnpm -r typecheck · boundaries (13) · contracts (9) · lint clean; all 22 routes 200. Parallel-agent pattern: main builds shared module/shell foundation + commits, agents build disjoint pages only (no commits/installs), main verifies + commits.
+  - id: 31
+    date: 2026-05-29
+    hash: "b572c75"
+    branch: main
+    intent: Record demo-completeness pass (slices 40-46) + parallel-agent pattern in GCC
+  - id: 32
+    date: 2026-05-29
+    hash: "0c28778"
+    branch: main
+    intent: Phase-2 federation APIs — public feeds + institution (key) + recruiter (read-only bearer) + OpenAPI
+    note: federation-as-lib (apps/web/lib/federation.ts) + app/api route handlers; built by a background agent. Recruiter bearer validated against the live admin-accountability api-keys store → revoked key_ghost_01 returns 401 (revocable-access guardrail). No student PII on recruiter side. Verified auth gates + integrated typecheck.
+  - id: 33
+    date: 2026-05-29
+    hash: "49acb3a"
+    branch: main
+    intent: Admin publishing UIs — publishPptWindow + publishMeetingSlot + /admin/engagement
+    note: recruiter-engagement gains the supply-side publish actions; AdminShell nav +Interview slots +PPT & meetings. Verified supply grows 3→4 + Zod validation.
+  - id: 34
+    date: 2026-05-29
+    hash: "70a2567"
+    branch: main
+    intent: A11y (prefers-reduced-motion) + vitest test pass (16 @nid/core unit tests) + CI test step
+    note: Most a11y (skip-link/focus-visible/lang/Devanagari/main-id/aria) was already in place; added reduced-motion. Tests cover stipend-floor/health-score/offer-cascade pure guardrails. pnpm -r test wired into CI.
+  - id: 35
+    date: 2026-05-29
+    hash: "0e02624"
+    branch: main
+    intent: Add .claude/launch.json (dev-server configs) — web :3100, ml-worker :8000, drizzle-studio :4983

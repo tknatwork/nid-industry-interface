@@ -13,8 +13,29 @@ Project-local session memory. Fully isolated from any global GCC layer.
 ## Last session
 
 **Date:** 2026-05-29
-**Phase:** DEMO-COMPLETE — every discussed plan flow is now a functioning mock-data page across all 4 portals (public · recruiter · admin · student). 10 modules + the Python ML worker.
-**Latest commit:** `8e7521f feat(demo): public + admin + student completeness (parallel-agent batch)`
+**Phase:** DEMO-COMPLETE + Phase-2 federation APIs + admin publishing + a11y + tests. 10 modules + Python ML worker.
+**Latest commit:** `0e02624 chore: add .claude/launch.json — dev server configs`
+
+## Latest round (federation + publishing + a11y + tests)
+
+- **Phase-2 federation APIs** (`apps/web/app/api/**` + `apps/web/lib/federation.ts`, built by a
+  background agent): public feeds (cycles.json/.ics, recruiters/past.json), institution read
+  (`x-api-key` per-campus) + `POST /announcements`, recruiter **read-only** (`Bearer <keyId>`),
+  `/api/v1/openapi.json`. Recruiter bearer is validated against the **live** admin-accountability
+  api-keys store → revoked `key_ghost_01` returns 401 (revocable-access guardrail). No student PII /
+  no write API on the recruiter side. Demo keys: institution `nid-inst-ahmedabad-demo`; recruiter
+  `key_acme_01` (active), `key_ghost_01` (revoked).
+- **Admin publishing**: `recruiter-engagement.publishPptWindow` + `publishMeetingSlot`;
+  `/admin/engagement` opens PPT windows + meeting slots; `/admin/slots` opens interview slots.
+- **A11y**: added `prefers-reduced-motion` to globals.css (skip-link/focus-visible/lang/Devanagari/
+  aria/`main#main`/no-zoom-lock were already present).
+- **Tests**: vitest in `@nid/core` — 16 unit tests over stipend-floor / health-score / offer-cascade;
+  `pnpm -r test` wired into CI. Run with `pnpm --filter @nid/core test`.
+- **`.claude/launch.json`**: dev-server configs (web :3100, ml-worker :8000, drizzle-studio :4983 —
+  drizzle fails without a live DB). Start via the preview manager / `preview_start`.
+
+GOTCHA reinforced: **Turbopack doesn't hot-register new `app/api/*` route dirs** — restart the web
+server (preview_stop + preview_start, or kill+rerun) after adding API routes, else they 404.
 
 ## Demo-completeness pass (slices 40–46, after Milestone 4)
 
@@ -147,21 +168,21 @@ StatusPill, Field, PageShell, AdminShell, RecruiterShell, StudentShell.
 - `.github/workflows/ci.yml` — static `run:` steps only (no `${{ }}` → shell), clears the
   command-injection scanner that blocked the earlier attempt. `lefthook.yml` is opt-in (no auto-install).
 
-## Next step — demo is feature-complete on mock data; ask the user for direction
+## Next step — demo + Phase-2 read APIs + publishing + a11y + tests all done; ask the user
 
-Every discussed plan flow is now a functioning page (slices 36–46). Student-conduct, recruiter
-`/stats`, the calculator, PPT/meetings, JD close/withdraw, the public site, and the full admin
-governance suite are all built. **Do not auto-continue** (Phase 9.3). Ask which direction next.
-Candidates, none requested yet:
+Slices 36–50 are complete: the whole 4-portal demo, federation read APIs (+ one write endpoint),
+admin publishing, a11y (reduced-motion), and a vitest unit-test pass. **Do not auto-continue**
+(Phase 9.3). Ask which direction next. Candidates, none requested yet:
 
-1. **Real infrastructure swap** — Drizzle/Postgres behind the module APIs (the swap-later seam is
-   ready in every module store), auth/SSO (replaces the demo-recruiter/demo-student constants),
-   Langfuse wiring on the AIProvider adapter.
-2. **Phase 2 APIs** — institution-side (read) + recruiter-side (read-only) federation APIs + SDKs.
-3. **Polish** — accessibility sweep (WCAG AA), real tests (the harness has the slots + CI gate),
-   wire the lefthook hooks locally, replace the stdlib ML worker with FastAPI/Pydantic.
-4. **Admin publishing UIs** for the things currently seeded (PPT/meeting windows, slot calendar,
-   content blocks made truly editable).
+1. **Real infrastructure swap** — Drizzle/Postgres behind the module stores (swap-later seam ready),
+   auth/SSO (replaces demo-recruiter/demo-student constants), Langfuse on the AIProvider adapter.
+2. **Federation Phase-2 writes + SDKs** — institution-side write endpoints beyond /announcements,
+   webhooks (HMAC), and the `@nid/industry-embed` / `@nid/industry-recruiter-sdk` packages.
+3. **Deeper tests** — module integration tests (the JSON stores), a light Playwright E2E over the
+   5 critical recruiter paths; raise coverage on `packages/core`.
+4. **Editable cycle/content admin** — make `/admin/cycles` + `/admin/content` truly editable
+   (currently display-only), and wire the lefthook hooks locally.
+5. **Production ML** — replace the stdlib `services/ml-jd-analyzer` with FastAPI + Pydantic + ruff/mypy.
 
 ## How to run the full demo
 
