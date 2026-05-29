@@ -13,8 +13,22 @@ Project-local session memory. Fully isolated from any global GCC layer.
 ## Last session
 
 **Date:** 2026-05-29
-**Phase:** DEMO-COMPLETE + federation read/write APIs + webhooks + LIVE Postgres (Drizzle Studio) + editable admin. **11 modules** + Python ML worker.
-**Latest commit:** `ed29877 feat(demo): editable cycle + content admin (admin-cms module)`
+**Phase:** 🟢 LIVE ON VERCEL + 3-up playground. Full demo deployed from a public GitHub repo. 11 modules + Python ML worker.
+**Latest commit:** `e07a2a9 chore(deploy): vercel.json — web service rooted at apps/web (live on Vercel)`
+
+## 🟢 Live demo (the headline)
+
+- **Live URL:** https://nid-industry-interface.vercel.app
+- **3-up playground:** https://nid-industry-interface.vercel.app/playground — recruiter (top, full width) + institution/admin & student (below, side-by-side) in same-origin iframes against ONE live backend. Act in one pane, reload another to see the cross-portal loop (student accepts offer → reload recruiter → wave cascade shows filled 1/2). Server-Action forms post inside the panes.
+- **Public repo:** https://github.com/tknatwork/nid-industry-interface (its own repo; only `.env.example` dummies tracked — secret-scanned before going public).
+
+### How the deploy works (read before touching it)
+- **Serverless fs fix:** all 10 mock stores write to `/tmp/nid-dev-data` when `process.env['VERCEL']` is set (Vercel fs is read-only except /tmp). State persists within a warm instance + re-seeds on cold start (clean slate per demo session). Single-instance caveat under heavy concurrency — fine for a solo walkthrough; the real-DB swap (Drizzle/KV) is the upgrade.
+- `/recruiter`, `/admin`, `/student` have **force-dynamic segment layouts** so pages read live `/tmp` state per request (not a build-time static snapshot).
+- `next.config` gates `output:'standalone'` OFF on Vercel + transpiles all 10 modules. `vercel.json` uses `experimentalServices.web.root = apps/web` (pnpm-monorepo app root) — this is what made the build detect Next.
+- **Redeploy:** `vercel deploy --prod --yes --scope tushar-kant-naiks-projects` (GitHub auto-connect is NOT set up — Vercel's GitHub app isn't installed on the account; push alone does NOT redeploy. Either run the CLI or install the Vercel GitHub app + set Root Directory = apps/web in the dashboard for push-deploys).
+- **CI:** `.github/workflows/ci.yml` is `workflow_dispatch`-only (showcase artifact, not an active pipeline — no auto-runs). The ML Python worker is NOT deployed on Vercel → the JD analyzer uses its graceful deterministic fallback live.
+- GitHub Dependabot flags transitive-dep advisories (mock-data demo; informational — ignore or disable in repo settings).
 
 ## Latest round — Drizzle Studio (live DB) + federation Phase-2 + editable admin
 
