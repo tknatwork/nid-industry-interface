@@ -126,3 +126,44 @@ entries:
     branch: main
     intent: Milestone 4 — admin accountability (health scores · redressal · blacklist · payment-cell)
     note: 8th module (admin-accountability), depends on @nid/core only. Score derived not stored (70 baseline + core delta). THE loop verified: deciding a redressal emits a HealthEvent → Pixel Forge 42 (watch) → 27 (restricted). Seed spans all 5 bands. AdminShell nav +blacklist +payment-cell (prior health-scores/redressal links now resolve). Harness (12 pkgs, 8 modules) + lint + typecheck clean; 6 admin routes 200. Completes all 4 post-recruiter plan options.
+  - id: 24
+    date: 2026-05-29
+    hash: "deaf9e2"
+    branch: main
+    intent: Record admin-accountability slice (milestone 4, task 39) in GCC
+  - id: 25
+    date: 2026-05-29
+    hash: "c35b8be"
+    branch: main
+    intent: Demo-completeness — recruiter nav completeness (stats, candidates, interviews, offers launchers)
+    note: Resolves the 4 RecruiterShell nav 404s. /recruiter/stats = your-stats-on-return via admin-accountability.
+  - id: 26
+    date: 2026-05-29
+    hash: "8756d59"
+    branch: main
+    intent: Demo-completeness — recruiter scheduling (PPT 4.3 + meetings 4.12) + minimum-stipend calculator (4.15)
+    note: 9th module recruiter-engagement (PPT windows + meeting slots, book/flip-supply). Shared StipendCalculator server component (real floor matrix), public + recruiter routes.
+  - id: 27
+    date: 2026-05-29
+    hash: "1c05731"
+    branch: main
+    intent: Demo-completeness — JD close-with-collective-justification (4.16) + withdrawal (5.12) + shortlist page (4.5) + analytics (4.13)
+    note: jd-posting closeJd (mandatory collective message) + withdrawJd (reason category). Verified close blocked w/o message; withdraw sets category.
+  - id: 28
+    date: 2026-05-29
+    hash: "c5cc8e1"
+    branch: main
+    intent: Demo-completeness — public surfaces (disciplines catalog, cycles, campuses; Phase 3.2)
+    note: apps/web/lib/public-content.ts seed; static-rendered.
+  - id: 29
+    date: 2026-05-29
+    hash: "4a66834"
+    branch: main
+    intent: Demo-completeness — extend admin-accountability (conduct/adjustments/api-keys/fileRedressal/transparencyFor) + shell navs (parallel-batch foundation)
+    note: Built by main agent FIRST so 3 parallel agents could work on disjoint page files without shared-file conflicts.
+  - id: 30
+    date: 2026-05-29
+    hash: "8e7521f"
+    branch: main
+    intent: Demo-completeness — public + admin + student pages via 3 PARALLEL AGENTS (disjoint route trees), verified together
+    note: 28 files. Public /recruiters+/contact+/reports+/r microsites+transparency; admin /cycles+/content+/offer-adjustments+/api-keys+/student-conduct; student /report-company (files into admin redressal — verified 2→3)+/conduct+/coordinator+/profile+/feedback. pnpm -r typecheck · boundaries (13) · contracts (9) · lint clean; all 22 routes 200. Parallel-agent pattern: main builds shared module/shell foundation + commits, agents build disjoint pages only (no commits/installs), main verifies + commits.

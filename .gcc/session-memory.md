@@ -2,8 +2,8 @@
 name: nid-industry-interface-session-memory
 project: nid-industry-interface
 last_updated: 2026-05-29
-status: milestone-4-student-portal-complete
-current_module: (recruiter flow + student portal end-to-end on mock data)
+status: demo-complete — all discussed plan flows functioning on mock data
+current_module: (whole 4-portal demo end-to-end on mock data)
 ---
 
 # Session Memory — NID Industry Interface (project-local)
@@ -13,8 +13,35 @@ Project-local session memory. Fully isolated from any global GCC layer.
 ## Last session
 
 **Date:** 2026-05-29
-**Phase:** Milestone 4 — COMPLETE. All 4 post-recruiter plan options shipped (student portal · AI analyzer · native harness · admin accountability).
-**Latest commit:** `6c6dbfe feat(milestone-4): admin accountability — health scores, redressal, blacklist, payment-cell`
+**Phase:** DEMO-COMPLETE — every discussed plan flow is now a functioning mock-data page across all 4 portals (public · recruiter · admin · student). 10 modules + the Python ML worker.
+**Latest commit:** `8e7521f feat(demo): public + admin + student completeness (parallel-agent batch)`
+
+## Demo-completeness pass (slices 40–46, after Milestone 4)
+
+User ask: "complete all the parts discussed as per plan … showcase in the demo with all features
+functioning" — mock data only, no real DB/auth.
+
+- **Recruiter portal**: zero nav 404s now — `/recruiter/stats` (your-stats-on-return),
+  `/candidates` (cross-JD browse), `/interviews` + `/offers` launchers, `/calculator` (+ public
+  `/recruiters/calculator`), `/ppt` + `/meetings` (new **recruiter-engagement** module, 9th),
+  `/analytics`, `/jds/[id]/close` (4.16 mandatory collective justification + 5.12 withdraw) +
+  `/shortlist`.
+- **Public site** (3.2): disciplines(+slug) · cycles(+slug) · campuses(+slug) · recruiters hub +
+  process/guidelines/faq/past · contact(+coordinators/placement-heads) · reports · `/r/[slug]`
+  microsites + `/transparency` (reads REAL anonymised redressal via `transparencyFor`). Seeds in
+  `apps/web/lib/{public-content,recruiter-public}.ts`.
+- **Admin**: `/admin/cycles` (+ discipline-exposure equity) · `/content` · `/offer-adjustments`
+  (5.14) · `/api-keys` (5.9) · `/student-conduct` (5.10).
+- **Student**: `/report-company` (files into the admin redressal queue — verified 2→3 cross-portal),
+  `/conduct` (+appeal) · `/coordinator` · `/profile` · `/feedback`.
+
+**Parallel-agent pattern (slices 44–46):** main agent built the shared foundation first (extend
+admin-accountability with fileRedressal/transparencyFor/conduct/adjustments/api-keys + both shell
+navs) and committed it, THEN dispatched 3 general-purpose agents on DISJOINT route trees (public /
+admin / student). Agents created only new page files — no module/shell/package.json edits, no git
+commits, no installs. Main verified together (typecheck/boundaries/contracts/lint + 22 routes 200 +
+the cross-portal loop) and committed. Reuse this for future broad page builds; it avoided all
+shared-file conflicts.
 
 ## Admin accountability (Task 39) — the loop that makes guardrails enforceable
 
@@ -120,21 +147,21 @@ StatusPill, Field, PageShell, AdminShell, RecruiterShell, StudentShell.
 - `.github/workflows/ci.yml` — static `run:` steps only (no `${{ }}` → shell), clears the
   command-injection scanner that blocked the earlier attempt. `lefthook.yml` is opt-in (no auto-install).
 
-## Next step — ALL requested options done; ask the user for direction
+## Next step — demo is feature-complete on mock data; ask the user for direction
 
-The user's "complete the rest options you have provided" is fully delivered:
-Task 36 student portal · Task 37 AI analyzer · Task 38 native harness/CI · Task 39 admin
-accountability. **Do not auto-continue** (Phase 9.3). Ask which direction next. Natural options,
-none requested yet:
+Every discussed plan flow is now a functioning page (slices 36–46). Student-conduct, recruiter
+`/stats`, the calculator, PPT/meetings, JD close/withdraw, the public site, and the full admin
+governance suite are all built. **Do not auto-continue** (Phase 9.3). Ask which direction next.
+Candidates, none requested yet:
 
-1. **Student-conduct** (Phase 5.10) — the symmetric student-side accountability surface
-   (no-show / ghost-after-acceptance); same event/decision pattern as redressal, student-keyed.
-2. **Recruiter `/recruiter/stats`** — the recruiter's transparent view of their OWN band + history
-   (reads the same `@nid/core` math the admin health-scores surface uses).
-3. **Real infrastructure swap** — Drizzle/Postgres behind the module APIs (the swap-later seam is
-   ready everywhere), auth/SSO (replaces the demo-recruiter/demo-student constants), Langfuse wiring.
-4. **Phase 2 APIs** — institution-side (read) + recruiter-side (read-only) federation APIs + SDKs.
-5. **Polish** — accessibility sweep, real tests (the harness has the slots), wire the lefthook hooks.
+1. **Real infrastructure swap** — Drizzle/Postgres behind the module APIs (the swap-later seam is
+   ready in every module store), auth/SSO (replaces the demo-recruiter/demo-student constants),
+   Langfuse wiring on the AIProvider adapter.
+2. **Phase 2 APIs** — institution-side (read) + recruiter-side (read-only) federation APIs + SDKs.
+3. **Polish** — accessibility sweep (WCAG AA), real tests (the harness has the slots + CI gate),
+   wire the lefthook hooks locally, replace the stdlib ML worker with FastAPI/Pydantic.
+4. **Admin publishing UIs** for the things currently seeded (PPT/meeting windows, slot calendar,
+   content blocks made truly editable).
 
 ## How to run the full demo
 
