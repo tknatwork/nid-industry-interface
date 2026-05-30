@@ -87,8 +87,8 @@ importers:
         specifier: 16.21.0
         version: 16.21.0
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       '@tailwindcss/postcss':
         specifier: 4.0.0-beta.7
@@ -127,8 +127,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -140,8 +140,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -156,8 +156,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -178,8 +178,8 @@ importers:
         specifier: workspace:*
         version: link:../slot-booking
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -197,8 +197,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -216,8 +216,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -235,8 +235,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -251,8 +251,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -267,8 +267,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -280,8 +280,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -299,8 +299,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -321,8 +321,8 @@ importers:
         specifier: workspace:*
         version: link:../jd-posting
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -331,8 +331,8 @@ importers:
   packages/core:
     dependencies:
       zod:
-        specifier: 3.23.8
-        version: 3.23.8
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 5.6.3
@@ -3268,8 +3268,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.23.8:
-    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
 
@@ -6050,4 +6050,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.23.8: {}
+  zod@4.4.3: {}
