@@ -14,6 +14,7 @@ import {
   recordOutcomeAction,
   advanceRoundAction,
   lockSelectionAction,
+  recordTaskScoresAction,
   sendLetterAction,
   setTransportAction,
 } from './actions';
@@ -98,6 +99,7 @@ export default async function InterviewsWorkspacePage({
               recordOutcomeAction={recordOutcomeAction}
               advanceRoundAction={advanceRoundAction}
               lockSelectionAction={lockSelectionAction}
+              recordTaskScoresAction={recordTaskScoresAction}
               sendLetterAction={sendLetterAction}
               setTransportAction={setTransportAction}
             />

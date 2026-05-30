@@ -38,6 +38,7 @@ export interface InterviewWorkspaceBodyProps {
   readonly recordOutcomeAction: (formData: FormData) => void | Promise<void>;
   readonly advanceRoundAction: (formData: FormData) => void | Promise<void>;
   readonly lockSelectionAction: (formData: FormData) => void | Promise<void>;
+  readonly recordTaskScoresAction: (formData: FormData) => void | Promise<void>;
   readonly sendLetterAction: (formData: FormData) => void | Promise<void>;
   readonly setTransportAction: (formData: FormData) => void | Promise<void>;
 }
@@ -126,8 +127,11 @@ export function InterviewWorkspaceBody(props: InterviewWorkspaceBodyProps) {
           finalRound={vm.finalRound}
           interviewsComplete={vm.interviewsComplete}
           selectedCount={vm.selectedCount}
+          hasTask={vm.hasTask}
+          {...(vm.taskTitle ? { taskTitle: vm.taskTitle } : {})}
           {...(vm.letter ? { letter: vm.letter } : {})}
           lockSelectionAction={props.lockSelectionAction}
+          recordTaskScoresAction={props.recordTaskScoresAction}
           sendLetterAction={props.sendLetterAction}
         />
       )}

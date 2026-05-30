@@ -30,8 +30,12 @@ export interface AfterTallyProps {
   readonly finalRound: number;
   readonly interviewsComplete: boolean;
   readonly selectedCount: number;
+  /** True when the JD carries a pre-interview take-home / evaluation task. */
+  readonly hasTask: boolean;
+  readonly taskTitle?: string;
   readonly letter?: LetterVM;
   readonly lockSelectionAction: (formData: FormData) => void | Promise<void>;
+  readonly recordTaskScoresAction: (formData: FormData) => void | Promise<void>;
   readonly sendLetterAction: (formData: FormData) => void | Promise<void>;
 }
 
@@ -42,8 +46,11 @@ export function AfterTally({
   finalRound,
   interviewsComplete,
   selectedCount,
+  hasTask,
+  taskTitle,
   letter,
   lockSelectionAction,
+  recordTaskScoresAction,
   sendLetterAction,
 }: AfterTallyProps) {
   const ranked = tally.slice().sort((a, b) => b.total - a.total);
@@ -75,6 +82,49 @@ export function AfterTally({
           {picked.size} selected{locked ? ' · locked' : ''}
         </StatusPill>
       </div>
+
+      {/* Pre-interview task scores (Round 4 follow-up): a separate form so it can
+          submit independently of the selection. Shown only when the JD carries an
+          evaluation task and interviews aren't yet frozen. Each score folds into
+          the candidate's total via computeTally. */}
+      {hasTask && !interviewsComplete && (
+        <form action={recordTaskScoresAction} style={{ ...card, display: 'grid', gap: 'var(--space-3)' }}>
+          <input type="hidden" name="jdId" value={jdId} />
+          <div>
+            <p style={cardLabel}>Pre-interview task scores</p>
+            <p style={muted}>
+              {taskTitle ? `“${taskTitle}” — ` : ''}score each finalist&rsquo;s take-home (0–10). This folds into their
+              total tally below.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
+            {ranked.map((t) => (
+              <div key={`task-${t.studentId}`} style={taskRow}>
+                <span style={{ fontSize: 'var(--fs-14)', color: 'var(--text-strong)' }}>{t.name}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <input type="hidden" name="taskStudentId" value={t.studentId} />
+                  <input
+                    type="number"
+                    name="taskScore"
+                    min={0}
+                    max={10}
+                    step={1}
+                    defaultValue={t.taskScore ?? ''}
+                    aria-label={`Task score for ${t.name}`}
+                    style={taskInput}
+                  />
+                  <span style={muted}>/10</span>
+                </span>
+              </div>
+            ))}
+          </div>
+          <div>
+            <Button type="submit" size="sm" variant="secondary">
+              Save task scores
+            </Button>
+          </div>
+        </form>
+      )}
 
       <form action={lockSelectionAction} style={{ display: 'grid', gap: 'var(--space-3)' }}>
         <input type="hidden" name="jdId" value={jdId} />
@@ -120,6 +170,7 @@ export function AfterTally({
                         R{idx + 1} · {score === undefined ? '—' : `${score}/10`}
                       </span>
                     ))}
+                    {t.taskScore !== undefined && <span style={taskChip}>Task · {t.taskScore}/10</span>}
                     {!t.reachedFinal && <span style={{ ...muted, alignSelf: 'center' }}>did not reach round {finalRound}</span>}
                   </div>
                 </div>
@@ -227,6 +278,27 @@ const scoreChip: CSSProperties = {
   color: 'var(--text-strong)',
   fontSize: 'var(--fs-12)',
   fontWeight: 'var(--fw-600)',
+};
+const taskChip: CSSProperties = {
+  ...scoreChip,
+  backgroundColor: 'color-mix(in oklch, var(--accent), white 82%)',
+  border: '1px solid color-mix(in oklch, var(--accent), white 55%)',
+};
+const taskRow: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 'var(--space-3)',
+};
+const taskInput: CSSProperties = {
+  width: '4rem',
+  padding: 'var(--space-1) var(--space-2)',
+  fontSize: 'var(--fs-14)',
+  textAlign: 'center',
+  border: '1px solid var(--border-emphasized)',
+  borderRadius: 'var(--radius-2)',
+  backgroundColor: 'var(--surface-card)',
+  color: 'var(--text-strong)',
 };
 const notice: CSSProperties = {
   fontSize: 'var(--fs-14)',

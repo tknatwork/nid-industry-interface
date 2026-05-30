@@ -9,6 +9,7 @@ export {
   listRoundProgressForJd,
   setCoordinationSignal,
   setCandidateDecision,
+  setTaskScore,
   setInterviewsComplete,
   getInterviewsComplete,
   listSelected,
