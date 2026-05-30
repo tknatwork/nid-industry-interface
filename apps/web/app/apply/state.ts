@@ -23,6 +23,14 @@ export interface IssuedTicket {
   readonly phoneVerified: boolean;
   /** Live participation fee for this cycle, in paise (from public-content). */
   readonly feeAmountPaise: number;
+  /**
+   * Multi-branch grouping (plan Round 3 §D). Present only when the applicant
+   * registered this application as a branch of an existing parent company.
+   * Each branch keeps its OWN gst/registration/contacts above — these two only
+   * carry the parent grouping id + the branch's human label.
+   */
+  readonly parentCompanyId?: string;
+  readonly branchLabel?: string;
 }
 
 export interface ApplyFormState {

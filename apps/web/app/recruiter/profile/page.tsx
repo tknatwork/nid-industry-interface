@@ -22,6 +22,7 @@ import {
 import { readRecruiterSession } from '~/lib/recruiter-session';
 import { subRolesForRecruiter, type RecruiterSubRole } from '~/lib/recruiter-subroles';
 import { coordinatorForRecruiter, PLACEMENT_HEADS } from '~/lib/recruiter-public';
+import { parentCompanyFor, branchLabelFor } from '~/lib/recruiter-branch';
 import { CURRENT_CYCLES } from '~/lib/public-content';
 
 export const metadata: Metadata = {
@@ -47,6 +48,13 @@ export default async function RecruiterProfilePage() {
 
   const subRoles = subRolesForRecruiter(recruiterId);
   const coordinator = coordinatorForRecruiter(recruiterId);
+
+  // Multi-branch identity (plan Round 3 §D): when this recruiter is one branch of
+  // a parent company, surface a read-only "Part of <Parent> · <Branch>" indicator.
+  // Branches are isolated for recruiters — this is purely an identity cue, not a
+  // cross-branch view.
+  const parentCompany = parentCompanyFor(recruiterId);
+  const branchLabel = branchLabelFor(recruiterId);
   const cycle = CURRENT_CYCLES.find((c) => `cycle_${c.slug.replace(/-/g, '_')}` === cycleId) ?? CURRENT_CYCLES[0];
 
   // JDs by status, each with the date that status was reached.
@@ -89,6 +97,20 @@ export default async function RecruiterProfilePage() {
               roster, job descriptions, booked talks and meetings, interview slots, integrations, and your standing
               with the placement cell. This is a read-only overview; edit each item from its own page.
             </p>
+            {parentCompany && (
+              <div style={branchIdentityRow}>
+                <StatusPill tone="info">Branch account</StatusPill>
+                <span style={branchIdentityText}>
+                  Part of <strong style={{ fontWeight: 'var(--fw-600)', color: 'var(--text-strong)' }}>{parentCompany.name}</strong>
+                  {branchLabel != null && (
+                    <>
+                      {' '}
+                      <span aria-hidden="true">·</span> {branchLabel}
+                    </>
+                  )}
+                </span>
+              </div>
+            )}
           </header>
 
           {/* 1 · Company profile + sub-roles */}
@@ -558,6 +580,21 @@ const pageTitle: CSSProperties = {
   lineHeight: 'var(--lh-48)',
   fontWeight: 'var(--fw-500)',
   color: 'var(--text-strong)',
+};
+
+/** Read-only multi-branch identity indicator under the page intro (plan Round 3 §D). */
+const branchIdentityRow: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 'var(--space-2)',
+  marginTop: 'var(--space-4)',
+};
+
+const branchIdentityText: CSSProperties = {
+  fontSize: 'var(--fs-14)',
+  color: 'var(--text-secondary)',
+  lineHeight: 1.5,
 };
 
 const listReset: CSSProperties = { listStyle: 'none', margin: 'var(--space-3) 0 0', padding: 0 };

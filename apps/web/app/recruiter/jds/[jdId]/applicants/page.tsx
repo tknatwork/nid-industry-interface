@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
-import { notFound } from 'next/navigation';
 import { RecruiterShell, StatusPill } from '@nid/ui';
-import { getJd } from '@nid/module-jd-posting';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import {
   listEligibleCandidates,
   listShortlist,
@@ -37,8 +36,7 @@ export default async function ApplicantsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const { jdId } = await params;
-  const jd = getJd(jdId);
-  if (!jd) notFound();
+  const jd = await requireOwnedJd(jdId);
 
   const sortParam = (await searchParams).sort;
   const sort: CandidateSort = sortParam === 'discipline' || sortParam === 'batch' ? sortParam : 'name';

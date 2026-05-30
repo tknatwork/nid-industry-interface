@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { assignInterviewers, assignStudent, unassignStudent } from '@nid/module-slot-booking';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
 import { subRolesForRecruiter, subRoleLabel } from '~/lib/recruiter-subroles';
 
@@ -13,6 +14,7 @@ export async function assignSlotAction(formData: FormData): Promise<void> {
   const meetingLinkUrl = (formData.get('meetingLinkUrl') as string | null)?.trim() || undefined;
 
   if (!jdId || !studentId) redirect('/recruiter/jds');
+  await requireOwnedJd(jdId);
 
   if (slotId === '__unassign__') {
     unassignStudent(jdId, studentId);
@@ -41,6 +43,7 @@ export async function assignInterviewersAction(formData: FormData): Promise<void
     .filter((v) => v.length > 0);
 
   if (!jdId || !studentId) redirect('/recruiter/jds');
+  await requireOwnedJd(jdId);
 
   // The picker submits sub-role ids; we persist the human-readable labels
   // ("Name · Title") so both the slots page and the interview console can

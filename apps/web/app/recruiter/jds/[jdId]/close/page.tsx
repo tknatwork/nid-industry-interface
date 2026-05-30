@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
-import { notFound } from 'next/navigation';
 import { RecruiterShell, Button, StatusPill, type StatusTone } from '@nid/ui';
-import { getJd } from '@nid/module-jd-posting';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { listShortlist } from '@nid/module-candidate-browse';
 import { listOffers } from '@nid/module-offer-cascade';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
@@ -27,8 +26,7 @@ export default async function CloseJdPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { jdId } = await params;
-  const jd = getJd(jdId);
-  if (!jd) notFound();
+  const jd = await requireOwnedJd(jdId);
   const error = (await searchParams).error;
 
   const shortlist = listShortlist(jdId);

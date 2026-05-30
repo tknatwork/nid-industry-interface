@@ -9,6 +9,7 @@ import {
   type RecruiterStatus,
   type StatusHistoryEntry,
 } from '@nid/module-recruiter-onboarding';
+import { PARENT_COMPANIES } from '~/lib/recruiter-public';
 import { advanceTicketAction } from './actions';
 
 interface PageParams {
@@ -106,6 +107,7 @@ export default async function AdminTicketDetail({
           >
             <div>
               <Section title="Company">
+                {record.branchLabel && <Detail label="Branch" value={record.branchLabel} />}
                 <Detail label="Sector" value={record.sector} />
                 <Detail label="GST" value={record.gst} mono />
                 <Detail label="Registration" value={record.registrationNumber} mono />
@@ -209,6 +211,10 @@ export default async function AdminTicketDetail({
 }
 
 function Header({ record }: { record: ApplicationTicketRecord }) {
+  // Multi-branch grouping (plan Round 3 §D): when this ticket is one branch of a
+  // parent company, name the parent + this branch so the admin sees it is one of
+  // several SEPARATE accounts under that company.
+  const parent = record.parentCompanyId != null ? PARENT_COMPANIES[record.parentCompanyId] : undefined;
   return (
     <header
       style={{
@@ -255,6 +261,24 @@ function Header({ record }: { record: ApplicationTicketRecord }) {
         >
           {record.companyName}
         </p>
+        {parent && (
+          <p
+            style={{
+              fontSize: 'var(--fs-12)',
+              color: 'var(--text-secondary)',
+              marginTop: 'var(--space-1)',
+            }}
+          >
+            Part of{' '}
+            <a
+              href="/admin/recruiters/queue"
+              style={{ color: 'var(--accent)', fontWeight: 'var(--fw-600)', textDecoration: 'none' }}
+            >
+              {parent.name}
+            </a>
+            {record.branchLabel ? ` · ${record.branchLabel} branch` : ''} · separate account
+          </p>
+        )}
       </div>
       <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
         <a

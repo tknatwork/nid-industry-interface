@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
-import { notFound } from 'next/navigation';
 import { RecruiterShell, Button } from '@nid/ui';
-import { getJd } from '@nid/module-jd-posting';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { listShortlist } from '@nid/module-candidate-browse';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
 
@@ -13,8 +12,7 @@ export const metadata: Metadata = {
 
 export default async function ShortlistPage({ params }: { params: Promise<{ jdId: string }> }) {
   const { jdId } = await params;
-  const jd = getJd(jdId);
-  if (!jd) notFound();
+  const jd = await requireOwnedJd(jdId);
   const shortlist = listShortlist(jdId);
 
   return (

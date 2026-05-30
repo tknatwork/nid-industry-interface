@@ -3,15 +3,15 @@ import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell, StatusPill } from '@nid/ui';
 import { listForRecruiter } from '@nid/module-jd-posting';
 import { tallyFor } from '@nid/module-offer-cascade';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 
 export const metadata: Metadata = {
   title: 'Offers · Recruiter · NID Industry Interface',
   robots: { index: false, follow: false },
 };
 
-export default function OffersLauncher() {
-  const { recruiterId, companyName } = DEMO_RECRUITER;
+export default async function OffersLauncher() {
+  const { recruiterId, companyName } = await readRecruiterSession();
   const jds = listForRecruiter(recruiterId).filter((jd) => jd.status === 'published');
 
   return (

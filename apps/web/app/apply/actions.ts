@@ -2,6 +2,7 @@
 
 import { submit, advance, pay, type PaymentReceipt } from '@nid/module-recruiter-onboarding';
 import { cycleBySlug, CURRENT_CYCLES } from '~/lib/public-content';
+import { PARENT_COMPANIES } from '~/lib/recruiter-public';
 import type { ApplyFormState, IssuedTicket } from './state';
 
 const DEMO_CYCLE_SLUG = 'spring-2026';
@@ -25,6 +26,27 @@ export async function submitApplyAction(
 
   const phoneVerified = values['phoneVerified'] === 'true';
 
+  // Multi-branch grouping (plan Round 3 §D). The applicant either registers a
+  // brand-new company (default — no parent) or declares this application is one
+  // branch of an existing parent company. In branch mode we attach the parent
+  // grouping id (only when it names a known PARENT_COMPANIES entry) plus the
+  // branch's human label. Each branch still fills its OWN gst/registration/
+  // contacts in the required fields above — these two only carry the grouping.
+  const registrationMode = values['registrationMode'] === 'branch' ? 'branch' : 'new';
+  const selectedParentId = (values['parentCompanyId'] ?? '').trim();
+  const parentCompanyId =
+    registrationMode === 'branch' && selectedParentId in PARENT_COMPANIES
+      ? selectedParentId
+      : undefined;
+  const branchLabelRaw = (values['branchLabel'] ?? '').trim();
+  const branchLabel =
+    registrationMode === 'branch' && parentCompanyId !== undefined && branchLabelRaw.length > 0
+      ? branchLabelRaw
+      : undefined;
+
+  // Conditional spreads keep this object compatible with exactOptionalPropertyTypes
+  // (the schema's parentCompanyId/branchLabel are `.optional()`, never `| undefined`),
+  // so we omit the keys entirely when not in a confirmed branch registration.
   const input = {
     companyName: values['companyName'] ?? '',
     sector: values['sector'] ?? '',
@@ -36,6 +58,8 @@ export async function submitApplyAction(
     contactPhone: values['contactPhone'] ?? '',
     cycleId: values['cycleId'] ?? 'cycle_spring_2026',
     phoneVerified,
+    ...(parentCompanyId !== undefined ? { parentCompanyId } : {}),
+    ...(branchLabel !== undefined ? { branchLabel } : {}),
   };
 
   const result = submit(input);
@@ -60,6 +84,8 @@ export async function submitApplyAction(
     contactPhone: input.contactPhone,
     phoneVerified,
     feeAmountPaise: feeAmountPaiseForDemo(),
+    ...(parentCompanyId !== undefined ? { parentCompanyId } : {}),
+    ...(branchLabel !== undefined ? { branchLabel } : {}),
   };
 
   return {

@@ -6,6 +6,7 @@ import { issueOffer, recordResponse } from '@nid/module-offer-cascade';
 import { getInterviewsComplete } from '@nid/module-interview-console';
 import { isAccountLocked } from '@nid/module-recruiter-onboarding';
 import { readRecruiterSession } from '~/lib/recruiter-session';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 
 export async function issueOfferAction(formData: FormData): Promise<void> {
   const jdId = (formData.get('jdId') as string | null)?.trim() ?? '';
@@ -14,6 +15,11 @@ export async function issueOfferAction(formData: FormData): Promise<void> {
   const shortlistRemaining = (formData.get('shortlistRemaining') as string | null) ?? '0';
   const ctcPaise = (formData.get('ctcPaise') as string | null) ?? undefined;
   const stipendPaise = (formData.get('stipendPaise') as string | null) ?? undefined;
+
+  // Ownership guard: the JD must belong to the session recruiter's branch. A
+  // forged cross-branch POST (JD ids are sequential, hence guessable) is
+  // rejected with 404 before any lock/complete check or mutation runs.
+  await requireOwnedJd(jdId);
 
   // Cycle-lock guard (Round 3 §C): a recruiter whose account is locked between
   // cycles can't issue offers even by navigating straight here — send them to
@@ -52,6 +58,9 @@ export async function respondAction(formData: FormData): Promise<void> {
   const jdId = (formData.get('jdId') as string | null)?.trim() ?? '';
   const studentId = (formData.get('studentId') as string | null)?.trim() ?? '';
   const status = (formData.get('status') as string | null)?.trim() ?? '';
+
+  // Ownership guard: reject a forged cross-branch response (404) before mutating.
+  await requireOwnedJd(jdId);
 
   recordResponse({ jdId, studentId, status, reason: 'student response (demo)' });
   revalidatePath(`/recruiter/jds/${jdId}/offers`);

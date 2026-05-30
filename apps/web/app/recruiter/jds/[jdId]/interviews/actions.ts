@@ -12,6 +12,7 @@ import {
   type CandidateDecision,
   type RoundOutcomeInput,
 } from '@nid/module-interview-console';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
 
 function str(formData: FormData, key: string): string {
@@ -25,6 +26,7 @@ function refresh(jdId: string): void {
 
 export async function setTransportAction(formData: FormData): Promise<void> {
   const jdId = str(formData, 'jdId');
+  if (jdId) await requireOwnedJd(jdId);
   const mode = str(formData, 'mode');
   if (mode === 'live' || mode === 'periodic' || mode === 'manual') {
     setTransportMode(DEMO_RECRUITER.recruiterId, mode as TransportMode);
@@ -50,6 +52,7 @@ export async function recordOutcomeAction(formData: FormData): Promise<void> {
     refresh(jdId);
     return;
   }
+  await requireOwnedJd(jdId);
   const outcome = outcomeRaw as RoundOutcome;
 
   const scoreRaw = str(formData, 'score');
@@ -76,6 +79,7 @@ export async function recordOutcomeAction(formData: FormData): Promise<void> {
 /** After-phase: explicitly move a candidate between selected / rejected / pending. */
 export async function setDecisionAction(formData: FormData): Promise<void> {
   const jdId = str(formData, 'jdId');
+  if (jdId) await requireOwnedJd(jdId);
   const studentId = str(formData, 'studentId');
   const decisionRaw = str(formData, 'decision');
   const isDecision = decisionRaw === 'selected' || decisionRaw === 'rejected' || decisionRaw === 'pending';
@@ -88,6 +92,9 @@ export async function setDecisionAction(formData: FormData): Promise<void> {
 /** After-phase "Done & Dusted": flip the per-JD interviews-complete flag (unlocks Offers). */
 export async function markCompleteAction(formData: FormData): Promise<void> {
   const jdId = str(formData, 'jdId');
-  if (jdId) setInterviewsComplete(jdId, true);
+  if (jdId) {
+    await requireOwnedJd(jdId);
+    setInterviewsComplete(jdId, true);
+  }
   refresh(jdId);
 }

@@ -9,7 +9,7 @@ import {
   type SidePanelSection,
 } from '@nid/ui';
 import { listForRecruiter, skillLabel, type JdRecord } from '@nid/module-jd-posting';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { discardDraftAction } from './actions';
 
 export const metadata: Metadata = {
@@ -84,7 +84,8 @@ export default async function RecruiterJdsPage({
   const filter: FilterId = isFilterId(sp.filter) ? sp.filter : 'all';
   const error = sp.error;
 
-  const jds = listForRecruiter(DEMO_RECRUITER.recruiterId);
+  const session = await readRecruiterSession();
+  const jds = listForRecruiter(session.recruiterId);
   const visible = jds.filter((jd) => matchesFilter(jd, filter));
 
   const countFor = (id: FilterId) => jds.filter((jd) => matchesFilter(jd, id)).length;
@@ -143,7 +144,7 @@ export default async function RecruiterJdsPage({
     );
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
+    <RecruiterShell activeNav="jds" companyName={session.companyName} accountMenu={<RecruiterAccountMenu companyName={session.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div

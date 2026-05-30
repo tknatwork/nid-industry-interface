@@ -428,3 +428,27 @@ export const MICROSITES: Readonly<Record<string, MicrositeRecord>> = {
 export function micrositeBySlug(slug: string): MicrositeRecord | null {
   return MICROSITES[slug] ?? null;
 }
+
+// ── Multi-branch parent companies (plan Round 3 §D) ─────────────────────────
+//
+// One company can run MULTIPLE branches, each a SEPARATE recruiter account with
+// its OWN GST / registration / contacts / credentials / dashboard, grouped under
+// a parent company for the institution. The grouping id + branch label live on
+// each onboarding ticket (ApplicationTicketRecord.parentCompanyId / branchLabel);
+// the parent's human-facing name lives here so surfaces can render "Acme Design
+// Studio — Bengaluru" without reaching into the onboarding store for the name.
+
+export interface ParentCompany {
+  readonly id: string;
+  readonly name: string;
+}
+
+/** Registry of parent companies, keyed by the id stored on each branch ticket. */
+export const PARENT_COMPANIES: Readonly<Record<string, ParentCompany>> = {
+  acme: { id: 'acme', name: 'Acme Design Studio' },
+};
+
+// `parentCompanyFor` + `branchLabelFor` live in ./recruiter-branch (server-only):
+// they read the onboarding store (node:fs), which must NOT enter this
+// client-imported, store-free module. PARENT_COMPANIES (above) stays here as it
+// is pure presentation data.

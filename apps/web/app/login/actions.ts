@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { setRecruiterSession } from '~/lib/recruiter-session';
-import { DEMO_LOGIN } from './credentials';
+import { DEMO_LOGINS } from './credentials';
 import type { LoginFormState } from './state';
 
 /**
@@ -20,12 +20,17 @@ export async function loginAction(
   const username = String(formData.get('username') ?? '').trim();
   const password = String(formData.get('password') ?? '');
 
-  // Case-insensitive on the email username; exact on the password.
-  const ok =
-    username.toLowerCase() === DEMO_LOGIN.username.toLowerCase() &&
-    password === DEMO_LOGIN.password;
+  // Multi-branch (plan Round 3 §D): match the submission against ANY branch's
+  // credentials. Case-insensitive on the email username; exact on the password.
+  // The matched entry's recruiterId is what the session is set to, so logging in
+  // as either Acme branch resolves to that branch's own dashboard.
+  const match = DEMO_LOGINS.find(
+    (login) =>
+      username.toLowerCase() === login.username.toLowerCase() &&
+      password === login.password,
+  );
 
-  if (!ok) {
+  if (!match) {
     return {
       status: 'error',
       message:
@@ -33,6 +38,6 @@ export async function loginAction(
     };
   }
 
-  await setRecruiterSession(DEMO_LOGIN.recruiterId);
+  await setRecruiterSession(match.recruiterId);
   redirect('/recruiter/dashboard');
 }

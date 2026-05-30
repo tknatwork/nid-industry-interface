@@ -41,6 +41,13 @@ export const applyFormSchema = z.object({
     .trim()
     .regex(/^[+0-9 ()-]{7,20}$/, 'Provide a valid phone number'),
   cycleId: z.string().trim().min(1),
+  // Multi-branch grouping (plan Round 3 §D). Optional — only set when this
+  // application is one branch of a parent company. Each branch keeps its OWN
+  // gst/registrationNumber/corporateEmail/contactPhone above; these two fields
+  // only carry the parent grouping + the branch's human label. Kept in lock-step
+  // with the matching ApplicationTicketRecord fields.
+  parentCompanyId: z.string().trim().min(1).optional(),
+  branchLabel: z.string().trim().min(1).optional(),
 });
 
 export type ApplyForm = z.infer<typeof applyFormSchema>;
@@ -81,6 +88,16 @@ export interface ApplicationTicketRecord {
   readonly ticketId: string;
   readonly cycleId: string;
   readonly companyName: string;
+  /**
+   * Parent-company grouping id (plan Round 3 §D). One company can run MULTIPLE
+   * branches, each a SEPARATE recruiter account with its OWN
+   * GST/registration/contacts/credentials/dashboard. When set, this ticket is
+   * one branch of the parent identified by this id (e.g. 'acme'); the human name
+   * lives in PARENT_COMPANIES on the web side. Absent for standalone recruiters.
+   */
+  readonly parentCompanyId?: string;
+  /** Human label distinguishing this branch within its parent (e.g. 'Bengaluru'). */
+  readonly branchLabel?: string;
   readonly sector: string;
   readonly gst: string;
   readonly registrationNumber: string;

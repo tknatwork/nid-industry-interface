@@ -75,6 +75,11 @@ function seedInitialState(): StoreState {
       ticketId: 'NID-2026-A-0001',
       cycleId: 'cycle_spring_2026',
       companyName: 'Acme Design Studio',
+      // Branch of the 'acme' parent company (plan Round 3 §D). This is the
+      // primary (Bengaluru) branch; its sibling NID-2026-A-0002 (Ahmedabad)
+      // is a SEPARATE recruiter account with its OWN gst/registration/contacts.
+      parentCompanyId: 'acme',
+      branchLabel: 'Bengaluru',
       sector: 'Design Consultancy',
       gst: '24AAACA1234B1Z5',
       registrationNumber: 'U74999GJ2012PTC012345',
@@ -101,6 +106,45 @@ function seedInitialState(): StoreState {
         paidAt: isoYesterday,
         method: 'Demo gateway (UPI)',
         gatewayRef: 'DEMOPAY-0001',
+      },
+    },
+    {
+      // Second branch of the SAME parent company 'acme' (plan Round 3 §D): a
+      // SEPARATE recruiter account with its OWN gst, registration number,
+      // corporate email, contact, and credentials. It intentionally has NO JDs —
+      // a freshly-credentialed branch — which proves per-branch isolation
+      // (the Bengaluru branch's JDs never leak into this Ahmedabad dashboard).
+      ticketId: 'NID-2026-A-0002',
+      cycleId: 'cycle_spring_2026',
+      companyName: 'Acme Design Studio',
+      parentCompanyId: 'acme',
+      branchLabel: 'Ahmedabad',
+      sector: 'Design Consultancy',
+      gst: '24AAACA1234B2Z4',
+      registrationNumber: 'U74999GJ2014PTC024680',
+      corporateEmail: 'hire-ahm@acmedesign.example',
+      websiteUrl: 'https://acmedesign.example',
+      contactName: 'Deven Shah',
+      contactPhone: '+91 90000 67890',
+      phoneVerified: true,
+      status: 'credentials-issued',
+      statusHistory: [
+        { status: 'application-received', at: isoTwoDaysAgo, note: 'Form submitted for the Ahmedabad branch.' },
+        { status: 'verification-pending', at: isoTwoDaysAgo, note: 'Initial vetting begun.' },
+        { status: 'fee-due', at: isoYesterday, note: 'Vetting passed; participation fee invoice issued.' },
+        { status: 'payment-received', at: isoYesterday, note: 'Payment confirmed via gateway.' },
+        { status: 'approved', at: isoOneHour },
+        { status: 'credentials-issued', at: isoOneHour, note: 'Credentials emailed to hire-ahm@acmedesign.example.' },
+      ],
+      createdAt: isoTwoDaysAgo,
+      feeAmountPaise: 1_500_000,
+      receiptId: 'NID-RCPT-2026-A-0002',
+      receipt: {
+        receiptId: 'NID-RCPT-2026-A-0002',
+        amountPaise: 1_500_000,
+        paidAt: isoYesterday,
+        method: 'Demo gateway (UPI)',
+        gatewayRef: 'DEMOPAY-0002',
       },
     },
     {
@@ -154,6 +198,13 @@ function seedInitialState(): StoreState {
       activeCycleId: 'cycle_spring_2026',
       locked: false,
     },
+    // The Ahmedabad branch is its OWN account with its OWN activation state —
+    // it can lock/reactivate independently of the Bengaluru branch (§D).
+    'NID-2026-A-0002': {
+      recruiterId: 'NID-2026-A-0002',
+      activeCycleId: 'cycle_spring_2026',
+      locked: false,
+    },
   };
 
   const state: StoreState = {
@@ -169,6 +220,14 @@ function seedInitialState(): StoreState {
 export interface SubmitInput {
   readonly cycleId: string;
   readonly companyName: string;
+  /**
+   * Parent-company grouping id (plan Round 3 §D), present only when this
+   * application is one branch of an existing parent. Persisted onto the record
+   * so multi-branch surfaces can group it; absent for standalone recruiters.
+   */
+  readonly parentCompanyId?: string | undefined; // exactOptionalPropertyTypes: allow explicit undefined
+  /** Human label distinguishing this branch within its parent (e.g. 'Bengaluru'). */
+  readonly branchLabel?: string | undefined;
   readonly sector: string;
   readonly gst: string;
   readonly registrationNumber: string;
@@ -199,6 +258,11 @@ export function submitApplication(input: SubmitInput): SubmitResult {
     ticketId,
     cycleId: input.cycleId,
     companyName: input.companyName,
+    // Multi-branch grouping (plan Round 3 §D) — only carried when supplied, via
+    // conditional spreads so the optional record fields never get an explicit
+    // `undefined` under exactOptionalPropertyTypes (same pattern as websiteUrl).
+    ...(input.parentCompanyId ? { parentCompanyId: input.parentCompanyId } : {}),
+    ...(input.branchLabel ? { branchLabel: input.branchLabel } : {}),
     sector: input.sector,
     gst: input.gst,
     registrationNumber: input.registrationNumber,

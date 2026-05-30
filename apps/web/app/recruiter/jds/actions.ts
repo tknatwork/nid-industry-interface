@@ -9,6 +9,7 @@ import {
   type GateFailure,
 } from '@nid/module-jd-posting';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 
 export interface JdActionOk {
   readonly ok: true;
@@ -73,6 +74,9 @@ export async function submitJdAction(payload: JdWizardPayload): Promise<JdAction
  */
 export async function discardDraftAction(formData: FormData): Promise<void> {
   const jdId = (formData.get('jdId') as string | null)?.trim() ?? '';
+  // Ownership guard: a forged cross-branch discard (another branch's draft id)
+  // is rejected with 404 before the destructive discard runs.
+  await requireOwnedJd(jdId);
   const result = discardDraft(jdId);
   if (!result.ok) {
     redirect(`/recruiter/jds?error=${encodeURIComponent(result.reason ?? 'Discard failed')}`);

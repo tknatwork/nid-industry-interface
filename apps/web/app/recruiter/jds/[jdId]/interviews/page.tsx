@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
-import { notFound } from 'next/navigation';
 import { RecruiterShell, StatusPill } from '@nid/ui';
-import { getJd } from '@nid/module-jd-posting';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import {
   buildInterviewDayView,
   getTransportMode,
@@ -51,8 +50,7 @@ function slotLabel(s: Slot): string {
 
 export default async function InterviewConsole({ params }: { params: Promise<{ jdId: string }> }) {
   const { jdId } = await params;
-  const jd = getJd(jdId);
-  if (!jd) notFound();
+  const jd = await requireOwnedJd(jdId);
 
   const view = buildInterviewDayView(jdId);
   const transport = getTransportMode(DEMO_RECRUITER.recruiterId);

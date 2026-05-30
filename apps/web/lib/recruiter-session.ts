@@ -41,13 +41,19 @@ export interface RecruiterSession {
 }
 
 /**
- * The recruiters this demo can resolve a session to. Today only Acme Design
- * Studio is seeded (`credentials-issued`), so the cookie only ever stores its
- * id; the map exists so adding a second demo recruiter later is a one-line
- * change rather than a refactor of every reader.
+ * The recruiters this demo can resolve a session to. Acme Design Studio runs two
+ * branches (plan Round 3 §D), each a SEPARATE recruiter account with its OWN
+ * credentials and dashboard: the Bengaluru branch ({@link DEMO_RECRUITER},
+ * NID-2026-A-0001) and the Ahmedabad branch (NID-2026-A-0002). Logging in as
+ * either resolves to its own session here.
  */
 const KNOWN_RECRUITERS: Readonly<Record<string, RecruiterSession>> = {
   [DEMO_RECRUITER.recruiterId]: { ...DEMO_RECRUITER },
+  'NID-2026-A-0002': {
+    recruiterId: 'NID-2026-A-0002',
+    companyName: 'Acme Design Studio',
+    cycleId: 'cycle_spring_2026',
+  },
 };
 
 /**

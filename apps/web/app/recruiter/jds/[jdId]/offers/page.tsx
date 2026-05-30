@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
-import { notFound } from 'next/navigation';
 import { RecruiterShell, Button, StatusPill, type StatusTone } from '@nid/ui';
-import { getJd } from '@nid/module-jd-posting';
 import { getCandidate } from '@nid/module-candidate-browse';
 import { getInterviewsComplete, listSelected } from '@nid/module-interview-console';
 import { listOffers, cascadeFor, tallyFor, type OfferRecord } from '@nid/module-offer-cascade';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { issueOfferAction, respondAction } from './actions';
 
 export const metadata: Metadata = {
@@ -22,8 +21,7 @@ export default async function OffersPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { jdId } = await params;
-  const jd = getJd(jdId);
-  if (!jd) notFound();
+  const jd = await requireOwnedJd(jdId);
   const error = (await searchParams).error;
 
   // The Offers cascade is gated on the Interview tab's "Done & Dusted" flag

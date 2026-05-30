@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { notFound } from 'next/navigation';
 import { RecruiterShell, Button, Field, StatusPill } from '@nid/ui';
-import { getJd } from '@nid/module-jd-posting';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { getCandidate, isShortlisted, listShortlist, type CandidateView } from '@nid/module-candidate-browse';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
 import { shortlistAction, unshortlistAction } from '../actions';
@@ -32,8 +32,7 @@ export default async function CandidateDetail({
   searchParams: Promise<SearchParams>;
 }) {
   const { jdId, studentId } = await params;
-  const jd = getJd(jdId);
-  if (!jd) notFound();
+  await requireOwnedJd(jdId);
   const candidate = getCandidate(studentId);
   if (!candidate) notFound();
 
