@@ -48,25 +48,47 @@ are the modern replacement for branch-protection):
   - ✅ **Block force pushes**
   - ✅ **Restrict deletions**
   - (optional) ✅ **Require linear history** (squash/rebase merges only)
-  - (optional) Include administrators — uncheck "Bypass" so even you merge via PR.
+  - **Do NOT "Include administrators"** (leave admin bypass ON). With Code-Owner
+    review required and you as the only code owner, enforcing the rule on admins
+    would block you from merging your own PRs — you can't approve your own PR and
+    there's no second reviewer. Admin bypass lets you merge while still forcing
+    outside contributors through fork → PR → your review. Only enforce on admins
+    once a second reviewer exists.
 
-**CLI alternative** (classic branch-protection API):
+**CLI alternative** (classic branch-protection API). Run this **after PR #2 merges**
+so `CODEOWNERS` is present on `main`. `enforce_admins: false` keeps admin bypass on
+(per the note above) so you're never locked out of your own PRs. The JSON-body form
+(`--input -`) is used deliberately — the nested review object and the `null` fields
+don't round-trip correctly through `-F` form flags:
 
 ```bash
 gh api -X PUT repos/tknatwork/nid-industry-interface/branches/main/protection \
   -H "Accept: application/vnd.github+json" \
-  -F required_pull_request_reviews[required_approving_review_count]=1 \
-  -F required_pull_request_reviews[require_code_owner_reviews]=true \
-  -F required_pull_request_reviews[dismiss_stale_reviews]=true \
-  -F enforce_admins=true \
-  -F required_status_checks=null \
-  -F restrictions=null \
-  -F allow_force_pushes=false \
-  -F allow_deletions=false
+  --input - <<'JSON'
+{
+  "required_status_checks": null,
+  "enforce_admins": false,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 1,
+    "require_code_owner_reviews": true,
+    "dismiss_stale_reviews": true
+  },
+  "restrictions": null,
+  "allow_force_pushes": false,
+  "allow_deletions": false
+}
+JSON
 ```
 
-> Set `required_status_checks` to your CI context (e.g.
-> `{"strict":true,"contexts":["build"]}`) once CI runs on `pull_request`.
+Verify it applied:
+
+```bash
+gh api repos/tknatwork/nid-industry-interface/branches/main/protection \
+  --jq '{pr_required: (.required_pull_request_reviews != null), code_owner: .required_pull_request_reviews.require_code_owner_reviews, force_push: .allow_force_pushes.enabled, deletions: .allow_deletions.enabled, admins_enforced: .enforce_admins.enabled}'
+```
+
+> Once CI runs on `pull_request`, replace `"required_status_checks": null` with your
+> CI context, e.g. `{"strict": true, "contexts": ["build"]}`.
 
 ---
 
