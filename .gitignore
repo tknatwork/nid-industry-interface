@@ -65,3 +65,8 @@ coverage/
 .dev-data/
 
 .vercel
+
+# Local-only fork experiments (e.g. the /showcase pitch page) — built and run
+# locally, deliberately NOT committed to the repo. This also keeps them out of
+# the Vercel upload, which falls back to .gitignore when no .vercelignore exists.
+apps/web/app/showcase/
