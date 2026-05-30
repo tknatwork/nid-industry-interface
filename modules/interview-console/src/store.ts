@@ -151,6 +151,21 @@ export function writeDecision(jdId: string, studentId: string, decision: Candida
   return next;
 }
 
+/**
+ * Record a pre-interview task score (0–10) for a candidate. Creates the progress
+ * record if absent — a shortlisted candidate may not have been scored in any
+ * round yet. Independent of the round seals: the task is evaluated before the
+ * interviews, so this never collides with the per-round forward-only seal.
+ */
+export function writeTaskScore(jdId: string, studentId: string, taskScore: number): RoundProgress {
+  const state = loadState();
+  const key = progressKey(jdId, studentId);
+  const existing = state.roundProgress[key] ?? emptyProgress(jdId, studentId);
+  const next: RoundProgress = { ...existing, taskScore };
+  persist({ ...state, roundProgress: { ...state.roundProgress, [key]: next } });
+  return next;
+}
+
 export function writeCoordination(jdId: string, studentId: string, coordination: CoordinationSignal): RoundProgress {
   const state = loadState();
   const key = progressKey(jdId, studentId);
@@ -328,8 +343,16 @@ export function computeTally(jdId: string, finalRound: number): readonly TallyRo
       perRound.push(score);
       if (score !== undefined) total += score;
     }
+    // Pre-interview task score (if recorded) counts toward the total tally.
+    if (p.taskScore !== undefined) total += p.taskScore;
     const reachedFinal = p.perRound.some((x) => x.round === finalRound);
-    return { studentId: p.studentId, perRound, total, reachedFinal };
+    return {
+      studentId: p.studentId,
+      perRound,
+      total,
+      reachedFinal,
+      ...(p.taskScore !== undefined ? { taskScore: p.taskScore } : {}),
+    };
   });
 }
 

@@ -85,6 +85,12 @@ export interface RoundProgress {
    * progress to the next round.
    */
   readonly notAdvanced?: boolean;
+  /**
+   * Optional pre-interview task score (take-home / evaluation task). Recorded in
+   * the After tally and added to the candidate's total alongside the per-round
+   * scores. Absent until recorded (exactOptionalPropertyTypes).
+   */
+  readonly taskScore?: number;
 }
 
 // ── Interview plan (Round 4 §C Before) ────────────────────────────────────
@@ -138,6 +144,8 @@ export interface TallyRow {
   readonly total: number;
   /** True if the candidate has a recorded outcome at the final round. */
   readonly reachedFinal: boolean;
+  /** Pre-interview task score, if recorded — already included in `total`. */
+  readonly taskScore?: number;
 }
 
 // ── Offer-decision letters (Round 4 §C After) ─────────────────────────────

@@ -37,6 +37,7 @@ import {
   writeLetter as writeLetterStore,
   writePlan,
   writeRoundResult,
+  writeTaskScore,
   writeTransport,
 } from './store';
 import { planDraftSchema, type PlanDraft } from './plan-schema';
@@ -162,6 +163,11 @@ export function setCoordinationSignal(jdId: string, studentId: string, input: Co
 /** Explicitly set a candidate's interview decision (After-phase selected/rejected). */
 export function setCandidateDecision(jdId: string, studentId: string, decision: CandidateDecision): RoundProgress {
   return writeDecision(jdId, studentId, decision);
+}
+
+/** Record a candidate's pre-interview task score (0–10) — counts toward the tally total. */
+export function setTaskScore(jdId: string, studentId: string, taskScore: number): RoundProgress {
+  return writeTaskScore(jdId, studentId, taskScore);
 }
 
 /** Per-JD "Done & Dusted" flag — gates the Offers cascade (§R). */
