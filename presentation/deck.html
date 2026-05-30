@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>NID Industry Interface — recruiter portal redesign (print deck)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: #fdfdfe;
+        --panel: #f3f6f9;
+        --panel-blue: #eef5fb;
+        --ink: #1a1a1a;
+        --navy: #345381;
+        --body: #525a64;
+        --muted: #7c8893;
+        --line: #dadfe4;
+        --line-strong: #c4ccd3;
+        --blue: #59a0db;
+        --blue-strong: #3a86c8;
+        --red: #ff6969;
+        --yellow: #ff9a3c;
+        --cyan: #0099a5;
+        --green: #70aa62;
+        --purple: #3b2854;
+        --ff: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
+      }
+
+      @page {
+        size: 1123px 794px;
+        margin: 0;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: var(--ff);
+        color: var(--body);
+        background: #e9edf1;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        position: relative;
+        width: 1123px;
+        height: 794px;
+        padding: 50px 64px 46px;
+        background: var(--paper);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        page-break-after: always;
+        break-after: page;
+      }
+      .page:last-child { page-break-after: auto; break-after: auto; }
+
+      /* On-screen preview separation only; ignored in print. */
+      @media screen {
+        body { padding: 28px 0; }
+        .page { margin: 0 auto 26px; box-shadow: 0 8px 34px rgba(26, 38, 52, 0.16); }
+      }
+
+      /* ── Running header / footer ── */
+      .run {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 30px;
+        flex: 0 0 auto;
+      }
+      .run--accent { border-bottom-color: var(--blue); }
+      .run-id { display: flex; align-items: center; gap: 12px; }
+      .run-mark {
+        font-size: 11px; font-weight: 800; letter-spacing: 0.04em;
+        color: var(--ink); text-transform: uppercase; line-height: 1;
+      }
+      .run-mark .b { color: var(--blue-strong); }
+      .run-label {
+        font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em;
+        text-transform: uppercase; color: var(--muted);
+      }
+      .run-no { font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; color: var(--muted); }
+      .run-no b { color: var(--navy); }
+
+      .spectrum { display: inline-flex; height: 5px; width: 132px; border-radius: 9999px; overflow: hidden; vertical-align: middle; }
+      .spectrum > i { flex: 1; }
+      .spectrum > i:nth-child(1) { background: var(--red); }
+      .spectrum > i:nth-child(2) { background: var(--yellow); }
+      .spectrum > i:nth-child(3) { background: var(--cyan); }
+      .spectrum > i:nth-child(4) { background: var(--green); }
+      .spectrum > i:nth-child(5) { background: var(--purple); }
+      .spectrum > i:nth-child(6) { background: var(--navy); }
+
+      .content { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+
+      /* ── Type ── */
+      .kicker { font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue-strong); margin: 0 0 16px; }
+      .h1 { font-size: 35px; line-height: 1.04; font-weight: 600; letter-spacing: -0.018em; color: var(--navy); margin: 0; }
+      .h1 em { font-style: italic; color: var(--blue-strong); }
+      .lead { font-size: 16.5px; line-height: 1.5; font-weight: 300; color: var(--body); margin: 16px 0 0; max-width: 78ch; }
+      .lead b { font-weight: 600; color: var(--ink); }
+      .body { font-size: 13px; line-height: 1.55; font-weight: 400; color: var(--body); margin: 0; }
+      .ghost { position: absolute; top: 18px; right: 40px; font-size: 188px; font-weight: 700; line-height: 1; color: #eef1f4; letter-spacing: -0.04em; z-index: 0; }
+      .content > * { position: relative; z-index: 1; }
+
+      /* ── Numbered / point lists ── */
+      .points { list-style: none; margin: 30px 0 0; padding: 0; display: grid; gap: 18px; }
+      .points.two { grid-template-columns: 1fr 1fr; gap: 22px 40px; }
+      .pt { display: grid; grid-template-columns: 34px 1fr; gap: 16px; align-items: start; }
+      .pt-n { font-size: 13px; font-weight: 700; color: var(--blue-strong); padding-top: 2px; font-variant-numeric: tabular-nums; }
+      .pt-tick { width: 26px; height: 26px; border-radius: 7px; background: var(--panel-blue); display: flex; align-items: center; justify-content: center; }
+      .pt-tick i { width: 8px; height: 8px; border-radius: 2px; background: var(--blue); display: block; }
+      .pt-h { font-size: 14.5px; font-weight: 700; color: var(--ink); margin: 0 0 4px; letter-spacing: -0.005em; }
+      .pt-b { font-size: 12.5px; line-height: 1.5; color: var(--body); margin: 0; }
+
+      /* ── Two-column split ── */
+      .split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 28px; }
+      .col-h { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--navy); margin: 0 0 10px; display: flex; align-items: center; gap: 9px; }
+      .col-h .dot { width: 9px; height: 9px; border-radius: 9999px; background: var(--blue); }
+
+      /* ── Diagrams ── */
+      .stage { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 30px 0 12px; }
+      .flow { display: flex; align-items: stretch; gap: 0; flex-wrap: nowrap; }
+      .node {
+        flex: 1 1 0; min-width: 0; border: 1.5px solid var(--line-strong); border-radius: 8px;
+        background: #fff; padding: 14px 14px 13px; display: flex; flex-direction: column; gap: 3px;
+      }
+      .node .nk { font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+      .node .nt { font-size: 13.5px; font-weight: 700; color: var(--ink); letter-spacing: -0.005em; }
+      .node .ns { font-size: 11px; line-height: 1.4; color: var(--body); margin-top: 2px; }
+      .node.hi { border-color: var(--blue); background: var(--panel-blue); border-width: 1.5px; box-shadow: 0 1px 0 var(--blue) inset; }
+      .node.hi .nk { color: var(--blue-strong); }
+      .arrow { flex: 0 0 30px; display: flex; align-items: center; justify-content: center; color: var(--blue); font-size: 17px; font-weight: 700; }
+      .flow.soft .node { border-style: solid; }
+
+      .surfaces { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 14px; }
+      .surf { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 13px 15px; }
+      .surf.hi { background: var(--panel-blue); border-color: var(--blue); }
+      .surf .st { font-size: 13px; font-weight: 700; color: var(--ink); }
+      .surf .ss { font-size: 10.5px; line-height: 1.4; color: var(--body); margin-top: 3px; }
+      .surf .badge { font-size: 8.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue-strong); }
+
+      .note { display: flex; gap: 12px; align-items: flex-start; margin-top: 20px; padding: 14px 18px; background: var(--panel); border-left: none; border-radius: 8px; }
+      .note .nb { width: 5px; align-self: stretch; border-radius: 9999px; background: var(--blue); flex: 0 0 5px; }
+      .note p { margin: 0; font-size: 12px; line-height: 1.5; color: var(--body); }
+      .note p b { color: var(--ink); font-weight: 700; }
+
+      /* row of guardrail chips under the flow */
+      .guards { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+      .guard { font-size: 10.5px; font-weight: 600; color: var(--navy); background: var(--panel); border: 1px solid var(--line); border-radius: 9999px; padding: 5px 12px; }
+      .guard b { color: var(--blue-strong); }
+
+      /* ── Screenshot frames ── */
+      .shots { display: grid; gap: 22px; margin-top: 8px; flex: 1 1 auto; min-height: 0; }
+      .shots.two { grid-template-columns: 1fr 1fr; }
+      .shots.asym { grid-template-columns: 1.62fr 1fr; align-items: start; }
+      .figure { display: flex; flex-direction: column; min-height: 0; }
+      .frame { border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: #fff; box-shadow: 0 3px 14px rgba(26, 38, 52, 0.09); }
+      .frame img { display: block; width: 100%; height: auto; }
+      .frame.phone { max-width: 230px; margin: 0 auto; border-radius: 14px; }
+      .cap { margin-top: 12px; }
+      .cap .ck { font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--blue-strong); margin: 0 0 4px; }
+      .cap .cb { font-size: 12px; line-height: 1.45; color: var(--body); margin: 0; }
+      .cap .cb b { color: var(--ink); font-weight: 600; }
+
+      /* ── Rationale decision rows ── */
+      .decisions { margin-top: 26px; display: grid; gap: 0; }
+      .dec { display: grid; grid-template-columns: 0.92fr 1.08fr; gap: 28px; padding: 15px 0; border-top: 1px solid var(--line); }
+      .dec:last-child { border-bottom: 1px solid var(--line); }
+      .dec .dw { font-size: 14px; font-weight: 700; color: var(--navy); letter-spacing: -0.005em; }
+      .dec .dy { font-size: 12.5px; line-height: 1.5; color: var(--body); }
+      .dec .dy b { color: var(--ink); font-weight: 600; }
+
+      /* ── Cover ── */
+      .cover { justify-content: space-between; }
+      .cover-top { display: flex; align-items: center; justify-content: space-between; }
+      .cover-mark { font-size: 13px; font-weight: 800; letter-spacing: 0.05em; color: var(--ink); text-transform: uppercase; }
+      .cover-mark .b { color: var(--blue-strong); }
+      .cover-tag { font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+      .cover-mid { }
+      .cover-kicker { font-size: 12.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue-strong); margin: 0 0 26px; }
+      .cover-h { font-size: 66px; line-height: 1.0; font-weight: 600; letter-spacing: -0.026em; color: var(--navy); margin: 0; max-width: 17ch; }
+      .cover-h em { font-style: italic; color: var(--blue-strong); }
+      .cover-sub { font-size: 17.5px; line-height: 1.5; font-weight: 300; color: var(--body); margin: 28px 0 0; max-width: 74ch; }
+      .cover-sub b { font-weight: 600; color: var(--ink); }
+      .cover-foot { display: flex; align-items: flex-end; justify-content: space-between; }
+      .cover-by { font-size: 13px; color: var(--body); }
+      .cover-by b { color: var(--ink); font-weight: 700; }
+      .cover-by .muted { color: var(--muted); }
+      .cover-contains { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: var(--muted); text-align: right; }
+      .cover-contains b { color: var(--blue-strong); }
+
+      /* ── Close ── */
+      .close { justify-content: space-between; }
+      .close-h { font-size: 44px; line-height: 1.05; font-weight: 600; letter-spacing: -0.02em; color: var(--navy); margin: 0; max-width: 20ch; }
+      .close-h em { font-style: italic; color: var(--blue-strong); }
+      .close-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 30px; }
+      .close-blk .cbk { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+      .close-blk p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--body); }
+      .close-blk a, .close-blk .url { color: var(--blue-strong); font-weight: 600; word-break: break-word; }
+      .close-foot { display: flex; align-items: flex-end; justify-content: space-between; }
+    </style>
+  </head>
+  <body>
+    <!-- ════════════════ 1 · COVER ════════════════ -->
+    <section class="page cover">
+      <div class="cover-top">
+        <div class="cover-mark">INDUSTRY <span class="b">INTERFACE</span></div>
+        <div class="cover-tag">OroLabs &middot; UX intern task</div>
+      </div>
+
+      <div class="cover-mid">
+        <p class="cover-kicker">National Institute of Design &middot; recruiter portal redesign</p>
+        <h1 class="cover-h">The recruiter journey NID never <em>wrote down.</em></h1>
+        <p class="cover-sub">
+          A migration-grade rebuild of the Industry Interface placement portal. <b>Reverse-engineered
+          from the institute's real internal structures</b>, brand-true to nid.edu, and modular enough
+          to swap into the live system one surface at a time.
+        </p>
+      </div>
+
+      <div>
+        <span class="spectrum"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <div class="cover-foot" style="margin-top: 22px;">
+          <div class="cover-by"><b>Tushar Kant Naik</b><span class="muted"> &middot; 2026</span></div>
+          <div class="cover-contains">Two forms enclosed: <b>an interactive HTML showcase</b> and this print deck.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ 2 · THE CORE PROBLEM ════════════════ -->
+    <section class="page">
+      <div class="run">
+        <div class="run-id"><span class="run-mark">INDUSTRY <span class="b">INTERFACE</span></span></div>
+        <span class="run-label">The core problem</span>
+        <span class="run-no"><b>01</b> / 04</span>
+      </div>
+      <div class="content">
+        <div class="ghost">01</div>
+        <p class="kicker">The core problem</p>
+        <h2 class="h1">The visible portal is the small part.</h2>
+        <p class="lead">
+          Industry Interface runs on ASP.NET Web Forms, with cycle dates hand-edited into the HTML and
+          onboarding that still begins as an email. The workflow underneath, from first contact to a
+          signed offer, carries caveats that never surface until a recruiter is already mid-cycle.
+        </p>
+
+        <ul class="points two">
+          <li class="pt"><span class="pt-n">01</span><div><p class="pt-h">An undocumented workflow</p><p class="pt-b">Onboarding, selection, and offers run on conventions the placement cell holds in its head, not in the system. New recruiters keep hitting rules they could not see.</p></div></li>
+          <li class="pt"><span class="pt-n">02</span><div><p class="pt-h">A missing compliance spine</p><p class="pt-b">Stipend floors, GST-correct receipts, data residency, an audit trail: government and institutional norms live in email threads and scanned PDFs, not in the product.</p></div></li>
+          <li class="pt"><span class="pt-n">03</span><div><p class="pt-h">Portfolios that will not load</p><p class="pt-b">The portfolio surface ships roughly 8 MB per discipline view, fetched one student at a time, so recruiters often cannot find a portfolio that is sitting right there.</p></div></li>
+          <li class="pt"><span class="pt-n">04</span><div><p class="pt-h">Fragmented contact</p><p class="pt-b">Two mailboxes, scattered phone numbers, no single status surface. "Did anyone read my email" becomes the recruiter's default state for weeks.</p></div></li>
+        </ul>
+
+        <div class="note">
+          <span class="nb"></span>
+          <p><b>The thesis.</b> Fix the workflow, not just the screens. Surface the hidden caveats, encode the compliance, and make the portfolio findable, without forcing the institute into a risky big-bang cutover.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ 3 · HOW I WORKED WITH AI ════════════════ -->
+    <section class="page">
+      <div class="run">
+        <div class="run-id"><span class="run-mark">INDUSTRY <span class="b">INTERFACE</span></span></div>
+        <span class="run-label">How I worked with AI</span>
+        <span class="run-no"><b>02</b> / 04</span>
+      </div>
+      <div class="content">
+        <div class="ghost">02</div>
+        <p class="kicker">How I worked with AI</p>
+        <h2 class="h1">AI did the reading. I held the judgment.</h2>
+        <p class="lead">
+          AI synthesised the public research, drafted the architecture, and wrote first-pass code across
+          four build rounds. <b>I decided what to build, what to refuse, and where a cheaper tool beats a
+          clever one.</b> The interesting calls were mine; the volume was the model's.
+        </p>
+
+        <div class="split">
+          <div>
+            <p class="col-h"><span class="dot"></span>Decisions I made</p>
+            <ul class="points">
+              <li class="pt"><span class="pt-tick"><i></i></span><div><p class="pt-h">AI translates, never judges</p><p class="pt-b">The system maps recruiter vocabulary to NID disciplines and summarises long JDs. It never ranks, scores, or filters students. The line is drawn in the product, not just the prompt.</p></div></li>
+              <li class="pt"><span class="pt-tick"><i></i></span><div><p class="pt-h">ML over LLM where the task is structured</p><p class="pt-b">JD extraction, skill matching, scope-creep checks, stipend math: deterministic ML and pure formulas. The system stays light, fast, cheap, and self-hostable.</p></div></li>
+            </ul>
+          </div>
+          <div>
+            <p class="col-h"><span class="dot"></span>How the build stayed coherent</p>
+            <ul class="points">
+              <li class="pt"><span class="pt-tick"><i></i></span><div><p class="pt-h">A context contract per module</p><p class="pt-b">Every module carries a five-file markdown contract plus a git-backed memory layer, so any model could resume the build without re-reading the whole history.</p></div></li>
+              <li class="pt"><span class="pt-tick"><i></i></span><div><p class="pt-h">A human gate on every merge</p><p class="pt-b">Adversarial verification, strict TypeScript, and module-boundary checks. The model proposes; the gates and I dispose.</p></div></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="note">
+          <span class="nb"></span>
+          <p><b>Why it reads as built, not generated.</b> The choices that shape this portal are refusals: no fit-score, no bulk shortlist, no LLM where a formula will do. A first-draft copy-paste would have added features; the work was in taking them away.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ 4 · SOLUTION: IA + MODULAR ════════════════ -->
+    <section class="page">
+      <div class="run run--accent">
+        <div class="run-id"><span class="run-mark">INDUSTRY <span class="b">INTERFACE</span></span></div>
+        <span class="run-label">The solution &middot; architecture</span>
+        <span class="run-no"><b>03</b> / 04</span>
+      </div>
+      <div class="content">
+        <p class="kicker">The solution &middot; information architecture</p>
+        <h2 class="h1">One forward-only pipeline, four modular surfaces.</h2>
+        <p class="lead">
+          The recruiter side becomes a strict left-to-right pipeline. Lock a stage and the previous one
+          turns read-only, so the workflow can never quietly run backwards.
+        </p>
+
+        <p class="stage">The recruiter pipeline</p>
+        <div class="flow">
+          <div class="node"><span class="nk">Stage 1</span><span class="nt">Dashboard</span><span class="ns">Cycle phase, deadlines, your pipelines</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node"><span class="nk">Stage 2</span><span class="nt">Job descriptions</span><span class="ns">Structured, checked, immutable on publish</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node"><span class="nk">Stage 3</span><span class="nt">Candidates</span><span class="ns">Portfolio-first, individual shortlist</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node"><span class="nk">Stage 4</span><span class="nt">Interview</span><span class="ns">Before plan &middot; During rounds &middot; After tally</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node hi"><span class="nk">Stage 5</span><span class="nt">Offers</span><span class="ns">Wave cascade, 1:1 to positions</span></div>
+        </div>
+
+        <p class="stage">Four surfaces, each a swappable module</p>
+        <div class="surfaces">
+          <div class="surf"><div class="st">Public</div><div class="ss">Apply, track a ticket, browse disciplines</div></div>
+          <div class="surf hi"><div class="badge">This redesign</div><div class="st">Recruiter</div><div class="ss">The full lifecycle, rebuilt</div></div>
+          <div class="surf"><div class="st">Admin</div><div class="ss">Cycles, moderation, accountability</div></div>
+          <div class="surf"><div class="st">Student</div><div class="ss">Eligible JDs, offers, redressal</div></div>
+        </div>
+
+        <div class="note">
+          <span class="nb"></span>
+          <p><b>Migration-grade by design.</b> Only the recruiter surface is rebuilt, in a way that does not break the existing workflow. Each surface sits behind a stable interface, so the institute's engineers can chain the new portal in beside the old one and retire it cycle by cycle, integrated systems intact.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ 5 · SOLUTION: RECRUITER FLOW ════════════════ -->
+    <section class="page">
+      <div class="run run--accent">
+        <div class="run-id"><span class="run-mark">INDUSTRY <span class="b">INTERFACE</span></span></div>
+        <span class="run-label">The solution &middot; recruiter flow</span>
+        <span class="run-no"><b>03</b> / 04</span>
+      </div>
+      <div class="content">
+        <p class="kicker">The solution &middot; process map</p>
+        <h2 class="h1">From first contact to a signed offer.</h2>
+        <p class="lead">
+          The whole journey, with the caveats now built in as guardrails rather than tribal knowledge.
+        </p>
+
+        <p class="stage">Before login &middot; the public track</p>
+        <div class="flow soft">
+          <div class="node"><span class="nk">Step</span><span class="nt">Apply</span><span class="ns">No login. Branch-aware.</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node"><span class="nk">Step</span><span class="nt">Ticket issued</span><span class="ns">Email and SMS</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node"><span class="nk">Step</span><span class="nt">Pay fee</span><span class="ns">GST receipt, hashed</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node"><span class="nk">Step</span><span class="nt">Track</span><span class="ns">Public status page</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node hi"><span class="nk">Step</span><span class="nt">Credentials</span><span class="ns">Dashboard unlocked</span></div>
+        </div>
+
+        <p class="stage">Inside the portal &middot; the cycle</p>
+        <div class="flow soft">
+          <div class="node"><span class="nk">Post</span><span class="nt">Job description</span><span class="ns">Upload, ML autofills, checks run, immutable on publish</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node"><span class="nk">Review</span><span class="nt">Candidates</span><span class="ns">Portfolio-first, shortlist one at a time with a note</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node"><span class="nk">Run</span><span class="nt">Interview</span><span class="ns">Plan, score each round, tally and decide</span></div>
+          <div class="arrow">&rarr;</div>
+          <div class="node hi"><span class="nk">Close</span><span class="nt">Offers</span><span class="ns">Sequence, deadlines, certified letter</span></div>
+        </div>
+
+        <div class="guards">
+          <span class="guard"><b>&times;</b> no bulk shortlist</span>
+          <span class="guard"><b>&times;</b> no fit-score</span>
+          <span class="guard">stipend floor checked <b>both ends</b></span>
+          <span class="guard">JDs <b>immutable</b> after publish</span>
+          <span class="guard">offers never exceed <b>open positions</b></span>
+          <span class="guard">every mutation <b>audit-logged</b></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ 6 · HI-FI A ════════════════ -->
+    <section class="page">
+      <div class="run run--accent">
+        <div class="run-id"><span class="run-mark">INDUSTRY <span class="b">INTERFACE</span></span></div>
+        <span class="run-label">The solution &middot; hi-fidelity</span>
+        <span class="run-no"><b>03</b> / 04</span>
+      </div>
+      <div class="content">
+        <p class="kicker">The solution &middot; hi-fidelity, brand-true</p>
+        <h2 class="h1">Browse, the way a design school should.</h2>
+        <div class="shots two">
+          <div class="figure">
+            <div class="frame"><img src="assets/hero-dashboard.png" alt="Recruiter dashboard showing cycle phase, deadline banner, stat cards, and a Product Designer pipeline" /></div>
+            <div class="cap"><p class="ck">Dashboard</p><p class="cb"><b>One institution, not a separate product.</b> Open Sans and the nid.edu blue carry the brand; the live cycle phase, rolling deadlines, and your pipelines sit one glance away.</p></div>
+          </div>
+          <div class="figure">
+            <div class="frame"><img src="assets/candidates.png" alt="Candidates workspace with a portfolio-first grid of students and their disciplines" /></div>
+            <div class="cap"><p class="ck">Candidates</p><p class="cb"><b>Portfolio-first. No ranking, no fit-score.</b> Open a student, read their statement, and shortlist one at a time with a required note. Subjective work judged subjectively, on purpose.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ 7 · HI-FI B ════════════════ -->
+    <section class="page">
+      <div class="run run--accent">
+        <div class="run-id"><span class="run-mark">INDUSTRY <span class="b">INTERFACE</span></span></div>
+        <span class="run-label">The solution &middot; hi-fidelity</span>
+        <span class="run-no"><b>03</b> / 04</span>
+      </div>
+      <div class="content">
+        <p class="kicker">The solution &middot; hi-fidelity</p>
+        <h2 class="h1">Post a JD; run the room from your phone.</h2>
+        <div class="shots asym">
+          <div class="figure">
+            <div class="frame"><img src="assets/jd-wizard.png" alt="Structured JD posting wizard with a completion progress meter and an upload-to-autofill card" /></div>
+            <div class="cap"><p class="ck">JD wizard</p><p class="cb"><b>Structured, with a completion meter.</b> Upload an existing JD and ML maps it onto the fields. It only maps the text; it never scores or filters anyone.</p></div>
+          </div>
+          <div class="figure">
+            <div class="frame phone"><img src="assets/mobile-interview.png" alt="Mobile interview console with a candidate card, a score field, and advance, hold, reject actions" /></div>
+            <div class="cap"><p class="ck">Mobile interview console</p><p class="cb"><b>The same portal as a web app on a phone.</b> Score each round, advance or hold, and move the queue, all from the interview room.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ 8 · HI-FI C ════════════════ -->
+    <section class="page">
+      <div class="run run--accent">
+        <div class="run-id"><span class="run-mark">INDUSTRY <span class="b">INTERFACE</span></span></div>
+        <span class="run-label">The solution &middot; hi-fidelity</span>
+        <span class="run-no"><b>03</b> / 04</span>
+      </div>
+      <div class="content">
+        <p class="kicker">The solution &middot; hi-fidelity</p>
+        <h2 class="h1">A pipeline that refuses to skip stages.</h2>
+        <div class="shots two">
+          <div class="figure">
+            <div class="frame"><img src="assets/interview-before.png" alt="Interview workspace with Before plan, During rounds, and After tally tabs, and the round plan setup" /></div>
+            <div class="cap"><p class="ck">Interview &middot; before</p><p class="cb"><b>One linear flow per JD.</b> Plan the rounds and the per-round duration, then drag shortlisted students onto the time-slot grid. Lock it, and the plan freezes.</p></div>
+          </div>
+          <div class="figure">
+            <div class="frame"><img src="assets/offers.png" alt="Offers tab in a locked state until interviews are marked complete" /></div>
+            <div class="cap"><p class="ck">Offers &middot; the stage gate</p><p class="cb"><b>Offers stay locked until interviews are marked complete.</b> The cascade is wave-based and strictly one-to-one with open positions, so a recruiter can never over-offer.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ 9 · THE RATIONALE ════════════════ -->
+    <section class="page">
+      <div class="run">
+        <div class="run-id"><span class="run-mark">INDUSTRY <span class="b">INTERFACE</span></span></div>
+        <span class="run-label">The rationale</span>
+        <span class="run-no"><b>04</b> / 04</span>
+      </div>
+      <div class="content">
+        <div class="ghost">04</div>
+        <p class="kicker">The rationale</p>
+        <h2 class="h1">Why these choices, and what they protect.</h2>
+
+        <div class="decisions">
+          <div class="dec"><div class="dw">AI translates, never judges</div><div class="dy">Design is subjective. A fit-score would collapse the surface that lets a surprising portfolio win. AI disambiguates and summarises; the recruiter decides.</div></div>
+          <div class="dec"><div class="dw">ML over LLM where it counts</div><div class="dy"><b>Structured work does not need a 70B model.</b> Extraction, matching, and stipend math run as ML and formulas, so the system stays light, fast, cheap, and self-hostable on STQC-cleared infrastructure.</div></div>
+          <div class="dec"><div class="dw">Individual-only shortlist</div><div class="dy">No select-all, a required note per student. The interface makes real evaluation the path of least resistance.</div></div>
+          <div class="dec"><div class="dw">Mobile-first for the interview room</div><div class="dy"><b>The console is a web app on a phone.</b> Day-of work happens with a device in hand, so scoring, advancing, and pinging the coordinator are built for that context first.</div></div>
+          <div class="dec"><div class="dw">Brand parity with nid.edu</div><div class="dy"><b>The recruiter should perceive one institution.</b> Open Sans, the nid.edu blue, and the discipline palette are deliberate. Identity preservation is credibility.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════ 10 · CLOSE ════════════════ -->
+    <section class="page close">
+      <div class="cover-top">
+        <div class="cover-mark">INDUSTRY <span class="b">INTERFACE</span></div>
+        <div class="cover-tag">In one line</div>
+      </div>
+
+      <div>
+        <h2 class="close-h">A recruiter portal reverse-engineered from how NID <em>actually works.</em></h2>
+        <div class="close-grid">
+          <div class="close-blk">
+            <p class="cbk">What it is</p>
+            <p>Brand-true, ML-light, mobile-ready, and modular enough to migrate into the live system one surface at a time. The hidden caveats are now guardrails, and the compliance spine is built in.</p>
+          </div>
+          <div class="close-blk">
+            <p class="cbk">This submission contains</p>
+            <p>An interactive HTML showcase and this print deck. The live prototype is running:</p>
+            <p style="margin-top: 10px;"><span class="url">nid-industry-interface.vercel.app/recruiter/dashboard</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <span class="spectrum"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <div class="close-foot" style="margin-top: 22px;">
+          <div class="cover-by"><b>Tushar Kant Naik</b><span class="muted"> &middot; OroLabs UX intern task &middot; 2026</span></div>
+          <div class="cover-contains">Thank you for reading.</div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
