@@ -2,8 +2,8 @@
 name: nid-industry-interface-session-memory
 project: nid-industry-interface
 last_updated: 2026-05-30
-status: Round 3 (recruiter account lifecycle + multi-branch + repo governance) built GREEN; runtime advisories cleared 25→0 — on branch feat/recruiter-portal-round2
-current_module: (Round 3 — logout/profile, cycle-lock, multi-branch isolation, dep-advisory triage, repo hardening)
+status: Round 3 SHIPPED — built GREEN, DEMO_RECRUITER cleanup done, branch pushed (d9f8310), deployed to prod (vercel --prod READY at nid-industry-interface.vercel.app); PR #2 open feat→main (MERGEABLE/CLEAN) awaiting OWNER merge + main ruleset
+current_module: (Round 3 finalization — session cleanup, push, prod redeploy, feat→main PR)
 ---
 
 # Session Memory — NID Industry Interface (project-local)
@@ -22,11 +22,11 @@ Project-local session memory. Fully isolated from any global GCC layer.
 - **E3 dependency advisories:** `pnpm audit --prod` **25 → 0**. `next` 15.1.0→**15.5.18** (2 critical + 6 high Next CVEs), `drizzle-orm` 0.38.4→0.45.2, `eslint-config-next`→15.5.18, `postcss`→8.5.10 + root `pnpm.overrides.postcss ^8.5.10` (Next's transitive build-time copy). Remaining 7 are dev/build-only (vitest/vite/esbuild/@eslint/plugin-kit) — accepted + documented in `SECURITY.md`. `dependabot.yml` keeps them flowing through reviewed PRs.
 - **E2 repo hardening:** `docs/repo-hardening.md` runbook for the OWNER — branch protection (require PR + Code Owner review on `main`, block force-push/deletion), collaborator-write restriction, Dependabot/secret-scanning/push-protection. I authored the runbook; the owner applies the access-control toggles (an agent does NOT change repo access settings).
 
-**KNOWN residual (minor, NOT a leak):** a few `/recruiter/jds/[jdId]/*` surfaces still read `DEMO_RECRUITER` for the shell **companyName** (= the shared brand) + config (sub-roles, transport pref). Those pages are ownership-gated (`requireOwnedJd` 404s cross-branch) and only Bengaluru has JDs, so display is correct + no data leak. Full cleanup = swap to `readRecruiterSession()`. The DATA isolation (JD/candidate/offer read+write) is fully session-gated.
+**~~KNOWN residual~~ RESOLVED (commit `d9f8310`):** the 16 `/recruiter/*` surfaces that still read `DEMO_RECRUITER` for shell **companyName** + per-recruiter config (sub-roles, transport pref, coordinator, API key, draft owner) now read `readRecruiterSession()` (the logged-in branch). Fanned out across 3 subagents, verified centrally (tsc 14 projects · vitest · boundaries · contracts · next build 67 routes). Two sync Server Components → async; the shared `withContext()` draft helper → async. `DEMO_RECRUITER` now survives ONLY in the session/login/demo-data layer (`demo-recruiter.ts`, `recruiter-session.ts`, `recruiter-subroles.ts` data, `login/credentials.ts`, `student/report-company`).
 
 **Demo-posture decision:** durable Postgres KV stays OFF (no DATABASE_URL) — personal-project demo "feel"; wire durability only if the institution adopts.
 
-**Next step:** await the user for (a) applying the repo-hardening settings, (b) push + Vercel redeploy of Round 3, (c) optional residual `DEMO_RECRUITER` cleanup. Do NOT auto-continue.
+**Next step (agent done — remaining are OWNER actions):** Round 3 is SHIPPED — `DEMO_RECRUITER` cleanup committed (`d9f8310`), branch pushed to origin, deployed to prod (`vercel --prod` READY at `nid-industry-interface.vercel.app`, JSON-fallback posture). **PR #2** (`feat/recruiter-portal-round2 → main`, MERGEABLE/CLEAN, 9 commits / 178 files) is open to bring `main` current — merging it clears `main`'s 55 dependency advisories + lands governance/CODEOWNERS. OWNER to: (1) merge PR #2; (2) apply the `main` branch ruleset per `docs/repo-hardening.md` §1 — **do NOT tick "Include administrators"** or you lock yourself out of merging your own PRs. Already done (verified read-only): secret scanning + push protection + Dependabot enabled; collaborators = owner-only; Dependabot PR #1 open. Vercel prod is a manual `vercel --prod` (decoupled from `main`). Do NOT auto-continue.
 
 ---
 
