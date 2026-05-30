@@ -114,6 +114,9 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@nid/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       zod:
         specifier: 3.23.8
         version: 3.23.8
@@ -124,6 +127,9 @@ importers:
 
   modules/admin-cms:
     dependencies:
+      '@nid/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       zod:
         specifier: 3.23.8
         version: 3.23.8
@@ -137,6 +143,9 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@nid/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       zod:
         specifier: 3.23.8
         version: 3.23.8
@@ -150,6 +159,9 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@nid/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@nid/module-candidate-browse':
         specifier: workspace:*
         version: link:../candidate-browse
@@ -169,6 +181,9 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@nid/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       zod:
         specifier: 3.23.8
         version: 3.23.8
@@ -185,6 +200,9 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@nid/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       zod:
         specifier: 3.23.8
         version: 3.23.8
@@ -195,6 +213,9 @@ importers:
 
   modules/recruiter-engagement:
     dependencies:
+      '@nid/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       zod:
         specifier: 3.23.8
         version: 3.23.8
@@ -208,6 +229,9 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@nid/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       zod:
         specifier: 3.23.8
         version: 3.23.8
@@ -221,6 +245,9 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@nid/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       zod:
         specifier: 3.23.8
         version: 3.23.8
@@ -234,6 +261,9 @@ importers:
       '@nid/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@nid/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@nid/module-candidate-browse':
         specifier: workspace:*
         version: link:../candidate-browse

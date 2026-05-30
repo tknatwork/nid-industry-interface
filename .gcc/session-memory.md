@@ -30,7 +30,19 @@ Project-local session memory. Fully isolated from any global GCC layer.
 
 **GOTCHA (carry forward):** the split-comp floor invariant lives in `evaluateProgrammeFloors` — the client predictor MUST mirror its boundary (`offered < adjustedFloor` blocks). If you touch one side, touch the other; the test pins the server side. New vitest surface: jd-posting now runs `vitest run` (devDep added) — `pnpm -r test` covers both core + jd-posting.
 
-**Next step:** Wave 3 commit on `feat/recruiter-portal-round2` (this). Then await the user for push/Vercel deploy (optional) or the deferred larger efforts below. Do NOT auto-continue.
+**Next step:** Round 2 + the JD take-home/whiteboarding rule + the durable-KV swap are all committed on `feat/recruiter-portal-round2`. Await the user for push/Vercel deploy or the remaining deferred efforts (auth, SDK packages, Playwright E2E, production FastAPI ML, Langfuse). Do NOT auto-continue.
+
+## Durable demo persistence — Postgres KV store (2026-05-30)
+
+User picked the durable-KV approach (over a full relational remodel) to fix the `/tmp`-JSON single-instance caveat. **Done + verified.**
+
+- **Seam (low-risk, no async ripple):** the 10 module JSON stores stay synchronous + remain the in-instance cache; each `persist()` adds one `syncKv('<store-key>', state)` fire-and-forget write-through into a single `kv_store` table (full state blob per store). `apps/web/instrumentation.ts` → `instrumentation-hydrate.ts` hydrates `/tmp` from `kv_store` on cold start, BEFORE requests are served. Actions/pages unchanged.
+- **Edge-safety:** the instrumentation ENTRY only imports the node-only hydrate file inside a `process.env.NEXT_RUNTIME === 'nodejs'` branch — Next inlines NEXT_RUNTIME so the `node:fs` import is dead-code-eliminated from the Edge middleware bundle (the first build attempt failed with `UnhandledSchemeError: node:fs` until this split).
+- **`@nid/db` additions:** `kv.ts` (`kvEnabled`/`kvGetAll`/`kvSet`/`syncKv`) exported from the index. Lazy connection (never opens at import), **self-creating `kv_store` table** (raw `CREATE TABLE IF NOT EXISTS` on first use → no migration; a fresh hosted Postgres just needs the URL). All 10 store modules now depend on `@nid/db` (boundary check confirms modules→@nid/db is allowed, no cycle; only `@nid/core` must stay db-free).
+- **Gated on `DATABASE_URL`:** unset → every kv fn is a no-op and the stores fall back to JSON (the live demo never breaks). Set → durable + shared across instances.
+- **To make the VERCEL demo durable:** provision a hosted Postgres (Supabase/Neon/Vercel marketplace) + set `DATABASE_URL` in the Vercel project env + redeploy. The code + JSON fallback are ready; I can't create the DB account. Locally: `DATABASE_URL=postgres://nid:nid@localhost:5433/nid_industry_interface` against the `nid-pg-throwaway` docker container.
+- **Verified:** live KV round-trip through the docker Postgres (table auto-creates, blob round-trips with full fidelity); `next build` green WITH the wired stores AND WITHOUT a DB (fallback path); tsc (14 projects), boundaries, contracts all green.
+- **GOTCHA:** write-through is best-effort fire-and-forget (a sync `persist` can't await Postgres); because each write ships the FULL blob, a dropped write self-heals on the next mutation. Fine for a demo; for hard durability, await the write in the action layer.
 
 ---
 
@@ -73,8 +85,9 @@ Project-local session memory. Fully isolated from any global GCC layer.
 - **Editable admin** (11th module `@nid/module-admin-cms`): persisted cycle config + 6 CMS content
   blocks. `/admin/cycles` edit form + `/admin/content` editable blocks; edits persist (verified).
 
-GOTCHA: module STORES are still JSON `.dev-data` — the live Postgres powers Studio/tooling only;
-a full Postgres-backed store swap across modules is still future (NOT done).
+GOTCHA (superseded 2026-05-30): module STORES were JSON `.dev-data` only at this point. The
+durable Postgres KV swap is now DONE — stores write through to a `kv_store` table when
+`DATABASE_URL` is set (see "Durable demo persistence" section near the top).
 
 ## Latest round (federation + publishing + a11y + tests)
 
