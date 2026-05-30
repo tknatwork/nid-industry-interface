@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { syncKv } from '@nid/db';
 import { dirname, resolve } from 'node:path';
 import type {
+  AccountActivationRecord,
   ApplicationTicketRecord,
   OutboxMessage,
   PaymentReceipt,
@@ -22,6 +23,10 @@ interface StoreState {
   readonly tickets: Record<string, ApplicationTicketRecord>;
   readonly counters: Record<string, number>; // key = `${year}-${window}`
   readonly outbox: readonly OutboxMessage[];
+  // Per-recruiter account-activation / cycle-lock state, keyed by recruiterId
+  // (=== ticketId in this demo). Plan Round 3 §C — accounts lock between cycles
+  // and reactivate by re-paying the participation fee.
+  readonly accounts: Record<string, AccountActivationRecord>;
 }
 
 function dataFilePath(): string {
@@ -41,6 +46,7 @@ function loadState(): StoreState {
       tickets: parsed.tickets ?? {},
       counters: parsed.counters ?? {},
       outbox: parsed.outbox ?? [],
+      accounts: parsed.accounts ?? {},
     };
   } catch {
     return seedInitialState();
@@ -139,10 +145,22 @@ function seedInitialState(): StoreState {
   const tickets: Record<string, ApplicationTicketRecord> = {};
   for (const t of demoTickets) tickets[t.ticketId] = t;
 
+  // Seed the demo recruiter Acme as active for the spring 2026 cycle and
+  // unlocked, so the cycle-lock / reactivation surfaces have a live account
+  // to act on out-of-the-box (plan Round 3 §C).
+  const accounts: Record<string, AccountActivationRecord> = {
+    'NID-2026-A-0001': {
+      recruiterId: 'NID-2026-A-0001',
+      activeCycleId: 'cycle_spring_2026',
+      locked: false,
+    },
+  };
+
   const state: StoreState = {
     tickets,
     counters: { '2026-A': 42 },
     outbox: [],
+    accounts,
   };
   persist(state);
   return state;
@@ -231,6 +249,7 @@ export function submitApplication(input: SubmitInput): SubmitResult {
   };
 
   persist({
+    ...state,
     tickets: { ...state.tickets, [ticketId]: record },
     counters: { ...state.counters, [counterKey]: nextCounter },
     outbox: [...state.outbox, emailEntry, smsEntry],
@@ -439,4 +458,157 @@ export function payTicketFee(input: {
   });
 
   return { record: updated, receipt };
+}
+
+// ── Account activation / cycle lock (plan Round 3 §C) ───────────────────────
+//
+// Recruiter accounts lock between placement cycles. Credentials never change —
+// only the lock + active-cycle state does. An admin "wind down" at cycle close
+// locks every account on that cycle; the recruiter reactivates by re-paying the
+// participation fee for the next cycle (mock, mirroring payTicketFee).
+
+/** Default participation-fee amount in paise, reused for reactivation (mock). */
+const DEFAULT_PARTICIPATION_FEE_PAISE = 1_500_000;
+
+/** The active state a recruiter falls back to when no account record exists. */
+function defaultAccountState(): { activeCycleId: string; locked: boolean } {
+  return { activeCycleId: 'cycle_spring_2026', locked: false };
+}
+
+/**
+ * Read a recruiter's account-activation state. Falls back to the seeded active
+ * state (active on the spring 2026 cycle, unlocked) when no record exists, so
+ * callers always get a usable shape.
+ */
+export function getAccountState(
+  recruiterId: string,
+): { activeCycleId: string; locked: boolean; reactivatedAt?: string } {
+  const state = loadState();
+  const record = state.accounts[recruiterId];
+  if (!record) return defaultAccountState();
+  return {
+    activeCycleId: record.activeCycleId,
+    locked: record.locked,
+    ...(record.reactivatedAt !== undefined ? { reactivatedAt: record.reactivatedAt } : {}),
+  };
+}
+
+/** Whether a recruiter's account is currently locked (defaults to unlocked). */
+export function isAccountLocked(recruiterId: string): boolean {
+  return getAccountState(recruiterId).locked;
+}
+
+/**
+ * Admin "wind down": lock every account whose active cycle is `cycleId`.
+ * Returns how many accounts were newly locked (already-locked accounts on the
+ * cycle are not re-counted). Credentials are untouched.
+ */
+export function windDownCycle(cycleId: string): number {
+  const state = loadState();
+  let lockedCount = 0;
+  const nextAccounts: Record<string, AccountActivationRecord> = { ...state.accounts };
+  for (const [id, record] of Object.entries(state.accounts)) {
+    if (record.activeCycleId === cycleId && !record.locked) {
+      nextAccounts[id] = { ...record, locked: true };
+      lockedCount += 1;
+    }
+  }
+  if (lockedCount > 0) {
+    persist({ ...state, accounts: nextAccounts });
+  }
+  return lockedCount;
+}
+
+export interface ReactivateResult {
+  readonly ok: boolean;
+  readonly receipt?: PaymentReceipt;
+  readonly reason?: string;
+}
+
+/**
+ * Reactivate a recruiter for the next cycle by re-paying the participation fee
+ * (mock — mirrors payTicketFee: mints a PaymentReceipt and queues an email + SMS
+ * preview). On success the account is set to the next cycle, unlocked, and
+ * stamped with `reactivatedAt`. The recruiterId / credentials never change.
+ */
+export function reactivateForCycle(input: {
+  recruiterId: string;
+  nextCycleId: string;
+  amountPaise?: number | undefined;
+}): ReactivateResult {
+  const nextCycleId = input.nextCycleId.trim();
+  if (!nextCycleId) {
+    return { ok: false, reason: 'A next cycle is required to reactivate.' };
+  }
+
+  const state = loadState();
+
+  const now = new Date();
+  const reactivatedAt = now.toISOString();
+  // Derive the receipt id from the recruiter serial (e.g. NID-2026-A-0001 →
+  // NID-RCPT-2026-A-0001), mirroring payTicketFee; fall back to the full id.
+  const serial = input.recruiterId.match(/^NID-(\d{4}-[AB]-\d{4})$/)?.[1] ?? input.recruiterId;
+  const receiptId = `NID-RCPT-${serial}`;
+  const amountPaise = input.amountPaise ?? DEFAULT_PARTICIPATION_FEE_PAISE;
+  const method = 'Demo gateway (UPI)';
+  const gatewayRef = `DEMOPAY-${now.getTime().toString(36).toUpperCase()}`;
+
+  const receipt: PaymentReceipt = {
+    receiptId,
+    amountPaise,
+    paidAt: reactivatedAt,
+    method,
+    gatewayRef,
+  };
+
+  const updatedAccount: AccountActivationRecord = {
+    recruiterId: input.recruiterId,
+    activeCycleId: nextCycleId,
+    locked: false,
+    reactivatedAt,
+  };
+
+  // Queue the reactivation receipt preview to the recruiter's company contacts
+  // when we can resolve them from the onboarding ticket (recruiterId ===
+  // ticketId). Mirrors payTicketFee's email + SMS pair. Mock; nothing is sent.
+  const ticket = state.tickets[input.recruiterId];
+  const outboxAdditions: OutboxMessage[] = [];
+  if (ticket) {
+    outboxAdditions.push({
+      id: `outbox_${input.recruiterId}_reactivate_${now.getTime()}`,
+      ticketId: input.recruiterId,
+      channel: 'email',
+      to: ticket.corporateEmail,
+      templateId: 'account.reactivated',
+      renderedSubject: `NID Industry Interface — account reactivated for the new cycle (${receiptId})`,
+      renderedBody:
+        `Dear ${ticket.contactName},\n\n` +
+        `Your participation fee of ₹${(amountPaise / 100).toLocaleString('en-IN')} for the new placement cycle has been received. ` +
+        `Your existing login continues to work — your account is active again.\n\n` +
+        `Receipt: ${receiptId}\nGateway ref: ${gatewayRef}\n\n` +
+        `— NID Industry Interface`,
+      queuedAt: reactivatedAt,
+    });
+    outboxAdditions.push({
+      id: `outbox_${input.recruiterId}_reactivate_sms_${now.getTime()}`,
+      ticketId: input.recruiterId,
+      channel: 'sms',
+      to: ticket.contactPhone,
+      templateId: 'account.reactivated.sms',
+      renderedBody:
+        `NID Industry Interface: participation fee of ₹${(amountPaise / 100).toLocaleString('en-IN')} received. ` +
+        `Your account is reactivated for the new cycle. Receipt ${receiptId}.`,
+      queuedAt: reactivatedAt,
+    });
+  }
+
+  persist({
+    ...state,
+    accounts: { ...state.accounts, [input.recruiterId]: updatedAccount },
+    ...(outboxAdditions.length > 0
+      ? { outbox: [...state.outbox, ...outboxAdditions] }
+      : {}),
+  });
+
+  return { ok: true, receipt };
 }

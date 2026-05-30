@@ -2,16 +2,22 @@ import type { Metadata } from 'next';
 import { AdminShell, Button, Field, StatusPill, type StatusTone } from '@nid/ui';
 import { getCycleConfig, type CycleConfig } from '@nid/module-admin-cms';
 import { listJdsByStatus, DISCIPLINES_REF } from '@nid/module-jd-posting';
-import { updateCycleConfigAction } from './actions';
+import { updateCycleConfigAction, windDownCurrentCycleAction } from './actions';
 
 export const metadata: Metadata = {
   title: 'Cycles · Admin · NID Industry Interface',
   robots: { index: false, follow: false },
 };
 
-export default async function CyclesPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {
+export default async function CyclesPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string; locked?: string }> }) {
   const sp = await searchParams;
   const cfg = getCycleConfig('cycle_spring_2026');
+
+  // Confirmation after an institution-initiated wind-down: how many recruiter
+  // dashboards were newly locked (`?locked=N`). `0` means the cycle was already
+  // wound down — the run was a no-op.
+  const lockedCount = sp.locked !== undefined ? Number.parseInt(sp.locked, 10) : null;
+  const windDownConfirmed = lockedCount !== null && Number.isFinite(lockedCount);
 
   // Discipline-exposure equity (Phase 5.2): published JDs per discipline.
   const published = listJdsByStatus('published');
@@ -36,6 +42,13 @@ export default async function CyclesPage({ searchParams }: { searchParams: Promi
           </header>
 
           {sp.saved === '1' && <p style={savedBanner}>Cycle config saved.</p>}
+          {windDownConfirmed && (
+            <p style={savedBanner}>
+              {lockedCount === 0
+                ? 'Cycle already wound down — no active dashboards remained, so nothing changed. Company records stay on file.'
+                : `Cycle wound down. ${lockedCount} recruiter dashboard${lockedCount === 1 ? '' : 's'} locked — company details stay on file; recruiters reactivate by re-paying the participation fee for the next cycle.`}
+            </p>
+          )}
           {sp.error && <p role="alert" style={banner}>{decodeURIComponent(sp.error)}</p>}
 
           {cfg ? (
@@ -68,6 +81,25 @@ export default async function CyclesPage({ searchParams }: { searchParams: Promi
             </form>
           ) : (
             <p style={notice}>No cycle configured.</p>
+          )}
+
+          {cfg && (
+            <section aria-labelledby="wind-down-heading" style={{ ...card, marginTop: 'var(--space-6)', borderColor: 'var(--border-emphasized)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+                <p style={labelS}>End of season</p>
+                <StatusPill tone="warning">Institution action</StatusPill>
+              </div>
+              <h2 id="wind-down-heading" style={h2}>Wind down current cycle</h2>
+              <p style={{ fontSize: 'var(--fs-14)', color: 'var(--text-secondary)', marginTop: 'var(--space-2)', maxWidth: '64ch' }}>
+                When the institution closes <strong style={{ color: 'var(--text-strong)' }}>{cfg.label}</strong>, this locks every
+                recruiter dashboard active on the cycle. Company details — GST, registration, contacts — stay on file; nothing is
+                deleted. Locked recruiters reactivate for the next cycle by re-paying the participation fee. Already-locked
+                accounts are skipped, so running this twice is safe.
+              </p>
+              <form action={windDownCurrentCycleAction} style={{ marginTop: 'var(--space-4)' }}>
+                <Button type="submit" size="sm" style={dangerButton}>Wind down {cfg.label}</Button>
+              </form>
+            </section>
           )}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-8)', marginBottom: 'var(--space-2)' }}>
@@ -103,6 +135,8 @@ function cycleTone(s: CycleConfig['status']): StatusTone {
 const labelS = { fontSize: 'var(--fs-12)', fontWeight: 'var(--fw-600)', color: 'var(--text-secondary)', textTransform: 'uppercase' as const, letterSpacing: '0.08em' };
 const fieldLabel = { fontSize: 'var(--fs-12)', color: 'var(--text-secondary)' } as const;
 const h1 = { fontSize: 'var(--fs-40)', lineHeight: 'var(--lh-48)', fontWeight: 'var(--fw-500)', color: 'var(--text-strong)', marginTop: 'var(--space-1)' };
+const h2 = { fontSize: 'var(--fs-24)', lineHeight: 'var(--lh-28)', fontWeight: 'var(--fw-500)', color: 'var(--text-strong)' } as const;
+const dangerButton = { backgroundColor: 'var(--pill-danger-bg)', color: 'var(--pill-danger-fg)', borderColor: 'var(--pill-danger-fg)' } as const;
 const card = { backgroundColor: 'var(--surface-card)', border: '1px solid var(--card-border)', borderRadius: 'var(--card-radius)', padding: 'var(--card-padding)' } as const;
 const rowCard = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)', backgroundColor: 'var(--surface-card)', border: '1px solid var(--card-border)', borderRadius: 'var(--card-radius)', padding: 'var(--space-4) var(--card-padding)' } as const;
 const notice = { fontSize: 'var(--fs-14)', color: 'var(--text-secondary)', padding: 'var(--space-4)', backgroundColor: 'var(--surface-card)', borderRadius: 'var(--radius-2)', border: '1px dashed var(--border-emphasized)' } as const;

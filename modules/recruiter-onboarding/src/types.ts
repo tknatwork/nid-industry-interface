@@ -111,3 +111,22 @@ export interface OutboxMessage {
   readonly renderedBody: string;
   readonly queuedAt: string;
 }
+
+/**
+ * Per-recruiter account-activation record (plan Round 3 §C). Recruiter accounts
+ * lock between placement cycles — the credentials never change, only the
+ * lock/active-cycle state does. An admin "wind down" at cycle close flips
+ * `locked` to true for every account on that cycle; the recruiter reactivates by
+ * re-paying the participation fee for the next cycle, which mints a fresh
+ * `PaymentReceipt` and sets a new `activeCycleId`.
+ *
+ * `recruiterId === ticketId` in this demo (the recruiter is identified by the
+ * application ticket until real auth lands).
+ */
+export interface AccountActivationRecord {
+  readonly recruiterId: string;
+  readonly activeCycleId: string;
+  readonly locked: boolean;
+  /** ISO 8601 — set when the account is reactivated for a new cycle. */
+  readonly reactivatedAt?: string;
+}

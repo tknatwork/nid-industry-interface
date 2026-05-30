@@ -7,6 +7,7 @@ import {
   verifiedStrikeCount,
   BLACKLIST_STRIKE_THRESHOLD,
 } from '@nid/module-admin-accountability';
+import { isAccountLocked } from '@nid/module-recruiter-onboarding';
 import { readRecruiterSession } from '~/lib/recruiter-session';
 import {
   cyclePhase,
@@ -51,6 +52,15 @@ function shortDate(d: Date): string {
 /** The open cycle drives the phase tag + banner; fall back to the first current cycle. */
 function activeCycle(): Cycle {
   return CURRENT_CYCLES.find((c) => c.status === 'open') ?? CURRENT_CYCLES[0]!;
+}
+
+/**
+ * The cycle a locked recruiter reactivates into — the `upcoming` current-year
+ * cycle's label (e.g. "Autumn 2026"), or a neutral "the next cycle" when no
+ * upcoming cycle is seeded. Used only by the locked panel's CTA copy.
+ */
+function nextCycleLabel(): string {
+  return CURRENT_CYCLES.find((c) => c.status === 'upcoming')?.label ?? 'the next cycle';
 }
 
 /**
@@ -165,6 +175,23 @@ function countdown(target: Date, today: Date): string {
 
 export default async function RecruiterDashboard() {
   const recruiter = await readRecruiterSession();
+
+  // Cycle wind-down (plan Round 3 §C): once an admin winds down the recruiter's
+  // active cycle, the account locks. We keep the shell (so the account menu /
+  // Log Out still works) but swap the whole dashboard body for a locked panel
+  // that routes to re-payment. The normal dashboard below never renders while
+  // locked, so none of its per-recruiter reads run.
+  if (isAccountLocked(recruiter.recruiterId)) {
+    return (
+      <RecruiterShell
+        activeNav="dashboard"
+        companyName={recruiter.companyName}
+        accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}
+      >
+        <LockedPanel nextCycleLabel={nextCycleLabel()} />
+      </RecruiterShell>
+    );
+  }
 
   const jds = listForRecruiter(recruiter.recruiterId);
   const drafts = jds.filter((j) => j.status === 'draft').length;
@@ -337,6 +364,38 @@ function StatCard({ label, value }: { label: string; value: number }) {
   );
 }
 
+/**
+ * LockedPanel — the dashboard body shown when the recruiter's account is locked
+ * after a cycle wind-down (plan Round 3 §C). States plainly that the cycle has
+ * closed and company details are kept on file, then offers a single re-pay CTA
+ * to `/recruiter/reactivate`. No JD stats, tools, or contacts render while
+ * locked — only this panel inside the (still-functional) shell.
+ */
+function LockedPanel({ nextCycleLabel }: { nextCycleLabel: string }) {
+  return (
+    <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
+      <div style={lockedWrapStyle}>
+        <p style={lockedKickerStyle}>Account locked</p>
+        <h1 style={lockedTitleStyle}>This placement cycle has closed</h1>
+        <p style={lockedBodyStyle}>
+          Your dashboard is locked between placement cycles. Your company details are kept on file —
+          nothing has been deleted. Reactivate by paying the participation fee for {nextCycleLabel} and
+          your existing login continues to work.
+        </p>
+        <div style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center', flexWrap: 'wrap' }}>
+          <a href="/recruiter/reactivate" style={{ textDecoration: 'none' }}>
+            <Button size="lg">Reactivate for {nextCycleLabel} — pay participation fee (₹15,000)</Button>
+          </a>
+        </div>
+        <p style={lockedNoteStyle}>
+          The participation fee is non-refundable once the cycle opens. Need help? Your campus placement
+          head can confirm cycle dates and re-activation.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 // ── Styles (tokens only) ─────────────────────────────────────────────────────
 
 const cycleKickerStyle: CSSProperties = {
@@ -476,4 +535,48 @@ const statLabelStyle: CSSProperties = {
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
   marginTop: 'var(--space-2)',
+};
+
+// ── Locked-panel styles ──────────────────────────────────────────────────────
+
+const lockedWrapStyle: CSSProperties = {
+  maxWidth: '720px',
+  margin: '0 auto',
+  backgroundColor: 'var(--surface-card)',
+  border: '1px solid var(--card-border)',
+  borderRadius: 'var(--card-radius)',
+  padding: 'var(--card-padding-loose)',
+  boxShadow: 'var(--card-shadow)',
+};
+
+const lockedKickerStyle: CSSProperties = {
+  fontSize: 'var(--fs-12)',
+  fontWeight: 'var(--fw-600)',
+  color: 'var(--text-secondary)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  marginBottom: 'var(--space-3)',
+};
+
+const lockedTitleStyle: CSSProperties = {
+  fontSize: 'var(--fs-40)',
+  lineHeight: 'var(--lh-48)',
+  fontWeight: 'var(--fw-500)',
+  color: 'var(--text-strong)',
+  marginBottom: 'var(--space-4)',
+};
+
+const lockedBodyStyle: CSSProperties = {
+  fontSize: 'var(--fs-18)',
+  lineHeight: 'var(--lh-30)',
+  fontWeight: 'var(--fw-300)',
+  color: 'var(--text-primary)',
+  marginBottom: 'var(--space-8)',
+};
+
+const lockedNoteStyle: CSSProperties = {
+  fontSize: 'var(--fs-12)',
+  color: 'var(--text-secondary)',
+  lineHeight: 1.6,
+  marginTop: 'var(--space-8)',
 };

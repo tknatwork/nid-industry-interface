@@ -14,12 +14,23 @@ export {
   pay,
   updateContactDetails,
   getCompanyRecord,
+  getAccountState,
+  isAccountLocked,
+  windDownCycle,
+  reactivateForCycle,
 } from './actions';
-export type { SubmitApplyResult, SubmitOutcome, SubmitFailure, UpdateContactResult } from './actions';
+export type {
+  SubmitApplyResult,
+  SubmitOutcome,
+  SubmitFailure,
+  UpdateContactResult,
+  ReactivateOutcome,
+} from './actions';
 export {
   applyFormSchema,
   recruiterStatusSchema,
   recruiterStatusValues,
+  type AccountActivationRecord,
   type ApplyForm,
   type ApplicationTicketRecord,
   type OutboxMessage,

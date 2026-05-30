@@ -1,4 +1,9 @@
-import { applyFormSchema, type ApplicationTicketRecord, type RecruiterStatus } from './types';
+import {
+  applyFormSchema,
+  type ApplicationTicketRecord,
+  type PaymentReceipt,
+  type RecruiterStatus,
+} from './types';
 import {
   getTicketStatus as storeGetTicketStatus,
   listOutboxForTicket as storeListOutbox,
@@ -8,6 +13,10 @@ import {
   advanceTicketStatus as storeAdvance,
   payTicketFee as storePayFee,
   updateContactDetails as storeUpdateContactDetails,
+  getAccountState as storeGetAccountState,
+  isAccountLocked as storeIsAccountLocked,
+  windDownCycle as storeWindDownCycle,
+  reactivateForCycle as storeReactivateForCycle,
   type SubmitResult,
   type PayResult,
 } from './store';
@@ -121,4 +130,54 @@ export function updateContactDetails(input: {
  */
 export function getCompanyRecord(recruiterId: string): ApplicationTicketRecord | null {
   return storeGetTicketStatus(recruiterId.trim().toUpperCase());
+}
+
+// ── Account activation / cycle lock (plan Round 3 §C) ───────────────────────
+
+/**
+ * A recruiter's account-activation state (active cycle + lock). Defaults to the
+ * seeded active state when no record exists. `recruiterId === ticketId`.
+ */
+export function getAccountState(
+  recruiterId: string,
+): { activeCycleId: string; locked: boolean; reactivatedAt?: string } {
+  return storeGetAccountState(recruiterId.trim().toUpperCase());
+}
+
+/** Whether a recruiter's account is currently locked (defaults to unlocked). */
+export function isAccountLocked(recruiterId: string): boolean {
+  return storeIsAccountLocked(recruiterId.trim().toUpperCase());
+}
+
+/**
+ * Admin "wind down": lock every recruiter account on `cycleId`. Returns how
+ * many accounts were newly locked. Credentials are untouched.
+ */
+export function windDownCycle(cycleId: string): number {
+  return storeWindDownCycle(cycleId);
+}
+
+export interface ReactivateOutcome {
+  readonly ok: boolean;
+  readonly receipt?: PaymentReceipt;
+  readonly reason?: string;
+}
+
+/**
+ * Reactivate a recruiter for the next cycle by re-paying the participation fee
+ * (mock — mirrors `pay`: mints a receipt + queues an email/SMS preview), then
+ * unlocks the account and moves it to the next cycle. The recruiterId /
+ * credentials never change. Returns a result object so callers render a reason
+ * without throwing.
+ */
+export function reactivateForCycle(input: {
+  recruiterId: string;
+  nextCycleId: string;
+  amountPaise?: number;
+}): ReactivateOutcome {
+  return storeReactivateForCycle({
+    recruiterId: input.recruiterId.trim().toUpperCase(),
+    nextCycleId: input.nextCycleId,
+    ...(input.amountPaise !== undefined ? { amountPaise: input.amountPaise } : {}),
+  });
 }
