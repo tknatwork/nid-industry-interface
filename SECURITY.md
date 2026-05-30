@@ -95,9 +95,18 @@ rather than fixed reactively. The production dependency audit
 (`pnpm audit --prod --audit-level=high`) is the gate that matters for runtime
 reach.
 
-| Advisory | Package | Reason accepted (no runtime reach) | Reviewed |
-| -------- | ------- | ---------------------------------- | -------- |
-| _placeholder_ | _devDependency only_ | _Build/dev tooling; not bundled into the deployed app. Re-evaluate if it moves to a runtime dependency._ | _YYYY-MM-DD_ |
+**Status (2026-05-30): `pnpm audit --prod` reports 0 runtime advisories.** A Round 3
+pass bumped `next` 15.1.0 → 15.5.18 (cleared 2 critical + 6 high + the moderate/low
+Next.js CVEs), `drizzle-orm` 0.38.4 → 0.45.2 (1 high), and forced `postcss` ≥ 8.5.10
+via a root `pnpm.overrides` (Next's transitive build-time copy). The entries below are
+the remaining **dev/build-only** advisories (`pnpm audit` full), none reachable from
+shipped runtime code.
+
+| Package | Severity | Reason accepted (no runtime reach) | Reviewed |
+| ------- | -------- | ---------------------------------- | -------- |
+| `vitest` | critical | Test runner. The RCE requires its API server running AND visiting a malicious site — a dev-machine vector, never CI/build/runtime. Not bundled into the app. Bumping 2→3 would churn the test suite for no runtime gain. | 2026-05-30 |
+| `vite` / `esbuild` | moderate | Dev bundler + its transitive `esbuild`; dev-server request vector only. Not in the deployed app. | 2026-05-30 |
+| `@eslint/plugin-kit` | low | Lint tooling (ReDoS in config parsing). Dev-only; never runs in production. | 2026-05-30 |
 
 > Entries are added only after confirming the advisory has no path into
 > `dependencies` of any shipped package. Anything with runtime reach is fixed,
