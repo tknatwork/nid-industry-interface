@@ -3,13 +3,16 @@ import {
   bookPptSchema,
   publishMeetingSlotSchema,
   publishPptWindowSchema,
+  submitRatingSchema,
   type ActionResult,
+  type ExperienceRating,
   type Meeting,
   type MeetingSlot,
   type PptBooking,
   type PptWindow,
 } from './types';
 import {
+  experienceRatingFor,
   insertMeeting,
   insertMeetingSlot,
   insertPptBooking,
@@ -20,6 +23,7 @@ import {
   listPptWindows as storeListPptWindows,
   meetingSlotById,
   pptWindowById,
+  upsertExperienceRating,
 } from './store';
 
 export function listPptWindows(cycleId: string): readonly PptWindow[] {
@@ -80,4 +84,25 @@ export function publishMeetingSlot(input: unknown): ActionResult {
   if (!parsed.success) return { ok: false, reason: parsed.error.issues[0]?.message ?? 'Invalid' };
   insertMeetingSlot(parsed.data);
   return { ok: true };
+}
+
+// ── Recruiter experience rating (Round 4 §E) ─────────────────────────────────
+
+/**
+ * Record the recruiter's 1–5 star experience rating (one per recruiter, latest
+ * wins). Recruiter-on-process feedback only — never a judgement of a student.
+ */
+export function submitExperienceRating(input: unknown): ActionResult {
+  const parsed = submitRatingSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, reason: parsed.error.issues[0]?.message ?? 'Invalid' };
+  upsertExperienceRating({
+    recruiterId: parsed.data.recruiterId,
+    stars: parsed.data.stars,
+    ...(parsed.data.comment !== undefined ? { comment: parsed.data.comment } : {}),
+  });
+  return { ok: true };
+}
+
+export function getExperienceRating(recruiterId: string): ExperienceRating | null {
+  return experienceRatingFor(recruiterId);
 }

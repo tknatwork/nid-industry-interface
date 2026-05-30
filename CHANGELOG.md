@@ -5,7 +5,49 @@ demo on mock data — there are no versioned releases (see `SECURITY.md`), so
 entries are grouped by date. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
-## 2026-05-30
+## 2026-05-30 — Round 4: linear recruiter workflow
+
+The recruiter portal becomes a strictly linear, no-backwards pipeline
+(Dashboard → JD → Candidates → Interview → Offers).
+
+### Added
+
+- **Hybrid IA workspaces.** The Candidates / Interview / Offers tabs are now
+  self-contained workspaces with a JD selector; JD and candidate detail open
+  inline in a drawer instead of navigating, so the active tab never switches.
+  Legacy per-JD routes redirect into the matching workspace. Fixes the
+  tab-switch bug where viewing JD content from the Interview tab flipped to "JDs".
+- **Forward-only pipeline + activity log.** A stage machine (`published →
+  shortlisting → plan-locked → interviewing → tallied → offer-sequencing →
+  letters-out`) makes each completed stage read-only, with an append-only audit
+  log; day-of interview changes layer on top of the locked plan.
+- **Interview Before / During / After.** Before: a "Prepare interview plan" setup
+  (duration, rounds, interviewers per round) feeding a drag-and-drop timeline that
+  locks before interviews start. During: round-by-round scoring where advancing a
+  round seals it and surfaces only advancers in the next. After: a score tally,
+  candidate selection (may exceed vacancies), an optional letter-to-students
+  (note + voicenote) and a recruiter star rating.
+- **Offers sequencing + letters.** The recruiter sets a locked float order;
+  offers float in that order with per-wave deadlines and auto-float on
+  decline/timeout, never exceeding the vacancy count. A per-JD offer-letter PDF
+  upload auto-attaches an institute certificate of authenticity (SHA-256 +
+  verification glyph + timestamp), verifiable at a public `/verify/<hash>` page;
+  the student sees the letter + certificate badge. An accepted-students section
+  lists locked vacancies.
+- **Dashboard pipelines.** A per-JD status grid (shortlisted / interview stage /
+  offers filled-vs-positions) plus a recruiter experience star-rating.
+
+### Security
+
+- Linear invariants are enforced **server-side** (the UI `disabled` state is never
+  the only lock): the After selection freezes once interviews complete; a round
+  advanced past cannot be re-scored to un-advance a candidate; offer issuance
+  derives the vacancy cap and shortlist count on the server (never client-supplied),
+  preserving the hard `outstanding + accepted ≤ positions` cap. The public
+  `/verify` page exposes only authenticity metadata, never the PDF. Found and
+  fixed via a six-verifier adversarial pass.
+
+## 2026-05-30 — Round 2 + Round 3
 
 The Round 2 redesign and the Round 3 account-lifecycle + governance work land on
 `main` together.

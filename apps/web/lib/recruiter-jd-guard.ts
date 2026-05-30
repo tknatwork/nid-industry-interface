@@ -31,3 +31,26 @@ export async function requireOwnedJd(jdId: string): Promise<JdRecord> {
   if (!jd || jd.recruiterId !== session.recruiterId) notFound();
   return jd;
 }
+
+/**
+ * Non-throwing sibling of {@link requireOwnedJd}, for the hybrid workspace pages.
+ *
+ * The Candidates / Interview / Offers workspaces read a `?jd=<jdId>` selector that
+ * may be absent (no JD picked yet) or point at a JD the session recruiter does not
+ * own (a stale or hand-typed cross-branch id). In those cases the workspace should
+ * render its empty selector state — not 404 — so this resolves to `null` instead of
+ * calling {@link notFound}. It also leaks nothing: a foreign or missing JD is
+ * indistinguishable from "none selected" to the caller.
+ *
+ * Returns the {@link JdRecord} only when `jdId` is defined, the JD exists, and its
+ * `recruiterId` matches the session; otherwise returns `null`. Mutation paths must
+ * still use {@link requireOwnedJd} (and server actions re-check ownership) — this is
+ * a read-side convenience, not a relaxation of the write-side guarantee.
+ */
+export async function resolveOwnedJd(jdId: string | undefined): Promise<JdRecord | null> {
+  if (jdId === undefined) return null;
+  const jd = getJd(jdId);
+  if (!jd) return null;
+  const session = await readRecruiterSession();
+  return jd.recruiterId === session.recruiterId ? jd : null;
+}

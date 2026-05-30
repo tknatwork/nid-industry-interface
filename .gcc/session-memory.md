@@ -2,13 +2,33 @@
 name: nid-industry-interface-session-memory
 project: nid-industry-interface
 last_updated: 2026-05-30
-status: Round 3 SHIPPED — built GREEN, DEMO_RECRUITER cleanup done, branch pushed (d9f8310), deployed to prod (vercel --prod READY at nid-industry-interface.vercel.app); PR #2 open feat→main (MERGEABLE/CLEAN) awaiting OWNER merge + main ruleset
-current_module: (Round 3 finalization — session cleanup, push, prod redeploy, feat→main PR)
+status: Round 4 (linear recruiter workflow) built GREEN on feat/recruiter-linear-workflow — Hybrid IA + stage-gate + interview Before/During/After + offers sequence/letters + dashboard; gate green (tsc 16 · 91 tests · boundaries · contracts · build 67 routes · audit 0); 6-verifier adversarial pass fixed 3 HIGH; PR to open for owner review. (Round 3 PR #2 already MERGED to main 509686d.)
+current_module: (Round 4 — linear recruiter workflow pipeline)
 ---
 
 # Session Memory — NID Industry Interface (project-local)
 
 Project-local session memory. Fully isolated from any global GCC layer.
+
+## Round 4 — linear recruiter workflow (2026-05-30)
+
+**Branch:** `feat/recruiter-linear-workflow` (off merged `main` 509686d). Built via dynamic Workflows: Wave 0 (9 parallel foundation writers) → Wave 1 (4 parallel surface groups) → Wave 2 (6 adversarial verifiers + fix-loop) → Wave 3 docs. Plan: the plan file → "# Round 4".
+
+**What shipped:**
+- **Hybrid IA:** Candidates/Interview/Offers tabs are self-contained workspaces (`?jd=` selector via new `apps/web/components/JdWorkspaceSelector.tsx`); JD/candidate detail opens inline in an `Overlay` (no nav → tab never flips). The 6 legacy `/recruiter/jds/[jdId]/{applicants,applicants/[studentId],shortlist,slots,interviews,offers,close}` pages now `redirect()` (after `requireOwnedJd`) into the workspace. New non-throwing `resolveOwnedJd` (workspace reads) vs throwing `requireOwnedJd` (redirects + ALL mutations).
+- **NEW `modules/recruiter-pipeline`:** forward-only stage machine (`published→shortlisting→plan-locked→interviewing→tallied→offer-sequencing→letters-out`) + append-only audit log = the "never backwards" + "active log" core.
+- **Interview (extend `interview-console`):** Before = `PlanSetupForm` + `LegoTimeline` (@dnd-kit `SortableList`) → lock; During = `DuringRounds` (round-by-round; advancing a round SEALS it); After = `AfterTally` + `LetterDialog` (note + VoiceInput voicenote + StarRating) → `sendLetterAction` flips interviewsComplete + hands to Offers. Plan/letters/round-advance/tally fns + `InterviewPlan` live in interview-console.
+- **Offers (extend `offer-cascade` + NEW `modules/offer-letters`):** recruiter-locked float sequence (`SortableList`); per-wave `deadlineIso` + lazy `sweepExpiredOffers` + `autoFloatNext` + simulate control (hard cap untouched); offer-letter PDF (base64) + institute certificate (`certificate.ts` SHA-256 + placeholder QR SVG, ≤2.8MB) + public `/verify/[hash]` + student `StudentLetterViewer`; accepted-students section. Pure rules `nextInSequence`/`isDeadlinePassed`/`minutesToDeadline` in `packages/core`.
+- **Dashboard:** per-JD pipelines grid + experience StarRating (sliced into `recruiter-engagement`).
+- **New `packages/ui` primitives:** `StarRating`, `FileUpload` (PDF→base64), `SortableList` (@dnd-kit, generic — Lego timeline + offer sequence). Deps `@dnd-kit/{core,sortable,utilities}` on `packages/ui` only.
+
+**Wave 2 adversarial (6 verifiers · 11 findings · boundary/ownership/routing verdict CLEAN):** Fixed **3 HIGH** — (1) `lockSelectionAction` had no server lock after interviews-complete (could rewrite the live offer pool); (2) `recordOutcomeAction` could re-score a SEALED round to un-advance a candidate; (3) `issueOfferAction` trusted client `positions`/`shortlistRemaining` → cap bypass — plus 1 MED (legacy issueOfferAction), 3 LOW (override-pre-lock, `/verify` double-decode 500, shortlistRemaining), 2 INFO-cleanup (deleted orphaned `InterviewTabs.tsx`; `closeJdAction`→workspace). 2 INFO accepted (verify-metadata intended; single-writer JSON store = demo posture). Regression tests: `interview-console/test/linearity-guards.test.ts` (3 cases: round-seal + override-lock).
+
+**GOTCHA (carry forward):** linearity invariants MUST be enforced server-side (store or action), NEVER via the rendered `disabled` — a crafted/replayed server-action POST ignores the UI. Cap-bearing inputs (positions, shortlistRemaining) are derived from the owned JD + module state, never `formData`. Store-level seals (`writeRoundResult` refuses round ≤ advancedThroughRound; `overridePlanAssignment` requires locked) protect all callers.
+
+**Verification (green):** `tsc` 16 projects · vitest **91** (core 48 · offer-letters 9 · recruiter-pipeline 9 · jd-posting 8 · offer-cascade 8 · interview-console 9) · `pnpm boundaries` (16 pkgs) · `check:contracts` (12 modules) · `next build` 67 routes · `pnpm audit --prod` 0. Vercel-safe (@dnd-kit pure-JS; JSON fallback; no DATABASE_URL).
+
+**Next step:** Round 4 built GREEN on `feat/recruiter-linear-workflow`. Commit (Conventional Commits, project-local identity, no co-author trailer) → push → open PR to `main` (branch-protected; OWNER reviews + merges). Owner redeploys `vercel --prod` after merge (prod decoupled from main). Do NOT auto-continue past opening the PR.
 
 ## Round 3 — recruiter account lifecycle + multi-branch + repo governance (2026-05-30)
 

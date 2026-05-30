@@ -5,24 +5,41 @@ import type {
   ConflictSignal,
   CoordinationSignalInput,
   InterviewDayView,
+  InterviewPlan,
+  Letter,
+  LetterInput,
+  PlanAssignment,
+  PlanRound,
+  PlanSlot,
   QueueEntry,
   RoundOutcomeInput,
   RoundProgress,
   RoundResult,
+  TallyRow,
   TransportMode,
 } from './types';
 import { DEMO_INTERVIEW_DAY } from './demo';
 import {
+  advanceRound as advanceRoundStore,
+  candidatesForRound as candidatesForRoundStore,
+  computeTally as computeTallyStore,
+  lockPlan as lockPlanStore,
+  overridePlanAssignment as overridePlanAssignmentStore,
   readInterviewsComplete,
+  readLetter,
+  readPlan,
   readRoundProgress,
   readRoundProgressForJd,
   readTransport,
   writeCoordination,
   writeDecision,
   writeInterviewsComplete,
+  writeLetter as writeLetterStore,
+  writePlan,
   writeRoundResult,
   writeTransport,
 } from './store';
+import { planDraftSchema, type PlanDraft } from './plan-schema';
 
 /** Derive the anonymized conflict line the queue renders from the coordinator's signal. */
 function conflictFromProgress(progress: RoundProgress): ConflictSignal {
@@ -165,4 +182,109 @@ export function listSelected(jdId: string): readonly RoundProgress[] {
 /** Candidates with a 'rejected' decision for this JD (§R After phase). */
 export function listRejected(jdId: string): readonly RoundProgress[] {
   return readRoundProgressForJd(jdId).filter((p) => p.decision === 'rejected');
+}
+
+// ── Interview plan: Before phase (Round 4 §C) ─────────────────────────────
+
+/** Seed input for synthesizing a fresh plan from a JD's interview rounds. */
+export interface PlanSeed {
+  readonly jdId: string;
+  readonly durationMin: number;
+  /** Round labels in order (seeded from JdRecord.interviewRounds). */
+  readonly roundLabels: readonly string[];
+  /** Optional pre-built time-slot columns (else none — the timeline starts empty). */
+  readonly slots?: readonly PlanSlot[];
+  /** Optional initial assignments (else none). */
+  readonly assignments?: readonly PlanAssignment[];
+}
+
+/** Read the current plan for a JD (null until first drafted). */
+export function getInterviewPlan(jdId: string): InterviewPlan | null {
+  return readPlan(jdId);
+}
+
+/**
+ * Seed (or re-seed, while unlocked) a plan from a JD's interview rounds. Builds
+ * `PlanRound[]` from the ordered labels. If a locked plan already exists this
+ * is a no-op that returns the locked plan (seeding never clobbers a frozen
+ * plan). Returns the persisted plan.
+ */
+export function seedPlanFromJd(seed: PlanSeed): InterviewPlan | null {
+  const existing = readPlan(seed.jdId);
+  if (existing?.locked) return existing;
+  const rounds: PlanRound[] = seed.roundLabels.map((label, i) => ({ round: i + 1, label }));
+  return writePlan(seed.jdId, {
+    durationMin: seed.durationMin,
+    rounds,
+    slots: seed.slots ?? [],
+    assignments: seed.assignments ?? [],
+  });
+}
+
+/**
+ * Validate + persist a structural plan draft (Lego-timeline save). Parses the
+ * draft with `planDraftSchema` at the boundary, then writes — the store refuses
+ * the write (returns null) once the plan is locked. Returns the persisted plan,
+ * or null when refused (locked) so the action can surface "plan locked".
+ */
+export function saveInterviewPlan(draft: unknown): InterviewPlan | null {
+  const parsed: PlanDraft = planDraftSchema.parse(draft);
+  return writePlan(parsed.jdId, {
+    durationMin: parsed.durationMin,
+    rounds: parsed.rounds,
+    slots: parsed.slots,
+    assignments: parsed.assignments,
+  });
+}
+
+/** Freeze the plan (advances the pipeline `plan-locked` in the calling action). */
+export function lockInterviewPlan(jdId: string): InterviewPlan | null {
+  return lockPlanStore(jdId);
+}
+
+/**
+ * Override a single assignment cell — allowed post-lock (day-of reassignment).
+ * The calling server action mirrors this to the recruiter-pipeline audit as a
+ * `plan-override` entry.
+ */
+export function overridePlanAssignment(jdId: string, assignment: PlanAssignment): InterviewPlan | null {
+  return overridePlanAssignmentStore(jdId, assignment);
+}
+
+// ── Round advancement + tally: During / After phase (Round 4 §C) ──────────
+
+/**
+ * "Shortlist round N → advance": lock advancers (latest outcome at `round` is
+ * 'advance') through to round N+1, bucket the rest `notAdvanced`. Returns the
+ * updated records for the JD.
+ */
+export function advanceRound(jdId: string, round: number): readonly RoundProgress[] {
+  return advanceRoundStore(jdId, round);
+}
+
+/** Candidates eligible to appear in `round` (round 1 = all; round N = advancers from N-1). */
+export function candidatesForRound(jdId: string, round: number): readonly RoundProgress[] {
+  return candidatesForRoundStore(jdId, round);
+}
+
+/** Compute the After-phase tally across rounds 1..finalRound. */
+export function computeTally(jdId: string, finalRound: number): readonly TallyRow[] {
+  return computeTallyStore(jdId, finalRound);
+}
+
+// ── Offer-decision letter: After phase (Round 4 §C) ───────────────────────
+
+/** Read the sent offer-decision letter for a JD (null until sent). */
+export function getLetter(jdId: string): Letter | null {
+  return readLetter(jdId);
+}
+
+/**
+ * Persist a sent offer-decision letter (optional note + voicenote transcript +
+ * recruiter review stars). Sending the letter is the Offers unlock — the
+ * calling action also flips `setInterviewsComplete(true)` and advances the
+ * pipeline. Returns the persisted letter.
+ */
+export function writeLetter(jdId: string, input: LetterInput): Letter {
+  return writeLetterStore(jdId, input);
 }
