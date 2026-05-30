@@ -77,6 +77,26 @@ export const publishMeetingSlotSchema = z.object({
   time: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be HH:MM'),
 });
 
+/**
+ * Recruiter experience rating (Round 4 §E) — a single 1–5 star satisfaction
+ * score the recruiter leaves after closing out a JD's interview/offer flow,
+ * with an optional free-text comment. One rating per recruiter (latest wins).
+ * This is recruiter-on-the-process feedback — NOT any judgement of a student,
+ * so it sidesteps the AI-as-judge / ranking prohibitions entirely.
+ */
+export interface ExperienceRating {
+  readonly recruiterId: string;
+  readonly stars: number; // 1..5
+  readonly comment?: string;
+  readonly ratedAt: string; // ISO 8601
+}
+
+export const submitRatingSchema = z.object({
+  recruiterId: z.string().trim().min(1, 'Recruiter is required'),
+  stars: z.number().int().min(1, 'Pick at least 1 star').max(5, 'At most 5 stars'),
+  comment: z.string().trim().max(500, 'Keep it under 500 characters').optional(),
+});
+
 /** The default agenda template auto-attached to a placement-head meeting (4.12). */
 export const DEFAULT_MEETING_AGENDA: readonly string[] = [
   'Confirm cycle dates relevant to your hire',

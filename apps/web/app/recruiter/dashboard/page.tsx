@@ -2,13 +2,22 @@ import type { Metadata } from 'next';
 import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import type { CSSProperties } from 'react';
 import { RecruiterShell, Button, StatusPill } from '@nid/ui';
-import { listForRecruiter } from '@nid/module-jd-posting';
+import { listForRecruiter, type JdRecord } from '@nid/module-jd-posting';
 import {
   verifiedStrikeCount,
   BLACKLIST_STRIKE_THRESHOLD,
 } from '@nid/module-admin-accountability';
 import { isAccountLocked } from '@nid/module-recruiter-onboarding';
+import { getStage, type PipelineStage } from '@nid/module-recruiter-pipeline';
+import { listShortlist } from '@nid/module-candidate-browse';
+import { tallyFor } from '@nid/module-offer-cascade';
+import {
+  getExperienceRating,
+  type ExperienceRating,
+} from '@nid/module-recruiter-engagement';
 import { readRecruiterSession } from '~/lib/recruiter-session';
+import { ExperienceWidget } from './ExperienceWidget';
+import { submitExperienceRatingAction } from './experience-actions';
 import {
   cyclePhase,
   parseActivityDates,
@@ -127,6 +136,59 @@ function phaseTagLabel(phase: CyclePhase): { tone: 'info' | 'success' | 'neutral
   return { tone: 'neutral', text: `${activeCycle().label} · cycle complete` };
 }
 
+/**
+ * The pipeline-stage tag for a JD's card in the "Your pipelines" band — a short
+ * human label + a `StatusPill` tone, mirroring `phaseTagLabel`'s shape. The
+ * recruiter-pipeline stage is the source of truth for "which stage are we in"
+ * (Round 4 §B); this only maps the seven forward-only stages to display copy.
+ * Tone walks neutral → info → success as the JD moves toward letters-out.
+ */
+function pipelineStageLabel(stage: PipelineStage): {
+  tone: 'info' | 'success' | 'neutral';
+  text: string;
+} {
+  switch (stage) {
+    case 'published':
+      return { tone: 'neutral', text: 'Awaiting shortlist' };
+    case 'shortlisting':
+      return { tone: 'info', text: 'Shortlisting' };
+    case 'plan-locked':
+      return { tone: 'info', text: 'Interview plan locked' };
+    case 'interviewing':
+      return { tone: 'info', text: 'Interviewing' };
+    case 'tallied':
+      return { tone: 'info', text: 'Tallied — selecting' };
+    case 'offer-sequencing':
+      return { tone: 'success', text: 'Floating offers' };
+    case 'letters-out':
+      return { tone: 'success', text: 'Letters out' };
+  }
+}
+
+/**
+ * The workspace a JD's card deep-links into, chosen by its pipeline stage so the
+ * card always lands the recruiter on the most relevant linear step:
+ * early stages → Candidates, the interview run → Interview, the offer phase →
+ * Offers. Each preserves the `?jd=` filter the workspaces read. The metric rows
+ * also carry their own per-workspace deep-links; this is the card's headline
+ * destination.
+ */
+function workspaceHrefForStage(stage: PipelineStage, jdId: string): string {
+  const jd = encodeURIComponent(jdId);
+  switch (stage) {
+    case 'published':
+    case 'shortlisting':
+      return `/recruiter/candidates?jd=${jd}`;
+    case 'plan-locked':
+    case 'interviewing':
+    case 'tallied':
+      return `/recruiter/interviews?jd=${jd}`;
+    case 'offer-sequencing':
+    case 'letters-out':
+      return `/recruiter/offers?jd=${jd}`;
+  }
+}
+
 /** Whole days from `from` to `to`, inclusive of both ends (Day 1 = the start day). */
 function daysInclusive(from: Date, to: Date): number {
   const ms = startOfDayMs(to) - startOfDayMs(from);
@@ -173,6 +235,42 @@ function countdown(target: Date, today: Date): string {
   return `in ${days} days`;
 }
 
+/** The plain, serializable view a "Your pipelines" card renders. */
+interface PipelineCard {
+  readonly jdId: string;
+  readonly title: string;
+  readonly location: string;
+  readonly positions: number;
+  readonly shortlisted: number;
+  readonly stage: PipelineStage;
+  readonly filled: number;
+  readonly href: string;
+}
+
+/**
+ * Assemble one published JD's pipeline card from its owning modules: the
+ * recruiter-pipeline stage, the candidate-browse shortlist count, and the
+ * offer-cascade tally (`filled` = accepted offers). Server-Component-only — it
+ * touches module stores directly and returns a plain object the (client-free)
+ * card markup renders. The deep-link routes to the workspace that matches the
+ * JD's current stage, carrying `?jd=`.
+ */
+function buildPipelineCard(jd: JdRecord): PipelineCard {
+  const stage = getStage(jd.id);
+  const shortlisted = listShortlist(jd.id).length;
+  const tally = tallyFor(jd.id, jd.positions);
+  return {
+    jdId: jd.id,
+    title: jd.title,
+    location: jd.location,
+    positions: jd.positions,
+    shortlisted,
+    stage,
+    filled: tally.filled,
+    href: workspaceHrefForStage(stage, jd.id),
+  };
+}
+
 export default async function RecruiterDashboard() {
   const recruiter = await readRecruiterSession();
 
@@ -196,7 +294,20 @@ export default async function RecruiterDashboard() {
   const jds = listForRecruiter(recruiter.recruiterId);
   const drafts = jds.filter((j) => j.status === 'draft').length;
   const inModeration = jds.filter((j) => j.status === 'in-moderation').length;
-  const published = jds.filter((j) => j.status === 'published').length;
+  const publishedJds = jds.filter((j) => j.status === 'published');
+  const published = publishedJds.length;
+
+  // "Your pipelines" band (Round 4 §E): one card per published JD with its
+  // shortlist count, linear pipeline stage, and offer fill. The pipeline stage
+  // comes from the recruiter-pipeline module (the source of truth for "which
+  // stage are we in"); shortlist + tally come from their owning modules. All
+  // reads are per published JD only — no read runs while the account is locked
+  // (that path returned above).
+  const pipelines = publishedJds.map((jd) => buildPipelineCard(jd));
+
+  // Recruiter experience rating (Round 4 §E) — the session recruiter's existing
+  // portal rating, surfaced read-only with an edit affordance in the widget.
+  const experience: ExperienceRating | null = getExperienceRating(recruiter.recruiterId);
 
   // Cycle phase drives the top-right tag + the rolling banner. `cyclePhase` is a
   // pure function; production callers pass `new Date()` (per the helper's docs).
@@ -252,6 +363,20 @@ export default async function RecruiterDashboard() {
             </a>
           </div>
 
+          {/* Your pipelines — one card per published JD walking the linear stage
+              machine (shortlist → interview → offers). Only renders for active
+              accounts; the locked path returned above. */}
+          {pipelines.length > 0 && (
+            <div style={bandStyle}>
+              <p style={sectionLabelStyle}>Your pipelines</p>
+              <div style={pipelineGridStyle}>
+                {pipelines.map((card) => (
+                  <PipelineCardView key={card.jdId} card={card} />
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Placement timetable — the at-a-glance schedule, carried into the dashboard. */}
           <div style={bandStyle}>
             <PlacementTimetable compact />
@@ -284,6 +409,24 @@ export default async function RecruiterDashboard() {
                 </a>
               ))}
             </div>
+          </div>
+
+          {/* How is your experience? — recruiter rates the portal (Round 4 §E).
+              The client widget receives the existing rating as plain props and
+              the server action injected; it never imports a store. */}
+          <div style={bandStyle}>
+            <p style={sectionLabelStyle}>How is your experience?</p>
+            <p style={experienceLeadStyle}>
+              Tell us how the placement portal is working for you. This is feedback on the tool —
+              never a rating of any student.
+            </p>
+            <ExperienceWidget
+              recruiterId={recruiter.recruiterId}
+              currentStars={experience ? experience.stars : null}
+              {...(experience?.comment !== undefined ? { currentComment: experience.comment } : {})}
+              {...(experience?.ratedAt !== undefined ? { ratedAt: experience.ratedAt } : {})}
+              action={submitExperienceRatingAction}
+            />
           </div>
         </div>
       </section>
@@ -361,6 +504,59 @@ function StatCard({ label, value }: { label: string; value: number }) {
       <p style={statValueStyle}>{value}</p>
       <p style={statLabelStyle}>{label}</p>
     </div>
+  );
+}
+
+/**
+ * One JD's pipeline card in the "Your pipelines" band. A whole-card link into
+ * the stage-appropriate workspace (`?jd=`), surfacing three at-a-glance metrics:
+ * shortlisted count, the linear pipeline stage (a `StatusPill`), and offers
+ * `{filled}/{positions}` with a mini progress bar. Pure server markup — no
+ * client island, no store import (the page assembled the plain `card`).
+ */
+function PipelineCardView({ card }: { card: PipelineCard }) {
+  const stageTag = pipelineStageLabel(card.stage);
+  const pct =
+    card.positions > 0 ? Math.min(100, Math.round((card.filled / card.positions) * 100)) : 0;
+  return (
+    <a href={card.href} style={pipelineCardStyle}>
+      <div style={pipelineCardHeadStyle}>
+        <h3 style={pipelineTitleStyle}>{card.title}</h3>
+        {card.location && <p style={pipelineLocationStyle}>{card.location}</p>}
+      </div>
+
+      <div style={{ marginBottom: 'var(--space-4)' }}>
+        <StatusPill tone={stageTag.tone}>{stageTag.text}</StatusPill>
+      </div>
+
+      <dl style={pipelineMetricsStyle}>
+        <div style={pipelineMetricStyle}>
+          <dt style={pipelineMetricLabelStyle}>Shortlisted</dt>
+          <dd style={pipelineMetricValueStyle}>{card.shortlisted}</dd>
+        </div>
+        <div style={pipelineMetricStyle}>
+          <dt style={pipelineMetricLabelStyle}>Offers filled</dt>
+          <dd style={pipelineMetricValueStyle}>
+            {card.filled}
+            <span style={pipelineMetricMutedStyle}>/{card.positions}</span>
+          </dd>
+        </div>
+      </dl>
+
+      {/* Offer-fill progress — purely visual reflection of {filled}/{positions}. */}
+      <div
+        style={progressTrackStyle}
+        role="progressbar"
+        aria-valuenow={card.filled}
+        aria-valuemin={0}
+        aria-valuemax={card.positions}
+        aria-label={`${card.filled} of ${card.positions} positions filled`}
+      >
+        <div style={{ ...progressFillStyle, width: `${pct}%` }} />
+      </div>
+
+      <span style={pipelineOpenStyle}>Open workspace →</span>
+    </a>
   );
 }
 
@@ -535,6 +731,106 @@ const statLabelStyle: CSSProperties = {
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
   marginTop: 'var(--space-2)',
+};
+
+// ── "Your pipelines" band styles ─────────────────────────────────────────────
+
+const pipelineGridStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+  gap: 'var(--space-4)',
+};
+
+const pipelineCardStyle: CSSProperties = {
+  display: 'block',
+  backgroundColor: 'var(--surface-card)',
+  border: '1px solid var(--card-border)',
+  borderRadius: 'var(--card-radius)',
+  padding: 'var(--card-padding)',
+  textDecoration: 'none',
+  color: 'inherit',
+};
+
+const pipelineCardHeadStyle: CSSProperties = {
+  marginBottom: 'var(--space-3)',
+};
+
+const pipelineTitleStyle: CSSProperties = {
+  fontSize: 'var(--fs-18)',
+  lineHeight: 'var(--lh-23)',
+  fontWeight: 'var(--fw-500)',
+  color: 'var(--text-strong)',
+  margin: 0,
+};
+
+const pipelineLocationStyle: CSSProperties = {
+  fontSize: 'var(--fs-14)',
+  color: 'var(--text-secondary)',
+  marginTop: 'var(--space-1)',
+};
+
+const pipelineMetricsStyle: CSSProperties = {
+  display: 'flex',
+  gap: 'var(--space-6)',
+  margin: 0,
+  marginBottom: 'var(--space-3)',
+};
+
+const pipelineMetricStyle: CSSProperties = {
+  display: 'grid',
+  gap: 'var(--space-1)',
+};
+
+const pipelineMetricLabelStyle: CSSProperties = {
+  fontSize: 'var(--fs-12)',
+  fontWeight: 'var(--fw-600)',
+  color: 'var(--text-secondary)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.06em',
+};
+
+const pipelineMetricValueStyle: CSSProperties = {
+  fontSize: 'var(--fs-24)',
+  lineHeight: 1,
+  fontWeight: 'var(--fw-600)',
+  color: 'var(--text-strong)',
+  margin: 0,
+};
+
+const pipelineMetricMutedStyle: CSSProperties = {
+  fontSize: 'var(--fs-16)',
+  fontWeight: 'var(--fw-500)',
+  color: 'var(--text-secondary)',
+};
+
+const progressTrackStyle: CSSProperties = {
+  height: '6px',
+  borderRadius: 'var(--radius-full)',
+  backgroundColor: 'var(--surface-panel)',
+  overflow: 'hidden',
+  marginBottom: 'var(--space-3)',
+};
+
+const progressFillStyle: CSSProperties = {
+  height: '100%',
+  borderRadius: 'var(--radius-full)',
+  backgroundColor: 'var(--accent)',
+  transition: 'width var(--motion-micro)',
+};
+
+const pipelineOpenStyle: CSSProperties = {
+  fontSize: 'var(--fs-14)',
+  fontWeight: 'var(--fw-600)',
+  color: 'var(--accent)',
+};
+
+const experienceLeadStyle: CSSProperties = {
+  fontSize: 'var(--fs-14)',
+  lineHeight: 'var(--lh-23)',
+  fontWeight: 'var(--fw-300)',
+  color: 'var(--text-primary)',
+  maxWidth: '560px',
+  marginBottom: 'var(--space-4)',
 };
 
 // ── Locked-panel styles ──────────────────────────────────────────────────────

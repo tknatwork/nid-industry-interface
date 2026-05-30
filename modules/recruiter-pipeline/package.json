@@ -1,0 +1,23 @@
+{
+  "name": "@nid/module-recruiter-pipeline",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Recruiter pipeline module — forward-only linear stage machine + append-only audit log (Round 4 §B). Owns linear stage + audit, NOT round results.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'lint placeholder'",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@nid/db": "workspace:*",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3",
+    "vitest": "2.1.8"
+  }
+}
