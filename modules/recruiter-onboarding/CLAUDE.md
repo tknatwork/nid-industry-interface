@@ -10,26 +10,29 @@ The pre-login recruiter onboarding flow per Phase 4.1 of the plan:
 Discovery ──► /apply  (form, no login)
               │
               ▼
-       Token issued ──► email + SMS (mock previews in dev)
+       Ticket issued ──► email + SMS (mock previews in dev)
               │
               ▼
-       /track/<token> reflects the state machine:
+       /track/<ticket> reflects the state machine:
          application-received → verification-pending → fee-due
          → payment-received → approved → credentials-issued
 ```
 
-The module exposes:
+The module exposes (public API in `src/index.ts`):
 
-- A typed **submitApplication** server-side action.
-- A typed **getTokenStatus** lookup.
-- A typed **advanceTokenStatus** admin transition (used later by `/admin/recruiters/queue`).
-- An in-memory mock store backed by a JSON file for dev so demo tokens survive restarts.
-- Status-history rendering helpers consumed by `/track/<token>`.
+- A typed **submit** server-side action (validates + creates a ticket).
+- A typed **lookup** (ticket status) reader, backed by `getTicketStatus`.
+- A typed **advance** admin transition (backed by `advanceTicketStatus`), used by `/admin/recruiters/queue`.
+- A typed **pay** action (mock participation-fee payment) that advances `fee-due → payment-received` and generates a `PaymentReceipt` mapped to the ticket.
+- An in-memory mock store backed by a JSON file for dev so demo tickets survive restarts.
+- Status-history + comms-outbox (email + SMS) rendering helpers consumed by `/track/<ticket>`.
+
+> Vocabulary note: the onboarding domain calls the tracked artifact a **ticket** (`ApplicationTicketRecord`, `ticketId`, `formatTicketId`/`parseTicketId`). This is distinct from design tokens, API keys, and auth/session tokens, which keep the word "token".
 
 ## What this module does NOT own
 
 - Login + session establishment after credentials issue (that's a separate auth module).
-- Payment gateway integration (it only knows the token transitions to `payment-received` when notified).
+- Real payment gateway / PFMS settlement (the `pay` action is a mock; it only records that the ticket transitioned to `payment-received` and mints a demo receipt).
 - JD posting, candidate browse, slot booking — separate modules.
 - Real DB writes. This is Milestone 2 mock-data scope. The DB-backed implementation lands later by swapping the adapter behind the same module API.
 
@@ -39,8 +42,8 @@ The module exposes:
 |---|---|
 | `src/index.ts` | Public module API. Cross-module imports must go through here. |
 | `src/types.ts` | Zod schemas + module-local types. |
-| `src/store.ts` | Mock token store (in-memory + JSON file for dev). |
-| `src/actions.ts` | Use cases: submitApplication, getTokenStatus, advanceTokenStatus. |
-| `src/tokens.ts` | Token ID generation in the NID-YYYY-X-NNNN format. |
+| `src/store.ts` | Mock ticket store (in-memory + JSON file for dev). |
+| `src/actions.ts` | Use cases: submit, lookup, advance, pay. |
+| `src/tokens.ts` | Ticket ID generation in the NID-YYYY-X-NNNN format (`formatTicketId`/`parseTicketId`). |
 
 Read [[AGENTS.md]] next.

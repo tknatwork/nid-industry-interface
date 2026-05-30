@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { syncKv } from '@nid/db';
 import { dirname, resolve } from 'node:path';
 import type { JdRecord } from './types';
 
@@ -67,9 +68,9 @@ function seedInitialState(): StoreState {
       },
       deliverables: ['Validated product flows', 'Design-system contributions'],
       interviewRounds: [
-        { round: 1, focus: 'Portfolio review' },
-        { round: 2, focus: 'Design exercise' },
-        { round: 3, focus: 'Culture + leadership' },
+        { round: 1, focus: 'Portfolio review', liveExercise: false },
+        { round: 2, focus: 'Design exercise', liveExercise: false },
+        { round: 3, focus: 'Culture + leadership', liveExercise: false },
       ],
       gpFeeAcknowledged: false,
       draftedAt: isoYesterday,
@@ -101,8 +102,8 @@ function seedInitialState(): StoreState {
       },
       deliverables: ['Brand guidelines', 'Campaign assets'],
       interviewRounds: [
-        { round: 1, focus: 'Portfolio review' },
-        { round: 2, focus: 'Brand exercise' },
+        { round: 1, focus: 'Portfolio review', liveExercise: false },
+        { round: 2, focus: 'Brand exercise', liveExercise: false },
       ],
       gpFeeAcknowledged: false,
       draftedAt: isoYesterday,
@@ -159,8 +160,8 @@ function seedInitialState(): StoreState {
       },
       deliverables: ['Shipped UI', 'Design system in code'],
       interviewRounds: [
-        { round: 1, focus: 'Portfolio + code review' },
-        { round: 2, focus: 'Pairing exercise' },
+        { round: 1, focus: 'Portfolio + code review', liveExercise: false },
+        { round: 2, focus: 'Pairing exercise', liveExercise: false },
       ],
       gpFeeAcknowledged: false,
       draftedAt: isoYesterday,
@@ -177,6 +178,9 @@ function persist(state: StoreState): void {
   const file = dataFilePath();
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, JSON.stringify(state, null, 2), 'utf8');
+  // Durable write-through (no-op without DATABASE_URL): mirror the full
+  // state blob to Postgres so it survives serverless cold starts.
+  syncKv('jd-posting', state);
 }
 
 export function insertJd(record: Omit<JdRecord, 'id'>): JdRecord {
@@ -195,6 +199,29 @@ export function updateJd(id: string, patch: Partial<JdRecord>): JdRecord | null 
   const updated: JdRecord = { ...current, ...patch, id: current.id };
   persist({ ...state, jds: { ...state.jds, [id]: updated } });
   return updated;
+}
+
+/**
+ * Replace a record's content wholesale (preserving its id), rather than the
+ * shallow-merge `updateJd` does. Used for draft edits, where the new authored
+ * content must fully supersede the old — so optional fields the recruiter
+ * cleared (e.g. an evaluation task they turned off) don't linger via a merge.
+ */
+export function replaceJd(id: string, next: Omit<JdRecord, 'id'>): JdRecord | null {
+  const state = loadState();
+  if (!state.jds[id]) return null;
+  const replaced: JdRecord = { ...next, id };
+  persist({ ...state, jds: { ...state.jds, [id]: replaced } });
+  return replaced;
+}
+
+export function deleteJd(id: string): boolean {
+  const state = loadState();
+  if (!state.jds[id]) return false;
+  const next: Record<string, JdRecord> = { ...state.jds };
+  delete next[id];
+  persist({ ...state, jds: next });
+  return true;
 }
 
 export function getJdById(id: string): JdRecord | null {

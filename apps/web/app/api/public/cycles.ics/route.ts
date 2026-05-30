@@ -29,14 +29,16 @@ function allDayStart(cycle: Cycle): string {
 
 function buildEvent(cycle: Cycle): readonly string[] {
   const dtstart = allDayStart(cycle);
+  const a = cycle.activities;
   const description = [
     `Status: ${cycle.status}`,
-    `Fee: Rs ${cycle.feeRupees}`,
-    `Applications open: ${cycle.applyOpens}`,
-    `JD deadline: ${cycle.jdDeadline}`,
-    `Browse opens: ${cycle.browseOpens}`,
-    `Interview window: ${cycle.interviewWindow}`,
-    `Offers by: ${cycle.offerBy}`,
+    `Participation fee: Rs ${cycle.participationFeeRupees}`,
+    `GP fee: Rs ${cycle.gpFeePerStudentRupees} per student`,
+    `Applications: ${a.applications.start} - ${a.applications.end}`,
+    `JD deadline: ${a.jdDeadline.end}`,
+    `Browse opens: ${a.browsing.start}`,
+    `Interview window: ${a.interviewWindow.start} - ${a.interviewWindow.end}`,
+    `Offers by: ${a.offers.end}`,
   ].join('\n');
 
   return [

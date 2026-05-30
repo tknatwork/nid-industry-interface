@@ -17,13 +17,13 @@ const SPRING = 'cycle_spring_2026';
 
 export const SEED_STUDENTS: readonly SeedStudent[] = [
   // Interaction Design (eligible for the Product Designer JD)
-  s('stu_0001', 'Riya Mishra', 'disc_interaction_design', 'Interaction Design', 'cyan', 'masters', 2025, 4, 'behance.net', 'UX researcher turned systems designer. Portfolio spans fintech + health.'),
+  s('stu_0001', 'Riya Mishra', 'disc_interaction_design', 'Interaction Design', 'cyan', 'masters', 2025, 4, 'behance.net', 'UX researcher turned systems designer. Portfolio spans fintech + health.', { presentationUrl: 'https://www.figma.com/deck/stu_0001-interview' }),
   s('stu_0002', 'Arnav Kulkarni', 'disc_interaction_design', 'Interaction Design', 'cyan', 'masters', 2025, 4, 'behance.net', 'Interaction designer focused on accessible public-service tools.'),
   s('stu_0003', 'Meher Singh', 'disc_interaction_design', 'Interaction Design', 'cyan', 'masters', 2024, 4, 'issuu.com', 'Prototyping-heavy practice; loves motion + micro-interaction.'),
   s('stu_0004', 'Kabir Das', 'disc_interaction_design', 'Interaction Design', 'cyan', 'masters', 2025, 4, 'kabir.design'),
 
   // Product Design (eligible for the Product Designer JD)
-  s('stu_0005', 'Aanya Roy', 'disc_product_design', 'Product Design', 'navy', 'masters', 2025, 4, 'behance.net', 'Hardware + software product designer. Shipped two consumer devices.'),
+  s('stu_0005', 'Aanya Roy', 'disc_product_design', 'Product Design', 'navy', 'masters', 2025, 4, 'behance.net', 'Hardware + software product designer. Shipped two consumer devices.', { cvUrl: 'https://drive.nid.edu/cv/stu_0005.pdf', presentationUrl: 'https://www.figma.com/deck/stu_0005-interview' }),
   s('stu_0006', 'Vikram Nair', 'disc_product_design', 'Product Design', 'navy', 'masters', 2024, 4, 'behance.net', 'Sustainability-driven product design; circular-economy thesis.'),
   s('stu_0007', 'Sara Pillai', 'disc_product_design', 'Product Design', 'navy', 'masters', 2025, 4, 'sarapillai.studio'),
 
@@ -43,6 +43,12 @@ export const SEED_STUDENTS: readonly SeedStudent[] = [
   s('stu_0014', 'Priya Rao', 'disc_animation_film', 'Animation Film Design', 'yellow', 'masters', 2025, 4, 'behance.net'),
 ];
 
+/** Optional interview artifacts a student may attach (§R). Both link-out, not embed. */
+interface SeedExtras {
+  readonly cvUrl?: string;
+  readonly presentationUrl?: string;
+}
+
 function s(
   studentId: string,
   name: string,
@@ -54,6 +60,7 @@ function s(
   semester: number,
   portfolioHost: string,
   statementOfIntent?: string,
+  extras?: SeedExtras,
 ): SeedStudent {
   return {
     studentId,
@@ -67,6 +74,8 @@ function s(
     portfolioUrl: `https://${portfolioHost}/${studentId}`,
     portfolioHost,
     cvAvailable: true,
+    ...(extras?.cvUrl ? { cvUrl: extras.cvUrl } : {}),
+    ...(extras?.presentationUrl ? { presentationUrl: extras.presentationUrl } : {}),
     ...(statementOfIntent ? { statementOfIntent } : {}),
     optedInCycles: [SPRING],
   };

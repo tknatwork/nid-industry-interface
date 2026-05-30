@@ -1,0 +1,94 @@
+name: Bug report
+description: Something in the prototype behaves incorrectly.
+title: "bug: <short summary>"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. A few reminders before you start:
+
+        - This is a **demo** — all data is mock and **re-seeds on a cold start**.
+          A "lost state" report is usually expected behavior, not a bug
+          (see DEPLOY.md).
+        - **Do not report security vulnerabilities here.** Use the private
+          process in [SECURITY.md](../../SECURITY.md).
+        - **Do not paste real secrets or personal data** into this issue.
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight
+      options:
+        - label: I searched existing issues and this isn't a duplicate.
+          required: true
+        - label: This is not a security vulnerability (those go through SECURITY.md privately).
+          required: true
+        - label: This isn't simply mock state being re-seeded on a cold start.
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: A clear description of the bug.
+      placeholder: When I do X, Y happens instead of Z.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps. Include the exact route/page if relevant.
+      placeholder: |
+        1. Go to '/recruiter/jds/new'
+        2. Fill the wizard with ...
+        3. Submit
+        4. See the error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: I expected the stipend gate to ...
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which surface?
+      description: Where in the prototype does this occur?
+      options:
+        - Recruiter portal
+        - Student portal
+        - Admin / placement portal
+        - Public pages
+        - Federation API (/api)
+        - Build / harness / tooling
+        - Other / not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Where did you see it?
+      options:
+        - Live demo (vercel.app)
+        - Local dev (pnpm dev)
+        - Both
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Console output, stack traces, or screenshots. Redact anything sensitive.
+      render: shell
+    validations:
+      required: false
+  - type: input
+    id: environment-details
+    attributes:
+      label: Browser / OS (optional)
+      placeholder: e.g. Chrome 124 on macOS 15
+    validations:
+      required: false

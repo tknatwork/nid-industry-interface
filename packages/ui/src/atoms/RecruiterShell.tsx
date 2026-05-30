@@ -15,6 +15,28 @@ export interface RecruiterShellProps {
   readonly activeNav?: RecruiterNav;
   readonly companyName: string;
   readonly demoNotice?: boolean;
+  /**
+   * Top-right phase tag (plan §J): the active cycle phase + day + date,
+   * e.g. a `StatusPill` reading "Interviews · Day 2 · 2 Jun". Rendered in the
+   * header row beside the nav. Caller owns the content so the shell stays free
+   * of `CYCLES`/`GUIDELINES` (no cross-module deep imports).
+   */
+  readonly phaseTag?: ReactNode;
+  /**
+   * Full-width rolling banner (plan §J) surfacing time-bound activities across
+   * the top, above the header. Caller supplies a `Marquee`/`RollingBanner`
+   * (with its own `prefers-reduced-motion` handling). Sits below the demo
+   * notice and above the header so it spans the full viewport width.
+   */
+  readonly banner?: ReactNode;
+  /**
+   * Top-right account control (plan §L): the acting company name plus a small
+   * disclosure for "Profile & settings" and "Log out". Rendered in the header's
+   * top-right flex group, after the `phaseTag`. Caller owns the content (a client
+   * `RecruiterAccountMenu` with the logout server action) so the shell stays
+   * presentational and free of app/session imports.
+   */
+  readonly accountMenu?: ReactNode;
 }
 
 const navItems: ReadonlyArray<{ key: RecruiterNav; href: string; label: string }> = [
@@ -32,6 +54,9 @@ export function RecruiterShell({
   activeNav,
   companyName,
   demoNotice = true,
+  phaseTag,
+  banner,
+  accountMenu,
 }: RecruiterShellProps) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -49,6 +74,18 @@ export function RecruiterShell({
           }}
         >
           Prototype · acting as <strong>{companyName}</strong> · authentication lands in a later milestone
+        </div>
+      )}
+
+      {banner != null && (
+        <div
+          style={{
+            backgroundColor: 'var(--surface-panel)',
+            borderBottom: '1px solid var(--border-default)',
+            overflow: 'hidden',
+          }}
+        >
+          {banner}
         </div>
       )}
 
@@ -99,38 +136,49 @@ export function RecruiterShell({
               </span>
             </span>
           </a>
-          <nav
-            aria-label="Recruiter"
+          <div
             style={{
               display: 'flex',
+              alignItems: 'center',
               gap: 'var(--space-5)',
               flexWrap: 'wrap',
-              fontSize: 'var(--fs-14)',
-              fontWeight: 'var(--fw-600)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
             }}
           >
-            {navItems.map((item) => {
-              const isActive = item.key === activeNav;
-              return (
-                <a
-                  key={item.key}
-                  href={item.href}
-                  style={{
-                    color: isActive ? 'var(--accent)' : 'var(--text-primary)',
-                    textDecoration: 'none',
-                    paddingBlock: 'var(--space-1)',
-                    borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
-                    transition: 'color var(--motion-micro)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {item.label}
-                </a>
-              );
-            })}
-          </nav>
+            <nav
+              aria-label="Recruiter"
+              style={{
+                display: 'flex',
+                gap: 'var(--space-5)',
+                flexWrap: 'wrap',
+                fontSize: 'var(--fs-14)',
+                fontWeight: 'var(--fw-600)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {navItems.map((item) => {
+                const isActive = item.key === activeNav;
+                return (
+                  <a
+                    key={item.key}
+                    href={item.href}
+                    style={{
+                      color: isActive ? 'var(--accent)' : 'var(--text-primary)',
+                      textDecoration: 'none',
+                      paddingBlock: 'var(--space-1)',
+                      borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                      transition: 'color var(--motion-micro)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {item.label}
+                  </a>
+                );
+              })}
+            </nav>
+            {phaseTag != null && <div style={{ display: 'inline-flex', alignItems: 'center' }}>{phaseTag}</div>}
+            {accountMenu != null && <div style={{ display: 'inline-flex', alignItems: 'center' }}>{accountMenu}</div>}
+          </div>
         </div>
       </header>
 

@@ -4,15 +4,16 @@ import { AdminShell, Button, Field, StatusPill } from '@nid/ui';
 import {
   lookup,
   outboxFor,
-  parseTokenId,
-  type ApplicationTokenRecord,
+  parseTicketId,
+  type ApplicationTicketRecord,
   type RecruiterStatus,
   type StatusHistoryEntry,
 } from '@nid/module-recruiter-onboarding';
-import { advanceTokenAction } from './actions';
+import { PARENT_COMPANIES } from '~/lib/recruiter-public';
+import { advanceTicketAction } from './actions';
 
 interface PageParams {
-  readonly tokenId: string;
+  readonly ticketId: string;
 }
 
 interface SearchParams {
@@ -20,9 +21,9 @@ interface SearchParams {
 }
 
 export async function generateMetadata({ params }: { params: Promise<PageParams> }): Promise<Metadata> {
-  const { tokenId } = await params;
+  const { ticketId } = await params;
   return {
-    title: `Review ${tokenId} · Admin · NID Industry Interface`,
+    title: `Review ${ticketId} · Admin · NID Industry Interface`,
     robots: { index: false, follow: false },
   };
 }
@@ -37,20 +38,20 @@ const NEXT_STATUSES: Readonly<Record<RecruiterStatus, readonly RecruiterStatus[]
   'rejected': [],
 };
 
-export default async function AdminTokenDetail({
+export default async function AdminTicketDetail({
   params,
   searchParams,
 }: {
   params: Promise<PageParams>;
   searchParams: Promise<SearchParams>;
 }) {
-  const { tokenId: raw } = await params;
-  const tokenId = raw.toUpperCase();
-  if (!parseTokenId(tokenId)) notFound();
-  const record = lookup(tokenId);
+  const { ticketId: raw } = await params;
+  const ticketId = raw.toUpperCase();
+  if (!parseTicketId(ticketId)) notFound();
+  const record = lookup(ticketId);
   if (!record) notFound();
   const queryError = (await searchParams).error;
-  const messages = outboxFor(tokenId);
+  const messages = outboxFor(ticketId);
 
   const nextStatuses = NEXT_STATUSES[record.status];
 
@@ -106,6 +107,7 @@ export default async function AdminTokenDetail({
           >
             <div>
               <Section title="Company">
+                {record.branchLabel && <Detail label="Branch" value={record.branchLabel} />}
                 <Detail label="Sector" value={record.sector} />
                 <Detail label="GST" value={record.gst} mono />
                 <Detail label="Registration" value={record.registrationNumber} mono />
@@ -115,8 +117,24 @@ export default async function AdminTokenDetail({
               <Section title="Primary contact">
                 <Detail label="Name" value={record.contactName} />
                 <Detail label="Email" value={record.corporateEmail} mono />
-                <Detail label="Phone" value={record.contactPhone} mono />
+                <Detail
+                  label="Phone"
+                  value={record.phoneVerified ? `${record.contactPhone} · verified` : record.contactPhone}
+                  mono
+                />
               </Section>
+
+              {record.receipt && (
+                <Section title="Payment receipt">
+                  <Detail label="Receipt" value={record.receipt.receiptId} mono />
+                  <Detail
+                    label="Amount"
+                    value={`₹${(record.receipt.amountPaise / 100).toLocaleString('en-IN')}`}
+                  />
+                  <Detail label="Method" value={record.receipt.method} />
+                  <Detail label="Gateway ref" value={record.receipt.gatewayRef} mono />
+                </Section>
+              )}
 
               <Section title="History">
                 <ol
@@ -147,7 +165,7 @@ export default async function AdminTokenDetail({
                     {nextStatuses.map((toStatus) => (
                       <AdvanceForm
                         key={toStatus}
-                        tokenId={record.tokenId}
+                        ticketId={record.ticketId}
                         fromStatus={record.status}
                         toStatus={toStatus}
                         hint={hintFor(record.status, toStatus)}
@@ -178,7 +196,7 @@ export default async function AdminTokenDetail({
                           {m.channel.toUpperCase()}
                         </strong>{' '}
                         to {m.to}
-                        <div style={{ marginTop: 'var(--space-1)' }}>{m.renderedSubject}</div>
+                        <div style={{ marginTop: 'var(--space-1)' }}>{m.renderedSubject ?? m.renderedBody}</div>
                       </li>
                     ))}
                   </ul>
@@ -192,7 +210,11 @@ export default async function AdminTokenDetail({
   );
 }
 
-function Header({ record }: { record: ApplicationTokenRecord }) {
+function Header({ record }: { record: ApplicationTicketRecord }) {
+  // Multi-branch grouping (plan Round 3 §D): when this ticket is one branch of a
+  // parent company, name the parent + this branch so the admin sees it is one of
+  // several SEPARATE accounts under that company.
+  const parent = record.parentCompanyId != null ? PARENT_COMPANIES[record.parentCompanyId] : undefined;
   return (
     <header
       style={{
@@ -216,7 +238,7 @@ function Header({ record }: { record: ApplicationTokenRecord }) {
             letterSpacing: '0.08em',
           }}
         >
-          Application token
+          Application ticket
         </p>
         <p
           style={{
@@ -227,7 +249,7 @@ function Header({ record }: { record: ApplicationTokenRecord }) {
             marginTop: 'var(--space-1)',
           }}
         >
-          {record.tokenId}
+          {record.ticketId}
         </p>
         <p
           style={{
@@ -239,10 +261,28 @@ function Header({ record }: { record: ApplicationTokenRecord }) {
         >
           {record.companyName}
         </p>
+        {parent && (
+          <p
+            style={{
+              fontSize: 'var(--fs-12)',
+              color: 'var(--text-secondary)',
+              marginTop: 'var(--space-1)',
+            }}
+          >
+            Part of{' '}
+            <a
+              href="/admin/recruiters/queue"
+              style={{ color: 'var(--accent)', fontWeight: 'var(--fw-600)', textDecoration: 'none' }}
+            >
+              {parent.name}
+            </a>
+            {record.branchLabel ? ` · ${record.branchLabel} branch` : ''} · separate account
+          </p>
+        )}
       </div>
       <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
         <a
-          href={`/track/${record.tokenId}`}
+          href={`/track/${record.ticketId}`}
           style={{
             fontSize: 'var(--fs-12)',
             color: 'var(--accent)',
@@ -350,14 +390,14 @@ function HistoryRow({ entry }: { entry: StatusHistoryEntry }) {
 }
 
 function AdvanceForm({
-  tokenId,
+  ticketId,
   fromStatus,
   toStatus,
   hint,
   showFee,
   defaultFeePaise,
 }: {
-  tokenId: string;
+  ticketId: string;
   fromStatus: RecruiterStatus;
   toStatus: RecruiterStatus;
   hint: string;
@@ -367,7 +407,7 @@ function AdvanceForm({
   const isRejection = toStatus === 'rejected';
   return (
     <form
-      action={advanceTokenAction}
+      action={advanceTicketAction}
       style={{
         display: 'grid',
         gap: 'var(--space-3)',
@@ -377,7 +417,7 @@ function AdvanceForm({
         border: '1px solid var(--border-default)',
       }}
     >
-      <input type="hidden" name="tokenId" value={tokenId} />
+      <input type="hidden" name="ticketId" value={ticketId} />
       <input type="hidden" name="fromStatus" value={fromStatus} />
       <input type="hidden" name="toStatus" value={toStatus} />
       <p style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--fw-600)', color: 'var(--text-strong)' }}>
@@ -500,9 +540,9 @@ function errorLabel(error: string): string {
     case 'illegal-transition':
       return 'That transition is not allowed from the current state.';
     case 'not-found':
-      return 'Token not found.';
+      return 'Ticket not found.';
     default:
-      return 'Could not advance the token. Try again.';
+      return 'Could not advance the ticket. Try again.';
   }
 }
 

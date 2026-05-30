@@ -5,7 +5,7 @@ import { ApplyForm } from './ApplyForm';
 export const metadata: Metadata = {
   title: 'Apply to recruit · NID Industry Interface',
   description:
-    'Apply to recruit from the National Institute of Design. No login required — receive a token and track your application through every step.',
+    'Apply to recruit from the National Institute of Design. No login required — receive a ticket and track your application through every step.',
 };
 
 export default function ApplyPage() {
@@ -52,8 +52,8 @@ export default function ApplyPage() {
             }}
           >
             We&rsquo;ll verify your company details, share a participation invoice, and issue login
-            credentials once payment is received. You will get a token to follow every step of the
-            process at <code style={{ fontFamily: 'inherit' }}>/track/&lt;your-token&gt;</code>.
+            credentials once payment is received. You will get a ticket to follow every step of the
+            process at <code style={{ fontFamily: 'inherit' }}>/track/&lt;your-ticket&gt;</code>.
           </p>
 
           <div
@@ -80,7 +80,7 @@ export default function ApplyPage() {
             <a href="/track" style={{ color: 'var(--accent)' }}>
               /track
             </a>{' '}
-            using the token we emailed you.
+            using the ticket we emailed you.
           </p>
         </div>
       </section>

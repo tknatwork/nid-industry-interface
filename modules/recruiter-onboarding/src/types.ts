@@ -41,6 +41,13 @@ export const applyFormSchema = z.object({
     .trim()
     .regex(/^[+0-9 ()-]{7,20}$/, 'Provide a valid phone number'),
   cycleId: z.string().trim().min(1),
+  // Multi-branch grouping (plan Round 3 §D). Optional — only set when this
+  // application is one branch of a parent company. Each branch keeps its OWN
+  // gst/registrationNumber/corporateEmail/contactPhone above; these two fields
+  // only carry the parent grouping + the branch's human label. Kept in lock-step
+  // with the matching ApplicationTicketRecord fields.
+  parentCompanyId: z.string().trim().min(1).optional(),
+  branchLabel: z.string().trim().min(1).optional(),
 });
 
 export type ApplyForm = z.infer<typeof applyFormSchema>;
@@ -63,10 +70,34 @@ export interface StatusHistoryEntry {
   readonly note?: string;
 }
 
-export interface ApplicationTokenRecord {
-  readonly tokenId: string;
+/**
+ * GST-compliant participation-fee receipt, generated when payment is recorded.
+ * Mocked for the prototype demo — no real gateway, no real PFMS settlement —
+ * but shaped like the PDF/A receipt the recruiter will ultimately download
+ * from `/recruiter/receipts` (plan Phase 3.3 + 6 payment-compliance notes).
+ */
+export interface PaymentReceipt {
+  readonly receiptId: string; // e.g. NID-RCPT-2026-A-0042
+  readonly amountPaise: number;
+  readonly paidAt: string; // ISO 8601
+  readonly method: string; // mock gateway label, e.g. "Demo gateway (UPI)"
+  readonly gatewayRef: string; // mock gateway transaction reference
+}
+
+export interface ApplicationTicketRecord {
+  readonly ticketId: string;
   readonly cycleId: string;
   readonly companyName: string;
+  /**
+   * Parent-company grouping id (plan Round 3 §D). One company can run MULTIPLE
+   * branches, each a SEPARATE recruiter account with its OWN
+   * GST/registration/contacts/credentials/dashboard. When set, this ticket is
+   * one branch of the parent identified by this id (e.g. 'acme'); the human name
+   * lives in PARENT_COMPANIES on the web side. Absent for standalone recruiters.
+   */
+  readonly parentCompanyId?: string;
+  /** Human label distinguishing this branch within its parent (e.g. 'Bengaluru'). */
+  readonly branchLabel?: string;
   readonly sector: string;
   readonly gst: string;
   readonly registrationNumber: string;
@@ -74,19 +105,45 @@ export interface ApplicationTokenRecord {
   readonly websiteUrl?: string;
   readonly contactName: string;
   readonly contactPhone: string;
+  /** Mock phone-OTP verification at apply time (plan §G — demo, no real SMS). */
+  readonly phoneVerified: boolean;
   readonly status: RecruiterStatus;
   readonly statusHistory: readonly StatusHistoryEntry[];
   readonly createdAt: string;
+  /** Live participation-fee amount in paise — set when the invoice is issued. */
   readonly feeAmountPaise?: number;
+  /** Present once the fee is paid (mock). Mirrors the generated receipt's id. */
+  readonly receiptId?: string;
+  /** Full receipt record, generated on payment (mock). */
+  readonly receipt?: PaymentReceipt;
 }
 
 export interface OutboxMessage {
   readonly id: string;
-  readonly tokenId: string;
+  readonly ticketId: string;
   readonly channel: 'email' | 'sms' | 'whatsapp';
   readonly to: string;
   readonly templateId: string;
   readonly renderedSubject?: string;
   readonly renderedBody: string;
   readonly queuedAt: string;
+}
+
+/**
+ * Per-recruiter account-activation record (plan Round 3 §C). Recruiter accounts
+ * lock between placement cycles — the credentials never change, only the
+ * lock/active-cycle state does. An admin "wind down" at cycle close flips
+ * `locked` to true for every account on that cycle; the recruiter reactivates by
+ * re-paying the participation fee for the next cycle, which mints a fresh
+ * `PaymentReceipt` and sets a new `activeCycleId`.
+ *
+ * `recruiterId === ticketId` in this demo (the recruiter is identified by the
+ * application ticket until real auth lands).
+ */
+export interface AccountActivationRecord {
+  readonly recruiterId: string;
+  readonly activeCycleId: string;
+  readonly locked: boolean;
+  /** ISO 8601 — set when the account is reactivated for a new cycle. */
+  readonly reactivatedAt?: string;
 }

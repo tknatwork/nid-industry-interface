@@ -1,17 +1,20 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell } from '@nid/ui';
 import { CANONICAL_SKILLS, SKILL_GROUPS } from '@nid/module-jd-posting';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { JdWizard } from './JdWizard';
+import { saveNewDraftAction, submitNewJdAction } from './actions';
 
 export const metadata: Metadata = {
   title: 'Post a JD · Recruiter · NID Industry Interface',
   robots: { index: false, follow: false },
 };
 
-export default function NewJdPage() {
+export default async function NewJdPage() {
+  const recruiter = await readRecruiterSession();
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName}>
+    <RecruiterShell activeNav="jds" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <p
@@ -51,7 +54,12 @@ export default function NewJdPage() {
             and finish later, or submit for moderation when ready.
           </p>
 
-          <JdWizard skills={[...CANONICAL_SKILLS]} skillGroups={[...SKILL_GROUPS]} />
+          <JdWizard
+            skills={[...CANONICAL_SKILLS]}
+            skillGroups={[...SKILL_GROUPS]}
+            onSubmit={submitNewJdAction}
+            onSaveDraft={saveNewDraftAction}
+          />
         </div>
       </section>
     </RecruiterShell>

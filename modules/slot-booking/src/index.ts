@@ -4,6 +4,7 @@ export {
   publishSlot,
   listOpenSlots,
   assignStudent,
+  assignInterviewers,
   unassignStudent,
   listAssignmentsForJd,
   slotById,

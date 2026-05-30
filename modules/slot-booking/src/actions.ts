@@ -1,4 +1,11 @@
-import { assignSchema, publishSlotSchema, type ActionResult, type Slot, type SlotAssignment } from './types';
+import {
+  assignInterviewersSchema,
+  assignSchema,
+  publishSlotSchema,
+  type ActionResult,
+  type Slot,
+  type SlotAssignment,
+} from './types';
 import {
   assignmentsForJd,
   assignmentsForSlot,
@@ -6,6 +13,7 @@ import {
   listSlots,
   publishSlotRecord,
   removeAssignment,
+  setInterviewers,
   upsertAssignment,
 } from './store';
 
@@ -36,9 +44,25 @@ export function assignStudent(input: unknown): ActionResult {
     slotId: parsed.data.slotId,
     studentId: parsed.data.studentId,
     ...(parsed.data.meetingLinkUrl ? { meetingLinkUrl: parsed.data.meetingLinkUrl } : {}),
+    interviewers: [],
     assignedAt: new Date().toISOString(),
   };
   return upsertAssignment(entry);
+}
+
+/**
+ * Recruiter sets the expected interviewers for a candidate's booked slot.
+ * Interviewers are the company's named sub-roles (HR Director / Hiring Manager /
+ * Interviewer — plan §P). Requires an existing slot booking for the candidate.
+ */
+export function assignInterviewers(input: unknown): ActionResult {
+  const parsed = assignInterviewersSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, reason: parsed.error.issues[0]?.message ?? 'Invalid interviewers' };
+  }
+  // De-dupe while preserving order.
+  const interviewers = [...new Set(parsed.data.interviewers)];
+  return setInterviewers(parsed.data.jdId, parsed.data.studentId, interviewers);
 }
 
 export function unassignStudent(jdId: string, studentId: string): ActionResult {

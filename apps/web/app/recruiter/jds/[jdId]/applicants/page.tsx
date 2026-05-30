@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell, StatusPill } from '@nid/ui';
-import { getJd } from '@nid/module-jd-posting';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import {
   listEligibleCandidates,
   listShortlist,
   type CandidateSort,
   type CandidateView,
 } from '@nid/module-candidate-browse';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 
 export const metadata: Metadata = {
   title: 'Applicants · Recruiter · NID Industry Interface',
@@ -36,8 +36,8 @@ export default async function ApplicantsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const { jdId } = await params;
-  const jd = getJd(jdId);
-  if (!jd) notFound();
+  const jd = await requireOwnedJd(jdId);
+  const recruiter = await readRecruiterSession();
 
   const sortParam = (await searchParams).sort;
   const sort: CandidateSort = sortParam === 'discipline' || sortParam === 'batch' ? sortParam : 'name';
@@ -49,7 +49,7 @@ export default async function ApplicantsPage({
   const shortlistedIds = new Set(listShortlist(jdId).map((s) => s.candidate.studentId));
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName}>
+    <RecruiterShell activeNav="jds" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <a href="/recruiter/jds" style={backLink}>

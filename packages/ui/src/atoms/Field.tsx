@@ -11,6 +11,17 @@ export interface FieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   readonly help?: ReactNode;
   readonly error?: ReactNode;
   readonly trailing?: ReactNode;
+  /**
+   * Marks the field as required: renders a red `*` after the label and sets
+   * the native `required` attribute (unless the caller overrides it).
+   */
+  readonly required?: boolean;
+  /**
+   * When the field is NOT required and this flag is set, render a muted
+   * "(optional)" hint after the label. Off by default so existing fields are
+   * unchanged; callers (or an app-level flag) opt in per form.
+   */
+  readonly showOptionalHint?: boolean;
 }
 
 const labelStyle = {
@@ -21,6 +32,20 @@ const labelStyle = {
   textTransform: 'uppercase' as const,
   letterSpacing: '0.08em',
   marginBottom: 'var(--space-2)',
+};
+
+const requiredMarkStyle = {
+  marginLeft: 'var(--space-1)',
+  color: 'var(--input-error-text)',
+  fontWeight: 'var(--fw-600)',
+};
+
+const optionalHintStyle = {
+  marginLeft: 'var(--space-1)',
+  color: 'var(--text-secondary)',
+  fontWeight: 'var(--fw-400)',
+  textTransform: 'none' as const,
+  letterSpacing: 'normal',
 };
 
 const inputStyle = {
@@ -52,20 +77,39 @@ const errorStyle = {
   fontWeight: 'var(--fw-600)',
 };
 
-export function Field({ id, label, help, error, trailing, ...inputProps }: FieldProps) {
+export function Field({
+  id,
+  label,
+  help,
+  error,
+  trailing,
+  required = false,
+  showOptionalHint = false,
+  ...inputProps
+}: FieldProps) {
   const hasError = Boolean(error);
   const describedBy = [help ? `${id}-help` : null, error ? `${id}-error` : null].filter(Boolean).join(' ') || undefined;
+  const requiredAttr = required;
 
   return (
     <div style={{ display: 'block' }}>
       <label htmlFor={id} style={labelStyle}>
         {label}
+        {required ? (
+          <span aria-hidden="true" style={requiredMarkStyle}>
+            *
+          </span>
+        ) : showOptionalHint ? (
+          <span style={optionalHintStyle}>(optional)</span>
+        ) : null}
       </label>
       <div style={{ position: 'relative' }}>
         <input
           id={id}
           {...inputProps}
+          required={requiredAttr}
           aria-invalid={hasError || undefined}
+          aria-required={required || undefined}
           aria-describedby={describedBy}
           style={{
             ...inputStyle,

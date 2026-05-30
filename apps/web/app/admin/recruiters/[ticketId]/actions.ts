@@ -18,44 +18,44 @@ const VALID_TRANSITIONS: Readonly<Record<RecruiterStatus, readonly RecruiterStat
   'rejected': [],
 };
 
-export async function advanceTokenAction(formData: FormData): Promise<void> {
-  const tokenId = (formData.get('tokenId') as string | null)?.trim().toUpperCase();
+export async function advanceTicketAction(formData: FormData): Promise<void> {
+  const ticketId = (formData.get('ticketId') as string | null)?.trim().toUpperCase();
   const fromStatusRaw = formData.get('fromStatus') as string | null;
   const toStatusRaw = formData.get('toStatus') as string | null;
   const note = (formData.get('note') as string | null)?.trim() ?? undefined;
   const feeRaw = formData.get('feeAmountPaise') as string | null;
 
-  if (!tokenId || !fromStatusRaw || !toStatusRaw) {
+  if (!ticketId || !fromStatusRaw || !toStatusRaw) {
     redirect('/admin/recruiters/queue?error=missing');
   }
 
   const fromStatus = recruiterStatusSchema.safeParse(fromStatusRaw);
   const toStatus = recruiterStatusSchema.safeParse(toStatusRaw);
   if (!fromStatus.success || !toStatus.success) {
-    redirect(`/admin/recruiters/${tokenId}?error=invalid-status`);
+    redirect(`/admin/recruiters/${ticketId}?error=invalid-status`);
   }
   const allowed = VALID_TRANSITIONS[fromStatus.data];
   if (!allowed.includes(toStatus.data)) {
-    redirect(`/admin/recruiters/${tokenId}?error=illegal-transition`);
+    redirect(`/admin/recruiters/${ticketId}?error=illegal-transition`);
   }
 
   const feeAmountPaise = feeRaw && feeRaw.length > 0 ? Number(feeRaw) : undefined;
 
   const updated = advance({
-    tokenId,
+    ticketId,
     toStatus: toStatus.data,
     note: note && note.length > 0 ? note : undefined,
     feeAmountPaise: feeAmountPaise !== undefined && Number.isFinite(feeAmountPaise) ? feeAmountPaise : undefined,
   });
 
   if (!updated) {
-    redirect(`/admin/recruiters/${tokenId}?error=not-found`);
+    redirect(`/admin/recruiters/${ticketId}?error=not-found`);
   }
 
   // Refresh both surfaces that depend on the updated record.
   revalidatePath('/admin/recruiters/queue');
-  revalidatePath(`/admin/recruiters/${tokenId}`);
-  revalidatePath(`/track/${tokenId}`);
+  revalidatePath(`/admin/recruiters/${ticketId}`);
+  revalidatePath(`/track/${ticketId}`);
 
-  redirect(`/admin/recruiters/${tokenId}`);
+  redirect(`/admin/recruiters/${ticketId}`);
 }

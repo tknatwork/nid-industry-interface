@@ -4,15 +4,15 @@ import { PageShell, StatusPill } from '@nid/ui';
 import {
   lookup,
   outboxFor,
-  parseTokenId,
+  parseTicketId,
   recruiterStatusValues,
-  type ApplicationTokenRecord,
+  type ApplicationTicketRecord,
   type RecruiterStatus,
   type StatusHistoryEntry,
 } from '@nid/module-recruiter-onboarding';
 
 interface PageParams {
-  readonly token: string;
+  readonly ticket: string;
 }
 
 export async function generateMetadata({
@@ -20,22 +20,22 @@ export async function generateMetadata({
 }: {
   params: Promise<PageParams>;
 }): Promise<Metadata> {
-  const { token } = await params;
+  const { ticket } = await params;
   return {
-    title: `Tracker · ${token} · NID Industry Interface`,
-    robots: { index: false, follow: false }, // tracker URLs include identifying token
+    title: `Tracker · ${ticket} · NID Industry Interface`,
+    robots: { index: false, follow: false }, // tracker URLs include identifying ticket
   };
 }
 
 export default async function TrackerPage({ params }: { params: Promise<PageParams> }) {
-  const { token } = await params;
-  const tokenId = token.toUpperCase();
-  if (!parseTokenId(tokenId)) notFound();
+  const { ticket } = await params;
+  const ticketId = ticket.toUpperCase();
+  if (!parseTicketId(ticketId)) notFound();
 
-  const record = lookup(tokenId);
+  const record = lookup(ticketId);
   if (!record) notFound();
 
-  const messages = outboxFor(tokenId);
+  const messages = outboxFor(ticketId);
 
   return (
     <PageShell activeNav="track">
@@ -59,7 +59,7 @@ export default async function TrackerPage({ params }: { params: Promise<PagePara
   );
 }
 
-function Header({ record }: { record: ApplicationTokenRecord }) {
+function Header({ record }: { record: ApplicationTicketRecord }) {
   return (
     <header
       style={{
@@ -84,7 +84,7 @@ function Header({ record }: { record: ApplicationTokenRecord }) {
             marginBottom: 'var(--space-1)',
           }}
         >
-          Application token
+          Application ticket
         </p>
         <p
           style={{
@@ -96,7 +96,7 @@ function Header({ record }: { record: ApplicationTokenRecord }) {
             marginBottom: 'var(--space-2)',
           }}
         >
-          {record.tokenId}
+          {record.ticketId}
         </p>
         <p
           style={{
@@ -113,7 +113,7 @@ function Header({ record }: { record: ApplicationTokenRecord }) {
   );
 }
 
-function Timeline({ record }: { record: ApplicationTokenRecord }) {
+function Timeline({ record }: { record: ApplicationTicketRecord }) {
   // Build the visual timeline against the canonical state machine so non-occurred
   // steps still render as upcoming dots — the recruiter sees the full journey.
   const orderedFlow: readonly RecruiterStatus[] = [
@@ -253,7 +253,7 @@ function Timeline({ record }: { record: ApplicationTokenRecord }) {
   );
 }
 
-function NextStep({ record }: { record: ApplicationTokenRecord }) {
+function NextStep({ record }: { record: ApplicationTicketRecord }) {
   const guidance: Record<RecruiterStatus, string> = {
     'application-received': 'Nothing required from you. We will reach out within 3 working days.',
     'verification-pending': 'Nothing required from you. Verification typically takes 24-48 hours.',
@@ -296,6 +296,18 @@ function NextStep({ record }: { record: ApplicationTokenRecord }) {
       >
         {guidance[record.status]}
       </p>
+      {record.receipt && (
+        <p
+          style={{
+            fontSize: 'var(--fs-12)',
+            color: 'var(--text-secondary)',
+            marginTop: 'var(--space-3)',
+          }}
+        >
+          Fee receipt <strong style={{ color: 'var(--text-strong)', fontFamily: 'ui-monospace, monospace' }}>{record.receipt.receiptId}</strong>{' '}
+          · ₹{rupeeFromPaise(record.receipt.amountPaise)} · {record.receipt.method}
+        </p>
+      )}
     </div>
   );
 }
@@ -324,7 +336,7 @@ function CommsOutbox({
           marginBottom: 'var(--space-3)',
         }}
       >
-        Comms log (this prototype previews emails; nothing was sent)
+        Comms log (this prototype previews emails &amp; SMS; nothing was sent)
       </p>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--space-4)' }}>
         {messages.map((m) => (
