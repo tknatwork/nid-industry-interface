@@ -2,13 +2,33 @@
 name: nid-industry-interface-session-memory
 project: nid-industry-interface
 last_updated: 2026-05-30
-status: Round 2 redesign built + adversarially verified GREEN — on branch feat/recruiter-portal-round2 (Wave 3 commit)
-current_module: (Round 2 recruiter-portal redesign — pre-login, dashboard, interview ops, gated offers)
+status: Round 3 (recruiter account lifecycle + multi-branch + repo governance) built GREEN; runtime advisories cleared 25→0 — on branch feat/recruiter-portal-round2
+current_module: (Round 3 — logout/profile, cycle-lock, multi-branch isolation, dep-advisory triage, repo hardening)
 ---
 
 # Session Memory — NID Industry Interface (project-local)
 
 Project-local session memory. Fully isolated from any global GCC layer.
+
+## Round 3 — recruiter account lifecycle + multi-branch + repo governance (2026-05-30)
+
+**Branch:** `feat/recruiter-portal-round2`. Built via dynamic multi-agent Workflows (user directed "build using dynamic workflows"). Commits: `e491ef5` (E1+A+B) · `bfc7087` (C) · `cfec101` (D + isolation fixes) · `cdc5461` (E3 deps) · + this docs commit.
+
+> **Plan-mode gotcha (learned):** workflow SUBAGENTS inherit the main session's plan mode — the first Round-3 workflow returned 5 plans + ZERO edits (agents were read-only). Approving the plan (ExitPlanMode) is the ONLY switch from planning→building; a fresh re-run then actually wrote code. If a workflow returns "here is my plan" instead of file changes, you're still in plan mode.
+
+- **E1 governance + A account self-service + B tutorials:** `.github/{CODEOWNERS,PULL_REQUEST_TEMPLATE,ISSUE_TEMPLATE/*,dependabot.yml}` + `CONTRIBUTING.md` + `SECURITY.md`; recruiter **Log Out** (`account-actions.ts` + `RecruiterAccountMenu` + a `RecruiterShell.accountMenu` slot wired into ~20 recruiter pages); **profile editing** (`/recruiter/profile/edit`, email + phone reusing `MobileVerify` with re-verify only on change; `updateContactDetails`/`getCompanyRecord` on recruiter-onboarding); first-time **DashboardTour** (Overlay, localStorage-gated, re-runnable via "Take a tour").
+- **C cycle wind-down + account lock:** account-activation state on recruiter-onboarding (`getAccountState`/`isAccountLocked`/`windDownCycle`/`reactivateForCycle`); admin "Wind down current cycle" on `/admin/cycles`; locked recruiter dashboard + `/recruiter/reactivate` re-pay flow (same creds → unlock next cycle). Lock authoritative on writes (guards on submitNewJdAction/saveNewDraftAction/issueOfferAction). Adversarial-passed.
+- **D multi-branch companies:** `parentCompanyId`+`branchLabel` on ApplicationTicketRecord; `PARENT_COMPANIES` + a 2nd seeded branch (Acme · Ahmedabad `NID-2026-A-0002`, own GST/creds, no JDs) + dual `DEMO_LOGINS`; apply branch-select; admin queue grouped by parent; profile branch chip; login picker. **Two adversarial passes:** the first caught (1) a client/server BOUNDARY break (branch helpers pulled the onboarding store into client-imported `recruiter-public.ts` → moved to server-only `apps/web/lib/recruiter-branch.ts`) and (2) a HIGH branch-isolation leak (hardcoded `DEMO_RECRUITER` + no JD-ownership checks → Ahmedabad could read/mutate Bengaluru's JDs). Fixed with a shared `requireOwnedJd(jdId)` guard (`apps/web/lib/recruiter-jd-guard.ts`) on every `/recruiter/jds` list + `[jdId]` page + write action (incl. the draft-discard the first pass missed); re-trace confirmed isolation closed.
+- **E3 dependency advisories:** `pnpm audit --prod` **25 → 0**. `next` 15.1.0→**15.5.18** (2 critical + 6 high Next CVEs), `drizzle-orm` 0.38.4→0.45.2, `eslint-config-next`→15.5.18, `postcss`→8.5.10 + root `pnpm.overrides.postcss ^8.5.10` (Next's transitive build-time copy). Remaining 7 are dev/build-only (vitest/vite/esbuild/@eslint/plugin-kit) — accepted + documented in `SECURITY.md`. `dependabot.yml` keeps them flowing through reviewed PRs.
+- **E2 repo hardening:** `docs/repo-hardening.md` runbook for the OWNER — branch protection (require PR + Code Owner review on `main`, block force-push/deletion), collaborator-write restriction, Dependabot/secret-scanning/push-protection. I authored the runbook; the owner applies the access-control toggles (an agent does NOT change repo access settings).
+
+**KNOWN residual (minor, NOT a leak):** a few `/recruiter/jds/[jdId]/*` surfaces still read `DEMO_RECRUITER` for the shell **companyName** (= the shared brand) + config (sub-roles, transport pref). Those pages are ownership-gated (`requireOwnedJd` 404s cross-branch) and only Bengaluru has JDs, so display is correct + no data leak. Full cleanup = swap to `readRecruiterSession()`. The DATA isolation (JD/candidate/offer read+write) is fully session-gated.
+
+**Demo-posture decision:** durable Postgres KV stays OFF (no DATABASE_URL) — personal-project demo "feel"; wire durability only if the institution adopts.
+
+**Next step:** await the user for (a) applying the repo-hardening settings, (b) push + Vercel redeploy of Round 3, (c) optional residual `DEMO_RECRUITER` cleanup. Do NOT auto-continue.
+
+---
 
 ## Round 2 — recruiter-portal redesign + Wave 2 adversarial fix-loop (2026-05-30)
 
