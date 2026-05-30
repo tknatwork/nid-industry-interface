@@ -524,6 +524,80 @@ export function payTicketFee(input: {
   return { record: updated, receipt };
 }
 
+// ── Offer-letter delivery notice (plan Round 4 §D — "Delivery") ─────────────
+//
+// When a recruiter sends a signed offer letter, the student is notified on both
+// channels (email + SMS), mirroring payTicketFee's dual-channel Outbox pair.
+// The Outbox write stays here in the owning module so the web action never
+// reaches into another module's store. Mock preview; nothing is actually sent.
+
+export interface QueueOfferLetterNoticeInput {
+  /** Recruiter sending the letter — used as the Outbox `ticketId` (recruiterId === ticketId). */
+  readonly recruiterId: string;
+  /** Student's email — when present, queues the email channel notice. */
+  readonly studentEmail?: string | undefined;
+  /** Student's phone — when present, queues the SMS channel notice. */
+  readonly studentPhone?: string | undefined;
+  /** JD title shown in the notice copy. */
+  readonly jdTitle: string;
+  /** Public path where the student views the letter + certificate (e.g. /student/offers or /verify/<hash>). */
+  readonly verifyPath: string;
+}
+
+/**
+ * Queue the offer-letter-delivered notice as an email + SMS Outbox pair
+ * (templateId `offer.letter.delivered`), mirroring payTicketFee's dual-channel
+ * pattern. Each channel is only queued when its destination is supplied, via
+ * conditional inclusion (exactOptionalPropertyTypes — never an explicit
+ * `undefined` `to`). Persists and returns the queued messages.
+ */
+export function queueOfferLetterNotice(input: QueueOfferLetterNoticeInput): readonly OutboxMessage[] {
+  const state = loadState();
+  const now = new Date();
+  const queuedAt = now.toISOString();
+  const stamp = now.getTime();
+
+  const queued: OutboxMessage[] = [];
+
+  if (input.studentEmail) {
+    queued.push({
+      id: `outbox_${input.recruiterId}_offerletter_email_${stamp}`,
+      ticketId: input.recruiterId,
+      channel: 'email',
+      to: input.studentEmail,
+      templateId: 'offer.letter.delivered',
+      renderedSubject: `Your NID offer letter — ${input.jdTitle}`,
+      renderedBody:
+        `Congratulations!\n\n` +
+        `Your signed offer letter for "${input.jdTitle}" is now available. It carries an ` +
+        `institute certificate of authenticity you can verify online.\n\n` +
+        `View your letter at: ${input.verifyPath}\n\n` +
+        `— NID Industry Interface`,
+      queuedAt,
+    });
+  }
+
+  if (input.studentPhone) {
+    queued.push({
+      id: `outbox_${input.recruiterId}_offerletter_sms_${stamp}`,
+      ticketId: input.recruiterId,
+      channel: 'sms',
+      to: input.studentPhone,
+      templateId: 'offer.letter.delivered',
+      renderedBody:
+        `NID Industry Interface: your signed offer letter for "${input.jdTitle}" is ready. ` +
+        `View it at ${input.verifyPath}`,
+      queuedAt,
+    });
+  }
+
+  if (queued.length > 0) {
+    persist({ ...state, outbox: [...state.outbox, ...queued] });
+  }
+
+  return queued;
+}
+
 // ── Account activation / cycle lock (plan Round 3 §C) ───────────────────────
 //
 // Recruiter accounts lock between placement cycles. Credentials never change —

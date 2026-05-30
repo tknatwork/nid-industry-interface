@@ -13,13 +13,17 @@ export {
   listMeetings,
   bookMeeting,
   publishMeetingSlot,
+  submitExperienceRating,
+  getExperienceRating,
 } from './actions';
 
 export {
   DEFAULT_MEETING_AGENDA,
+  submitRatingSchema,
   type PptWindow,
   type PptBooking,
   type MeetingSlot,
   type Meeting,
+  type ExperienceRating,
   type ActionResult,
 } from './types';

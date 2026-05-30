@@ -51,3 +51,10 @@ export {
   type ProgressTrackerOrientation,
 } from './atoms/ProgressTracker';
 export { VoiceInput, type VoiceInputProps } from './atoms/VoiceInput';
+export { StarRating, type StarRatingProps } from './atoms/StarRating';
+export { FileUpload, type FileUploadProps } from './atoms/FileUpload';
+export {
+  SortableList,
+  type SortableListProps,
+  type SortableRenderArgs,
+} from './atoms/SortableList';

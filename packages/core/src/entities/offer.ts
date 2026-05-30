@@ -24,4 +24,16 @@ export interface Offer {
   readonly windowExpiresAt: Date;
   readonly respondedAt?: Date;
   readonly responseReason?: string;
+  /**
+   * Position of this offer within a locked float sequence (0-based). Set by
+   * `issueOffer` from the JD's locked `FloatSequenceRecord.order`. Used to
+   * enforce strictly-in-sequence issuance (Round 4 §D).
+   */
+  readonly sequenceIndex?: number;
+  /**
+   * Per-wave acceptance deadline as an ISO-8601 instant. Each wave carries its
+   * own clock (`issuedAt + deadlineHours`); timeout is a pure per-record
+   * predicate evaluated lazily (Round 4 §D), not a per-JD schedule.
+   */
+  readonly deadlineIso?: string;
 }

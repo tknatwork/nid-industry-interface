@@ -1,13 +1,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { syncKv } from '@nid/db';
 import { dirname, resolve } from 'node:path';
-import type { Meeting, MeetingSlot, PptBooking, PptWindow } from './types';
+import type { ExperienceRating, Meeting, MeetingSlot, PptBooking, PptWindow } from './types';
 
 interface StoreState {
   readonly pptWindows: readonly PptWindow[];
   readonly pptBookings: readonly PptBooking[];
   readonly meetingSlots: readonly MeetingSlot[];
   readonly meetings: readonly Meeting[];
+  readonly experienceRatings: Record<string, ExperienceRating>;
   readonly counter: number;
 }
 
@@ -27,7 +28,7 @@ function seedInitialState(): StoreState {
     { id: 'mtg_s2', placementHead: 'Sujitha Nair', campus: 'Ahmedabad', day: '2026-05-25', time: '16:00', status: 'open' },
     { id: 'mtg_s3', placementHead: 'Placement Head', campus: 'Bengaluru', day: '2026-05-26', time: '11:00', status: 'open' },
   ];
-  return { pptWindows, pptBookings: [], meetingSlots, meetings: [], counter: 0 };
+  return { pptWindows, pptBookings: [], meetingSlots, meetings: [], experienceRatings: {}, counter: 0 };
 }
 
 function loadState(): StoreState {
@@ -41,6 +42,7 @@ function loadState(): StoreState {
       pptBookings: p.pptBookings ?? [],
       meetingSlots: p.meetingSlots ?? seed.meetingSlots,
       meetings: p.meetings ?? [],
+      experienceRatings: p.experienceRatings ?? {},
       counter: p.counter ?? 0,
     };
   } catch {
@@ -119,4 +121,28 @@ export function pptWindowById(id: string): PptWindow | null {
 }
 export function meetingSlotById(id: string): MeetingSlot | null {
   return loadState().meetingSlots.find((s) => s.id === id) ?? null;
+}
+
+// ── Recruiter experience ratings (Round 4 §E) ────────────────────────────────
+
+/** One rating per recruiter, keyed by recruiterId — latest submission wins. */
+export function upsertExperienceRating(
+  input: Omit<ExperienceRating, 'ratedAt'>,
+): ExperienceRating {
+  const s = loadState();
+  const rating: ExperienceRating = {
+    recruiterId: input.recruiterId,
+    stars: input.stars,
+    ...(input.comment !== undefined ? { comment: input.comment } : {}),
+    ratedAt: new Date().toISOString(),
+  };
+  persist({
+    ...s,
+    experienceRatings: { ...s.experienceRatings, [input.recruiterId]: rating },
+  });
+  return rating;
+}
+
+export function experienceRatingFor(recruiterId: string): ExperienceRating | null {
+  return loadState().experienceRatings[recruiterId] ?? null;
 }

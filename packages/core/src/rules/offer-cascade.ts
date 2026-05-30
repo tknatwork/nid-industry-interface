@@ -133,3 +133,55 @@ export function canIssueOffers(
   }
   return { allowed: true };
 }
+
+/**
+ * Pick the next `count` students to float, walking the locked float `order`
+ * (Round 4 §D) and skipping anyone already offered. Pure: preserves sequence
+ * order, never reorders, and stops once `count` slots are filled. Duplicate IDs
+ * in `order` are de-duplicated (an id offered earlier in this same pass is not
+ * floated twice). A non-positive `count` yields an empty result.
+ *
+ * NOTE: this returns at most `count` ids; it does NOT itself enforce the
+ * position cap — `canIssueOffers` remains the gate the caller must consult.
+ */
+export function nextInSequence(
+  order: readonly string[],
+  alreadyOffered: ReadonlySet<string>,
+  count: number,
+): readonly string[] {
+  if (count <= 0) return [];
+  const picked: string[] = [];
+  const seen = new Set<string>();
+  for (const studentId of order) {
+    if (picked.length >= count) break;
+    if (alreadyOffered.has(studentId) || seen.has(studentId)) continue;
+    seen.add(studentId);
+    picked.push(studentId);
+  }
+  return picked;
+}
+
+/**
+ * True once `now` is at or past the wave's acceptance deadline. The boundary is
+ * inclusive: an offer is considered lapsed exactly at the deadline instant. A
+ * malformed/unparseable `deadlineIso` is treated as NOT passed (fail-open so a
+ * bad timestamp never silently expires a live offer; the caller may validate).
+ */
+export function isDeadlinePassed(deadlineIso: string, now: Date): boolean {
+  const deadlineMs = Date.parse(deadlineIso);
+  if (Number.isNaN(deadlineMs)) return false;
+  return now.getTime() >= deadlineMs;
+}
+
+/**
+ * Whole minutes remaining until the wave deadline (floored). Zero at or past
+ * the deadline — never negative — so countdown UIs clamp cleanly to "0m".
+ * A malformed `deadlineIso` yields 0.
+ */
+export function minutesToDeadline(deadlineIso: string, now: Date): number {
+  const deadlineMs = Date.parse(deadlineIso);
+  if (Number.isNaN(deadlineMs)) return 0;
+  const remainingMs = deadlineMs - now.getTime();
+  if (remainingMs <= 0) return 0;
+  return Math.floor(remainingMs / 60_000);
+}

@@ -17,9 +17,11 @@ import {
   isAccountLocked as storeIsAccountLocked,
   windDownCycle as storeWindDownCycle,
   reactivateForCycle as storeReactivateForCycle,
+  queueOfferLetterNotice as storeQueueOfferLetterNotice,
   type SubmitResult,
   type PayResult,
 } from './store';
+import type { OutboxMessage } from './types';
 
 export interface SubmitOutcome {
   readonly ok: true;
@@ -155,6 +157,33 @@ export function isAccountLocked(recruiterId: string): boolean {
  */
 export function windDownCycle(cycleId: string): number {
   return storeWindDownCycle(cycleId);
+}
+
+/**
+ * Queue the offer-letter-delivered notice to the student on both channels
+ * (email + SMS, templateId `offer.letter.delivered`), mirroring `pay`'s
+ * dual-channel Outbox pair. Called by the web action that sends a signed offer
+ * letter so the Outbox write stays inside this owning module. Only the channels
+ * whose destination is supplied are queued (conditional spreads —
+ * exactOptionalPropertyTypes safe). Returns the queued messages.
+ *
+ * `recruiterId === ticketId` in this demo, so it doubles as the Outbox grouping
+ * key the comms log already filters on.
+ */
+export function queueOfferLetterNotice(input: {
+  recruiterId: string;
+  studentEmail?: string | undefined;
+  studentPhone?: string | undefined;
+  jdTitle: string;
+  verifyPath: string;
+}): readonly OutboxMessage[] {
+  return storeQueueOfferLetterNotice({
+    recruiterId: input.recruiterId.trim().toUpperCase(),
+    jdTitle: input.jdTitle,
+    verifyPath: input.verifyPath,
+    ...(input.studentEmail !== undefined ? { studentEmail: input.studentEmail } : {}),
+    ...(input.studentPhone !== undefined ? { studentPhone: input.studentPhone } : {}),
+  });
 }
 
 export interface ReactivateOutcome {

@@ -4,9 +4,11 @@ import { StudentShell, StatusPill, Button, type StatusTone } from '@nid/ui';
 import { getStudentProfile, companyNameFor } from '@nid/module-student-portal';
 import { listJdsByStatus } from '@nid/module-jd-posting';
 import { listOffers, type OfferRecord } from '@nid/module-offer-cascade';
+import { getOfferLetter, type OfferCertificate } from '@nid/module-offer-letters';
 import { DEMO_STUDENT } from '~/lib/demo-student';
 import { rupees } from '~/lib/money';
 import { respondToOfferAction } from './actions';
+import { StudentLetterViewer } from './StudentLetterViewer';
 
 export const metadata: Metadata = {
   title: 'Offers · Student · NID Industry Interface',
@@ -17,6 +19,14 @@ interface OfferView {
   readonly offer: OfferRecord;
   readonly jdTitle: string;
   readonly companyName: string;
+  /** Set for an ACCEPTED offer that has an uploaded letter (Round 4 §D). The
+   *  base64 feeds the client viewer; the certificate drives the badge + verify
+   *  link. Never present for pending/declined/expired offers. */
+  readonly letter?: {
+    readonly pdfBase64: string;
+    readonly fileName: string;
+    readonly certificate: OfferCertificate;
+  };
 }
 
 export default async function StudentOffersPage({
@@ -33,7 +43,23 @@ export default async function StudentOffersPage({
   for (const jd of listJdsByStatus('published')) {
     for (const offer of listOffers(jd.id)) {
       if (offer.studentId === studentId) {
-        offers.push({ offer, jdTitle: jd.title, companyName: companyNameFor(jd.recruiterId) });
+        // For an accepted offer, surface its uploaded letter (if any): the base64
+        // for the in-browser viewer and the institute certificate for the badge.
+        const letterRecord = offer.status === 'accepted' ? getOfferLetter(jd.id, studentId) : null;
+        offers.push({
+          offer,
+          jdTitle: jd.title,
+          companyName: companyNameFor(jd.recruiterId),
+          ...(letterRecord
+            ? {
+                letter: {
+                  pdfBase64: letterRecord.pdfBase64,
+                  fileName: letterRecord.fileName,
+                  certificate: letterRecord.certificate,
+                },
+              }
+            : {}),
+        });
       }
     }
   }
@@ -62,7 +88,7 @@ export default async function StudentOffersPage({
               {pending.length > 0 && (
                 <p style={{ ...label, color: 'var(--accent)' }}>{pending.length} awaiting your response</p>
               )}
-              {offers.map(({ offer, jdTitle, companyName }) => (
+              {offers.map(({ offer, jdTitle, companyName, letter }) => (
                 <article key={offer.id} style={{ ...card, borderColor: offer.status === 'pending' ? 'var(--accent)' : 'var(--card-border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
                     <div>
@@ -101,11 +127,30 @@ export default async function StudentOffersPage({
                       </form>
                     </div>
                   ) : (
-                    <p style={{ fontSize: 'var(--fs-14)', color: 'var(--text-secondary)', marginTop: 'var(--space-3)' }}>
-                      {offer.status === 'accepted' && 'You accepted this offer. A code-of-conduct acknowledgement applies on joining.'}
-                      {offer.status === 'declined' && `You declined this offer${offer.responseReason ? ` — “${offer.responseReason}”` : ''}.`}
-                      {offer.status === 'expired' && 'This offer window expired.'}
-                    </p>
+                    <div style={{ marginTop: 'var(--space-3)', display: 'grid', gap: 'var(--space-3)' }}>
+                      <p style={{ fontSize: 'var(--fs-14)', color: 'var(--text-secondary)' }}>
+                        {offer.status === 'accepted' && 'You accepted this offer. A code-of-conduct acknowledgement applies on joining.'}
+                        {offer.status === 'declined' && `You declined this offer${offer.responseReason ? ` — “${offer.responseReason}”` : ''}.`}
+                        {offer.status === 'expired' && 'This offer window expired.'}
+                      </p>
+
+                      {offer.status === 'accepted' && letter && (
+                        <div style={letterPanel}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                            <StudentLetterViewer pdfBase64={letter.pdfBase64} fileName={letter.fileName} />
+                            {letter.certificate.instituteApproved && (
+                              <StatusPill tone="success">Institute-approved certificate</StatusPill>
+                            )}
+                          </div>
+                          <p style={{ fontSize: 'var(--fs-12)', color: 'var(--text-secondary)' }}>
+                            Your offer letter carries a certificate of authenticity.{' '}
+                            <a href={letter.certificate.verifyPath} style={{ color: 'var(--accent)' }}>
+                              Verify this certificate →
+                            </a>
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </article>
               ))}
@@ -135,3 +180,4 @@ const h1 = { fontSize: 'var(--fs-40)', lineHeight: 'var(--lh-48)', fontWeight: '
 const card = { backgroundColor: 'var(--surface-card)', border: '2px solid var(--card-border)', borderRadius: 'var(--card-radius)', padding: 'var(--card-padding)' } as const;
 const notice = { fontSize: 'var(--fs-14)', color: 'var(--text-secondary)', padding: 'var(--space-6)', backgroundColor: 'var(--surface-card)', borderRadius: 'var(--radius-2)', border: '1px dashed var(--border-emphasized)', textAlign: 'center' as const };
 const errorBanner = { marginBottom: 'var(--space-6)', padding: 'var(--space-4)', backgroundColor: 'var(--pill-danger-bg)', color: 'var(--pill-danger-fg)', borderRadius: 'var(--radius-3)', fontWeight: 'var(--fw-600)' } as const;
+const letterPanel = { display: 'grid', gap: 'var(--space-2)', padding: 'var(--space-4)', backgroundColor: 'var(--surface-panel)', border: '1px solid var(--card-border)', borderRadius: 'var(--radius-2)' } as const;
