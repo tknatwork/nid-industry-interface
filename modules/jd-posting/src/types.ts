@@ -26,6 +26,10 @@ export const skillRefSchema = z.object({
 export const interviewRoundSchema = z.object({
   round: z.number().int().min(1).max(10),
   focus: z.string().trim().min(2).max(200),
+  // A round flagged as a LIVE design exercise / whiteboarding. Mutually
+  // exclusive with a required take-home evaluation task (see the moderation
+  // schema) — a JD may impose at most ONE unpaid evaluative task.
+  liveExercise: z.boolean().default(false),
 });
 
 /**
@@ -127,6 +131,21 @@ export const jdModerationSchema = jdDraftSchema
         code: z.ZodIssueCode.custom,
         path: ['evaluationTask', 'title'],
         message: 'Name the evaluation task, or turn the requirement off.',
+      });
+    }
+
+    // At most ONE unpaid evaluative task per JD: a take-home assignment OR a
+    // live whiteboarding round — never both. Each of these is a project's worth
+    // of work that students do without compensation; the institution caps it at
+    // one so a role can't extract two free deliverables ("values over money").
+    const hasTakeHome = data.evaluationTask?.required === true;
+    const hasLiveExercise = data.interviewRounds.some((r) => r.liveExercise);
+    if (hasTakeHome && hasLiveExercise) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['evaluationTask'],
+        message:
+          'Choose either a take-home assignment OR a live whiteboarding round — not both. NID limits each role to one unpaid evaluative task.',
       });
     }
 

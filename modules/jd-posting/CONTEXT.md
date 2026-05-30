@@ -55,4 +55,13 @@ The single most error-prone invariant in this module: **each targeted programme 
 - The client predictor in `apps/web/.../JdWizard.tsx` mirrors this exactly: per-programme floors, and it **blocks submit at the same boundary the server uses (`offered < adjustedFloor`)** — the mild/severe split is message tone only, never the block boundary. If you change one side, change the other.
 - Regression test: `test/stipend-split.test.ts` (B.Des-below-floor blocks; valid B.Des-near-its-own-floor passes; single-programme still gates). Run `pnpm --filter @nid/module-jd-posting test`.
 
+## One unpaid evaluative task per JD (take-home XOR whiteboarding)
+
+A JD may impose **at most one** unpaid evaluative task: a required **take-home** (`evaluationTask.required === true`) OR a **live whiteboarding round** (any interview round with `liveExercise === true`) — never both. Each is a project's worth of work students do without compensation, so the institution caps it at one ("values over money").
+
+- Enforced in `jdModerationSchema.superRefine` (path `evaluationTask`). Drafts stay permissive (you just can't *submit* both).
+- Mirrored client-side in the wizard: a live warning + a submit block when both are set, so the recruiter fixes it before the round-trip (same defense-in-depth pattern as the floor gate).
+- `interviewRoundSchema` carries `liveExercise: boolean` (default false). Seeded JDs set it explicitly false.
+- Regression test: `test/assessment-exclusivity.test.ts`.
+
 Read [[REFERENCES.md]] next.

@@ -103,8 +103,8 @@ function deriveInitial(initial: JdRecord | undefined) {
     prose: initial?.supplementaryProseMd ?? '',
     rounds:
       initial && initial.interviewRounds.length > 0
-        ? initial.interviewRounds.map((r) => ({ focus: r.focus }))
-        : [{ focus: '' }],
+        ? initial.interviewRounds.map((r) => ({ focus: r.focus, liveExercise: r.liveExercise ?? false }))
+        : [{ focus: '', liveExercise: false }],
     evalTask: {
       required: initial?.evaluationTask?.required ?? false,
       title: initial?.evaluationTask?.title ?? '',
@@ -177,7 +177,7 @@ export function JdWizard({
   const [prose, setProse] = useState(seed.prose);
 
   // Interview rounds
-  const [rounds, setRounds] = useState<{ focus: string }[]>(seed.rounds);
+  const [rounds, setRounds] = useState<{ focus: string; liveExercise: boolean }[]>(seed.rounds);
 
   // Evaluation task
   const [evalTask, setEvalTask] = useState<EvalTaskState>(seed.evalTask);
@@ -190,6 +190,12 @@ export function JdWizard({
   const isInternship = roleType !== 'full-time';
   const bothProgrammes = programmes.bachelors && programmes.masters;
   const splitComp = bothProgrammes; // per-programme inputs replace the single block
+
+  // A JD may impose at most ONE unpaid evaluative task: a required take-home OR
+  // a live whiteboarding round — never both (values-over-money). Surfaced as a
+  // live warning + a submit block here; the server moderation schema mirrors it.
+  const liveExerciseRound = rounds.some((r) => r.liveExercise);
+  const assessmentConflict = evalTask.required && liveExerciseRound;
 
   // ── live salary predictor ──────────────────────────────────────────────────
   // Reuse the module's floors × scope multiplier. Engineering skills bundled
@@ -260,7 +266,7 @@ export function JdWizard({
         .map((l) => l.trim())
         .filter((l) => l.length > 0),
       interviewRounds: rounds
-        .map((r, i) => ({ round: i + 1, focus: r.focus.trim() }))
+        .map((r, i) => ({ round: i + 1, focus: r.focus.trim(), liveExercise: r.liveExercise }))
         .filter((r) => r.focus.length > 0),
       gpFeeAcknowledged: gpAck,
     };
@@ -327,6 +333,17 @@ export function JdWizard({
       return;
     }
 
+    // One unpaid evaluative task per role — block a take-home + whiteboarding combo.
+    if (isSubmit && assessmentConflict) {
+      setFailure({
+        kind: 'schema',
+        message:
+          'Choose either a take-home assignment OR a live whiteboarding round — not both. NID limits each role to one unpaid evaluative task so students aren’t asked to do two projects’ worth of free work.',
+      });
+      scrollTop();
+      return;
+    }
+
     const payload = buildPayload();
     startTransition(async () => {
       const result = await action(payload);
@@ -376,7 +393,7 @@ export function JdWizard({
     if (p.deliverables) setDeliverables(p.deliverables);
     if (p.supplementaryProse) setProse(p.supplementaryProse);
     if (p.interviewRounds && p.interviewRounds.length > 0) {
-      setRounds(p.interviewRounds.map((focus) => ({ focus })));
+      setRounds(p.interviewRounds.map((focus) => ({ focus, liveExercise: false })));
     }
   }
 
@@ -568,32 +585,72 @@ export function JdWizard({
           />
         </Section>
 
-        <Section title="Evaluation task (optional)" hint="Optionally require candidates to complete a take-home / evaluation task. Release is aligned to the cycle's institute dates so the timeline can't stall.">
+        <Section title="Evaluation task (optional)" hint="Optionally require a take-home / evaluation task. Pick a take-home OR a live whiteboarding round (below) — NID allows only one unpaid evaluative task per role. Release is aligned to the cycle's institute dates so the timeline can't stall.">
           <EvaluationTaskFields value={evalTask} onChange={setEvalTask} />
         </Section>
 
-        <Section title="Interview rounds" hint="Declared upfront — students see this before applying.">
+        {assessmentConflict && (
+          <div
+            role="alert"
+            style={{
+              backgroundColor: 'var(--pill-warning-bg, var(--surface-panel))',
+              border: '1px solid var(--border-emphasized)',
+              borderRadius: 'var(--radius-3)',
+              padding: 'var(--space-4)',
+              fontSize: 'var(--fs-14)',
+              color: 'var(--text-strong)',
+              lineHeight: 1.5,
+            }}
+          >
+            <strong>Pick one evaluative task.</strong> You&rsquo;ve set both a required take-home assignment and a live
+            whiteboarding round. NID limits each role to <em>one</em> unpaid evaluative task so students aren&rsquo;t asked
+            to do two projects&rsquo; worth of free work — turn off the take-home or the whiteboarding round to continue.
+          </div>
+        )}
+
+        <Section title="Interview rounds" hint="Declared upfront — students see this before applying. Flag a round as a live design exercise / whiteboarding only if you are NOT requiring a take-home task.">
           <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
             {rounds.map((r, i) => (
-              <div key={i} style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-end' }}>
-                <div style={{ flex: 1 }}>
-                  <Field
-                    id={`round-${i}`}
-                    label={`Round ${i + 1} focus`}
-                    value={r.focus}
-                    onChange={(e) => setRounds((prev) => prev.map((x, j) => (j === i ? { focus: e.target.value } : x)))}
-                    placeholder="e.g. Portfolio review"
-                  />
+              <div
+                key={i}
+                style={{
+                  display: 'grid',
+                  gap: 'var(--space-2)',
+                  padding: 'var(--space-3)',
+                  border: '1px solid var(--border-default)',
+                  borderRadius: 'var(--radius-2)',
+                }}
+              >
+                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-end' }}>
+                  <div style={{ flex: 1 }}>
+                    <Field
+                      id={`round-${i}`}
+                      label={`Round ${i + 1} focus`}
+                      value={r.focus}
+                      onChange={(e) => setRounds((prev) => prev.map((x, j) => (j === i ? { ...x, focus: e.target.value } : x)))}
+                      placeholder="e.g. Portfolio review"
+                    />
+                  </div>
+                  {rounds.length > 1 && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setRounds((prev) => prev.filter((_, j) => j !== i))}>
+                      Remove
+                    </Button>
+                  )}
                 </div>
-                {rounds.length > 1 && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setRounds((prev) => prev.filter((_, j) => j !== i))}>
-                    Remove
-                  </Button>
-                )}
+                <label style={checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={r.liveExercise}
+                    onChange={(e) => setRounds((prev) => prev.map((x, j) => (j === i ? { ...x, liveExercise: e.target.checked } : x)))}
+                  />
+                  <span style={{ fontSize: 'var(--fs-13, 13px)', color: 'var(--text-primary)' }}>
+                    Live design exercise / whiteboarding in this round (in lieu of a take-home task)
+                  </span>
+                </label>
               </div>
             ))}
             <div>
-              <Button type="button" variant="secondary" size="sm" onClick={() => setRounds((prev) => [...prev, { focus: '' }])}>
+              <Button type="button" variant="secondary" size="sm" onClick={() => setRounds((prev) => [...prev, { focus: '', liveExercise: false }])}>
                 + Add round
               </Button>
             </div>

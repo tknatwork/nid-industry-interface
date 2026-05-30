@@ -31,7 +31,7 @@ export interface JdWizardPayload {
   readonly responsibilities: Record<string, string[]>;
   readonly deliverables: string[];
   readonly supplementaryProseMd?: string;
-  readonly interviewRounds: { round: number; focus: string }[];
+  readonly interviewRounds: { round: number; focus: string; liveExercise: boolean }[];
   readonly evaluationTask?: {
     required: boolean;
     title: string;
