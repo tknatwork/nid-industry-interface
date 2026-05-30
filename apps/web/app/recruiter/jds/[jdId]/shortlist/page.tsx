@@ -3,7 +3,7 @@ import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell, Button } from '@nid/ui';
 import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { listShortlist } from '@nid/module-candidate-browse';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 
 export const metadata: Metadata = {
   title: 'Shortlist · Recruiter · NID Industry Interface',
@@ -13,10 +13,11 @@ export const metadata: Metadata = {
 export default async function ShortlistPage({ params }: { params: Promise<{ jdId: string }> }) {
   const { jdId } = await params;
   const jd = await requireOwnedJd(jdId);
+  const recruiter = await readRecruiterSession();
   const shortlist = listShortlist(jdId);
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
+    <RecruiterShell activeNav="jds" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '820px', margin: '0 auto' }}>
           <a href={`/recruiter/jds/${jdId}/applicants`} style={backLink}>← Applicants</a>

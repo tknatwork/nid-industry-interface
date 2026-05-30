@@ -7,7 +7,7 @@ import {
   DEFAULT_MEETING_AGENDA,
   type MeetingSlot,
 } from '@nid/module-recruiter-engagement';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { bookMeetingAction } from './actions';
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MeetingsPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { recruiterId, companyName } = DEMO_RECRUITER;
+  const { recruiterId, companyName } = await readRecruiterSession();
   const error = (await searchParams).error;
   const slots = listMeetingSlots();
   const meetings = listMeetings(recruiterId);

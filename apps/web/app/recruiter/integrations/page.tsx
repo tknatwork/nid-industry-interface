@@ -3,7 +3,7 @@ import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { headers } from 'next/headers';
 import { RecruiterShell, StatusPill } from '@nid/ui';
 import { listApiKeys } from '@nid/module-admin-accountability';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { CopyField } from '~/components/CopyField';
 
 export const metadata: Metadata = {
@@ -27,13 +27,14 @@ export default async function IntegrationsPage() {
   const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3100';
   const proto = h.get('x-forwarded-proto') ?? (host.includes('localhost') ? 'http' : 'https');
   const base = `${proto}://${host}`;
+  const recruiter = await readRecruiterSession();
 
-  const key = listApiKeys().find((k) => k.recruiterId === DEMO_RECRUITER.recruiterId && k.status === 'active');
+  const key = listApiKeys().find((k) => k.recruiterId === recruiter.recruiterId && k.status === 'active');
   const token = key?.id ?? 'key_acme_01';
   const scopes = key?.scope ?? 'cycle:current:read me:read me:history:read';
 
   return (
-    <RecruiterShell activeNav="integrations" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
+    <RecruiterShell activeNav="integrations" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <header style={{ marginBottom: 'var(--space-6)' }}>

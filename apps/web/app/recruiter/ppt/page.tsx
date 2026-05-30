@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell, Button, StatusPill } from '@nid/ui';
 import { listPptWindows, listPptBookings, type PptWindow } from '@nid/module-recruiter-engagement';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { bookPptAction } from './actions';
 
 export const metadata: Metadata = {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PptPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { recruiterId, cycleId, companyName } = DEMO_RECRUITER;
+  const { recruiterId, cycleId, companyName } = await readRecruiterSession();
   const error = (await searchParams).error;
   const windows = listPptWindows(cycleId);
   const bookings = listPptBookings(recruiterId);

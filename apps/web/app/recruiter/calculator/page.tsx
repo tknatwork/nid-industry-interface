@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell } from '@nid/ui';
 import { StipendCalculator } from '~/components/StipendCalculator';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 
 export const metadata: Metadata = {
   title: 'Stipend calculator · Recruiter · NID Industry Interface',
@@ -15,8 +15,9 @@ export default async function RecruiterCalculatorPage({
   searchParams: Promise<{ roleType?: string; programme?: string; dev?: string }>;
 }) {
   const sp = await searchParams;
+  const recruiter = await readRecruiterSession();
   return (
-    <RecruiterShell companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
+    <RecruiterShell companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <header style={{ marginBottom: 'var(--space-6)' }}>

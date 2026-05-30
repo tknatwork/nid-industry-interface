@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { assignInterviewers, assignStudent, unassignStudent } from '@nid/module-slot-booking';
 import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { subRolesForRecruiter, subRoleLabel } from '~/lib/recruiter-subroles';
 
 export async function assignSlotAction(formData: FormData): Promise<void> {
@@ -48,7 +48,8 @@ export async function assignInterviewersAction(formData: FormData): Promise<void
   // The picker submits sub-role ids; we persist the human-readable labels
   // ("Name · Title") so both the slots page and the interview console can
   // render them directly (plan §P). Unknown ids are dropped.
-  const roster = subRolesForRecruiter(DEMO_RECRUITER.recruiterId);
+  const session = await readRecruiterSession();
+  const roster = subRolesForRecruiter(session.recruiterId);
   const wanted = new Set(submittedIds);
   const interviewers = roster.filter((r) => wanted.has(r.id)).map(subRoleLabel);
 

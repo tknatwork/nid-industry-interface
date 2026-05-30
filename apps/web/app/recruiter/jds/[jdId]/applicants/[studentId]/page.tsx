@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { RecruiterShell, Button, Field, StatusPill } from '@nid/ui';
 import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { getCandidate, isShortlisted, listShortlist, type CandidateView } from '@nid/module-candidate-browse';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { shortlistAction, unshortlistAction } from '../actions';
 
 interface PageParams {
@@ -33,6 +33,7 @@ export default async function CandidateDetail({
 }) {
   const { jdId, studentId } = await params;
   await requireOwnedJd(jdId);
+  const recruiter = await readRecruiterSession();
   const candidate = getCandidate(studentId);
   if (!candidate) notFound();
 
@@ -41,7 +42,7 @@ export default async function CandidateDetail({
   const existingNote = listShortlist(jdId).find((s) => s.candidate.studentId === studentId)?.note;
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
+    <RecruiterShell activeNav="jds" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <a href={`/recruiter/jds/${jdId}/applicants`} style={backLink}>

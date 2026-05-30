@@ -4,7 +4,7 @@ import { RecruiterShell, Button, StatusPill, type StatusTone } from '@nid/ui';
 import { getCandidate } from '@nid/module-candidate-browse';
 import { getInterviewsComplete, listSelected } from '@nid/module-interview-console';
 import { listOffers, cascadeFor, tallyFor, type OfferRecord } from '@nid/module-offer-cascade';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { issueOfferAction, respondAction } from './actions';
 
@@ -22,6 +22,7 @@ export default async function OffersPage({
 }) {
   const { jdId } = await params;
   const jd = await requireOwnedJd(jdId);
+  const recruiter = await readRecruiterSession();
   const error = (await searchParams).error;
 
   // The Offers cascade is gated on the Interview tab's "Done & Dusted" flag
@@ -52,7 +53,7 @@ export default async function OffersPage({
   const nameByStudent = new Map(selectedCandidates.map((s) => [s.studentId, s.name]));
 
   return (
-    <RecruiterShell activeNav="offers" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
+    <RecruiterShell activeNav="offers" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <a href={`/recruiter/jds/${jdId}/interviews`} style={backLink}>← Interview day</a>

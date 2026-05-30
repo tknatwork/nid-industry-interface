@@ -8,7 +8,7 @@ import {
   type CandidateSort,
   type CandidateView,
 } from '@nid/module-candidate-browse';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 
 export const metadata: Metadata = {
   title: 'Applicants · Recruiter · NID Industry Interface',
@@ -37,6 +37,7 @@ export default async function ApplicantsPage({
 }) {
   const { jdId } = await params;
   const jd = await requireOwnedJd(jdId);
+  const recruiter = await readRecruiterSession();
 
   const sortParam = (await searchParams).sort;
   const sort: CandidateSort = sortParam === 'discipline' || sortParam === 'batch' ? sortParam : 'name';
@@ -48,7 +49,7 @@ export default async function ApplicantsPage({
   const shortlistedIds = new Set(listShortlist(jdId).map((s) => s.candidate.studentId));
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
+    <RecruiterShell activeNav="jds" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <a href="/recruiter/jds" style={backLink}>

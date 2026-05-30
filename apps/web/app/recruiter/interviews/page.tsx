@@ -3,15 +3,15 @@ import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell, StatusPill } from '@nid/ui';
 import { listForRecruiter } from '@nid/module-jd-posting';
 import { listAssignmentsForJd } from '@nid/module-slot-booking';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 
 export const metadata: Metadata = {
   title: 'Interviews · Recruiter · NID Industry Interface',
   robots: { index: false, follow: false },
 };
 
-export default function InterviewsLauncher() {
-  const { recruiterId, companyName } = DEMO_RECRUITER;
+export default async function InterviewsLauncher() {
+  const { recruiterId, companyName } = await readRecruiterSession();
   const jds = listForRecruiter(recruiterId).filter((jd) => jd.status === 'published');
 
   return (

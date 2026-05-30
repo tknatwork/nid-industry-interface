@@ -8,7 +8,7 @@ import {
   discardDraft,
   type GateFailure,
 } from '@nid/module-jd-posting';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 
 export interface JdActionOk {
@@ -45,22 +45,23 @@ export interface JdWizardPayload {
   readonly gpFeeAcknowledged: boolean;
 }
 
-function withContext(payload: JdWizardPayload) {
+async function withContext(payload: JdWizardPayload) {
+  const session = await readRecruiterSession();
   return {
     ...payload,
-    recruiterId: DEMO_RECRUITER.recruiterId,
-    cycleId: DEMO_RECRUITER.cycleId,
+    recruiterId: session.recruiterId,
+    cycleId: session.cycleId,
   };
 }
 
 export async function saveDraftAction(payload: JdWizardPayload): Promise<JdActionResult> {
-  const result = createDraft(withContext(payload));
+  const result = createDraft(await withContext(payload));
   if (!result.ok) return { ok: false, failure: result.failure };
   return { ok: true, jdId: result.jd.id, status: result.jd.status };
 }
 
 export async function submitJdAction(payload: JdWizardPayload): Promise<JdActionResult> {
-  const result = submitForModeration(withContext(payload));
+  const result = submitForModeration(await withContext(payload));
   if (!result.ok) return { ok: false, failure: result.failure };
   return { ok: true, jdId: result.jd.id, status: result.jd.status };
 }

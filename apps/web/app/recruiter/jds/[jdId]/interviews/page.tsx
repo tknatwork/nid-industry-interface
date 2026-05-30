@@ -16,7 +16,7 @@ import {
 } from '@nid/module-interview-console';
 import { listShortlist, getCandidate, type CandidateView } from '@nid/module-candidate-browse';
 import { listAssignmentsForJd, slotById, type Slot } from '@nid/module-slot-booking';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { coordinatorForRecruiter } from '~/lib/recruiter-public';
 import {
   InterviewTabs,
@@ -51,9 +51,10 @@ function slotLabel(s: Slot): string {
 export default async function InterviewConsole({ params }: { params: Promise<{ jdId: string }> }) {
   const { jdId } = await params;
   const jd = await requireOwnedJd(jdId);
+  const recruiter = await readRecruiterSession();
 
   const view = buildInterviewDayView(jdId);
-  const transport = getTransportMode(DEMO_RECRUITER.recruiterId);
+  const transport = getTransportMode(recruiter.recruiterId);
   const interviewsComplete = getInterviewsComplete(jdId);
 
   // ── Before: shortlisted candidates + their slot + interviewers ──────────
@@ -121,7 +122,7 @@ export default async function InterviewConsole({ params }: { params: Promise<{ j
     .filter(isRow);
 
   // ── Coordinator (ties into dashboard Contacts) ──────────────────────────
-  const coordRecord = coordinatorForRecruiter(DEMO_RECRUITER.recruiterId);
+  const coordRecord = coordinatorForRecruiter(recruiter.recruiterId);
   const coordinator: CoordinatorVM | undefined = coordRecord
     ? { name: coordRecord.name, campus: coordRecord.campus }
     : undefined;
@@ -137,7 +138,7 @@ export default async function InterviewConsole({ params }: { params: Promise<{ j
       : undefined;
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
+    <RecruiterShell activeNav="jds" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-8)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>

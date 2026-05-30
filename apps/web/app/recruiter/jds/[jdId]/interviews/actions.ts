@@ -13,7 +13,7 @@ import {
   type RoundOutcomeInput,
 } from '@nid/module-interview-console';
 import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 
 function str(formData: FormData, key: string): string {
   return (formData.get(key) as string | null)?.trim() ?? '';
@@ -29,7 +29,8 @@ export async function setTransportAction(formData: FormData): Promise<void> {
   if (jdId) await requireOwnedJd(jdId);
   const mode = str(formData, 'mode');
   if (mode === 'live' || mode === 'periodic' || mode === 'manual') {
-    setTransportMode(DEMO_RECRUITER.recruiterId, mode as TransportMode);
+    const session = await readRecruiterSession();
+    setTransportMode(session.recruiterId, mode as TransportMode);
   }
   refresh(jdId);
 }

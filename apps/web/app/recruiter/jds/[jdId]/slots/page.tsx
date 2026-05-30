@@ -4,7 +4,7 @@ import { RecruiterShell, Button, StatusPill } from '@nid/ui';
 import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { listShortlist } from '@nid/module-candidate-browse';
 import { listOpenSlots, listAssignmentsForJd, type Slot } from '@nid/module-slot-booking';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { subRolesForRecruiter, subRoleLabel } from '~/lib/recruiter-subroles';
 import { InterviewerPicker, type SubRoleOption } from '~/components/InterviewerPicker';
 import { assignSlotAction, assignInterviewersAction } from './actions';
@@ -23,6 +23,7 @@ export default async function RecruiterSlotsPage({
 }) {
   const { jdId } = await params;
   const jd = await requireOwnedJd(jdId);
+  const recruiter = await readRecruiterSession();
   const error = (await searchParams).error;
 
   const shortlist = listShortlist(jdId);
@@ -37,7 +38,7 @@ export default async function RecruiterSlotsPage({
   // The company's named sub-roles (HR Director / Hiring Manager / Interviewer)
   // are the interviewer options. Map by label so stored assignments resolve to
   // ids; build the picker option list once.
-  const subRoles = subRolesForRecruiter(DEMO_RECRUITER.recruiterId);
+  const subRoles = subRolesForRecruiter(recruiter.recruiterId);
   const subRoleOptions: SubRoleOption[] = subRoles.map((r) => ({
     id: r.id,
     label: subRoleLabel(r),
@@ -47,7 +48,7 @@ export default async function RecruiterSlotsPage({
   const subRoleIdByLabel = new Map(subRoles.map((r) => [subRoleLabel(r), r.id]));
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
+    <RecruiterShell activeNav="jds" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <a href={`/recruiter/jds/${jdId}/applicants`} style={backLink}>← Applicants</a>

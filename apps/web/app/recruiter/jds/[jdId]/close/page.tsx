@@ -4,7 +4,7 @@ import { RecruiterShell, Button, StatusPill, type StatusTone } from '@nid/ui';
 import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { listShortlist } from '@nid/module-candidate-browse';
 import { listOffers } from '@nid/module-offer-cascade';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { closeJdAction, withdrawJdAction } from './actions';
 
 export const metadata: Metadata = {
@@ -27,6 +27,7 @@ export default async function CloseJdPage({
 }) {
   const { jdId } = await params;
   const jd = await requireOwnedJd(jdId);
+  const recruiter = await readRecruiterSession();
   const error = (await searchParams).error;
 
   const shortlist = listShortlist(jdId);
@@ -37,7 +38,7 @@ export default async function CloseJdPage({
   const isPublished = jd.status === 'published';
 
   return (
-    <RecruiterShell activeNav="offers" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
+    <RecruiterShell activeNav="offers" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <a href={`/recruiter/jds/${jdId}/offers`} style={backLink}>← Offers</a>
