@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import type { CSSProperties } from 'react';
 import { RecruiterShell, Button, StatusPill } from '@nid/ui';
 import { listForRecruiter } from '@nid/module-jd-posting';
@@ -32,6 +33,7 @@ import {
   StrikeTag,
   PingButton,
 } from '~/components/DashboardOverlays';
+import { DashboardTour, TourTrigger } from '~/components/DashboardTour';
 
 export const metadata: Metadata = {
   title: 'Dashboard · Recruiter · NID Industry Interface',
@@ -189,13 +191,21 @@ export default async function RecruiterDashboard() {
     <RecruiterShell
       activeNav="dashboard"
       companyName={recruiter.companyName}
+      accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}
       phaseTag={<StatusPill tone={tag.tone}>{tag.text}</StatusPill>}
       banner={<DashboardBanner lines={lines} />}
     >
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          {/* First-visit tour — self-gates on the nid_demo_tour_seen flag. */}
+          <DashboardTour />
+
           <p style={cycleKickerStyle}>{cycle.label} cycle</p>
-          <h1 style={pageTitleStyle}>Welcome back</h1>
+          <div style={welcomeRowStyle}>
+            <h1 style={welcomeTitleStyle}>Welcome back</h1>
+            {/* On-demand replay of the walkthrough; ignores the seen-flag. */}
+            <TourTrigger />
+          </div>
 
           <div style={statGridStyle}>
             <StatCard label="Drafts" value={drafts} />
@@ -338,12 +348,23 @@ const cycleKickerStyle: CSSProperties = {
   marginBottom: 'var(--space-2)',
 };
 
-const pageTitleStyle: CSSProperties = {
+/** Welcome heading + "Take a tour" trigger on one baseline-aligned row. */
+const welcomeRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  gap: 'var(--space-4)',
+  marginBottom: 'var(--space-6)',
+};
+
+/** The page heading inside the welcome row — the row owns the bottom margin. */
+const welcomeTitleStyle: CSSProperties = {
   fontSize: 'var(--fs-40)',
   lineHeight: 'var(--lh-48)',
   fontWeight: 'var(--fw-500)',
   color: 'var(--text-strong)',
-  marginBottom: 'var(--space-6)',
+  margin: 0,
 };
 
 const statGridStyle: CSSProperties = {

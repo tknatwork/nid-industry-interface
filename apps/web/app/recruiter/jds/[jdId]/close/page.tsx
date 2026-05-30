@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { notFound } from 'next/navigation';
 import { RecruiterShell, Button, StatusPill, type StatusTone } from '@nid/ui';
 import { getJd } from '@nid/module-jd-posting';
@@ -38,7 +39,7 @@ export default async function CloseJdPage({
   const isPublished = jd.status === 'published';
 
   return (
-    <RecruiterShell activeNav="offers" companyName={DEMO_RECRUITER.companyName}>
+    <RecruiterShell activeNav="offers" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <a href={`/recruiter/jds/${jdId}/offers`} style={backLink}>← Offers</a>

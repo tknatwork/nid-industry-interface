@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import {
   RecruiterShell,
   Button,
@@ -142,7 +143,7 @@ export default async function RecruiterJdsPage({
     );
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName}>
+    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div

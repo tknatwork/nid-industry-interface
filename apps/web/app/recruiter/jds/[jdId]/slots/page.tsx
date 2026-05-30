@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { notFound } from 'next/navigation';
 import { RecruiterShell, Button, StatusPill } from '@nid/ui';
 import { getJd } from '@nid/module-jd-posting';
@@ -48,7 +49,7 @@ export default async function RecruiterSlotsPage({
   const subRoleIdByLabel = new Map(subRoles.map((r) => [subRoleLabel(r), r.id]));
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName}>
+    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <a href={`/recruiter/jds/${jdId}/applicants`} style={backLink}>← Applicants</a>

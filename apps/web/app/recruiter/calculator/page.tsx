@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell } from '@nid/ui';
 import { StipendCalculator } from '~/components/StipendCalculator';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
@@ -15,7 +16,7 @@ export default async function RecruiterCalculatorPage({
 }) {
   const sp = await searchParams;
   return (
-    <RecruiterShell companyName={DEMO_RECRUITER.companyName}>
+    <RecruiterShell companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <header style={{ marginBottom: 'var(--space-6)' }}>

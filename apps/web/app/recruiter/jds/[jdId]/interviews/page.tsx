@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { notFound } from 'next/navigation';
 import { RecruiterShell, StatusPill } from '@nid/ui';
 import { getJd } from '@nid/module-jd-posting';
@@ -138,7 +139,7 @@ export default async function InterviewConsole({ params }: { params: Promise<{ j
       : undefined;
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName}>
+    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-8)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>

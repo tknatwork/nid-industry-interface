@@ -1,0 +1,12 @@
+# CODEOWNERS — NID Industry Interface
+#
+# Every change to this repository requires a review from the owner.
+# The owner is the default reviewer for all paths; GitHub will automatically
+# request their review on any pull request that touches a matched file.
+#
+# This is a single-maintainer demo repository. The catch-all rule below means
+# nothing merges without the owner's explicit approval. Pair it with a branch
+# protection rule on `main` ("Require review from Code Owners") to enforce it.
+
+# Catch-all: the owner reviews every change.
+*       @tknatwork

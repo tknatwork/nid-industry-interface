@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import type { CSSProperties } from 'react';
 import { RecruiterShell, StatusPill, type StatusTone } from '@nid/ui';
 import { listForRecruiter, type JdRecord } from '@nid/module-jd-posting';
+import { getCompanyRecord } from '@nid/module-recruiter-onboarding';
 import {
   listPptBookings,
   listMeetings,
@@ -39,6 +41,10 @@ export const metadata: Metadata = {
 export default async function RecruiterProfilePage() {
   const { recruiterId, companyName, cycleId } = await readRecruiterSession();
 
+  // Editable contact fields (corporate email + phone + mock verified flag),
+  // shown here read-only with an edit affordance into /recruiter/profile/edit.
+  const companyRecord = getCompanyRecord(recruiterId);
+
   const subRoles = subRolesForRecruiter(recruiterId);
   const coordinator = coordinatorForRecruiter(recruiterId);
   const cycle = CURRENT_CYCLES.find((c) => `cycle_${c.slug.replace(/-/g, '_')}` === cycleId) ?? CURRENT_CYCLES[0];
@@ -72,7 +78,7 @@ export default async function RecruiterProfilePage() {
   const apiKey = listApiKeys().find((k) => k.recruiterId === recruiterId && k.status === 'active');
 
   return (
-    <RecruiterShell companyName={companyName}>
+    <RecruiterShell companyName={companyName} accountMenu={<RecruiterAccountMenu companyName={companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto' }}>
           <header style={{ marginBottom: 'var(--space-8)' }}>
@@ -93,8 +99,29 @@ export default async function RecruiterProfilePage() {
                 ['Recruiter ID', recruiterId],
                 ['Cycle', cycle?.label ?? cycleId],
                 ['Assigned campus', coordinator?.campus ?? '—'],
+                ['Corporate email', companyRecord?.corporateEmail ?? '—'],
+                ['Primary phone', companyRecord?.contactPhone ?? '—'],
               ]}
             />
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 'var(--space-3)',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: 'var(--space-3)',
+              }}
+            >
+              {companyRecord?.phoneVerified ? (
+                <StatusPill tone="success">Phone verified ✓</StatusPill>
+              ) : (
+                <StatusPill tone="neutral">Phone not verified</StatusPill>
+              )}
+              <a href="/recruiter/profile/edit" style={editLinkStyle}>
+                Edit contact details
+              </a>
+            </div>
             {subRoles.length > 0 ? (
               <ul style={listReset}>
                 {subRoles.map((r) => (
@@ -563,4 +590,20 @@ const microNote: CSSProperties = {
   fontSize: 'var(--fs-12)',
   color: 'var(--text-secondary)',
   lineHeight: 1.5,
+};
+
+/** Button-styled edit affordance into /recruiter/profile/edit (tokens only). */
+const editLinkStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  paddingBlock: 'var(--space-2)',
+  paddingInline: 'var(--space-4)',
+  borderRadius: 'var(--radius-2)',
+  border: '1px solid var(--border-default)',
+  background: 'var(--surface-card)',
+  color: 'var(--text-strong)',
+  fontSize: 'var(--fs-14)',
+  fontWeight: 'var(--fw-600)',
+  textDecoration: 'none',
+  whiteSpace: 'nowrap',
 };

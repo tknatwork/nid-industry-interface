@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell, StatusPill } from '@nid/ui';
 import { listForRecruiter } from '@nid/module-jd-posting';
 import { listAssignmentsForJd } from '@nid/module-slot-booking';
@@ -14,7 +15,7 @@ export default function InterviewsLauncher() {
   const jds = listForRecruiter(recruiterId).filter((jd) => jd.status === 'published');
 
   return (
-    <RecruiterShell activeNav="interviews" companyName={companyName}>
+    <RecruiterShell activeNav="interviews" companyName={companyName} accountMenu={<RecruiterAccountMenu companyName={companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <header style={{ marginBottom: 'var(--space-6)' }}>

@@ -29,6 +29,14 @@ export interface RecruiterShellProps {
    * notice and above the header so it spans the full viewport width.
    */
   readonly banner?: ReactNode;
+  /**
+   * Top-right account control (plan §L): the acting company name plus a small
+   * disclosure for "Profile & settings" and "Log out". Rendered in the header's
+   * top-right flex group, after the `phaseTag`. Caller owns the content (a client
+   * `RecruiterAccountMenu` with the logout server action) so the shell stays
+   * presentational and free of app/session imports.
+   */
+  readonly accountMenu?: ReactNode;
 }
 
 const navItems: ReadonlyArray<{ key: RecruiterNav; href: string; label: string }> = [
@@ -48,6 +56,7 @@ export function RecruiterShell({
   demoNotice = true,
   phaseTag,
   banner,
+  accountMenu,
 }: RecruiterShellProps) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -168,6 +177,7 @@ export function RecruiterShell({
               })}
             </nav>
             {phaseTag != null && <div style={{ display: 'inline-flex', alignItems: 'center' }}>{phaseTag}</div>}
+            {accountMenu != null && <div style={{ display: 'inline-flex', alignItems: 'center' }}>{accountMenu}</div>}
           </div>
         </div>
       </header>

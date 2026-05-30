@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { notFound } from 'next/navigation';
 import { RecruiterShell, StatusPill } from '@nid/ui';
 import { CANONICAL_SKILLS, SKILL_GROUPS, getJd } from '@nid/module-jd-posting';
@@ -31,7 +32,7 @@ export default async function EditDraftPage({
   const boundSave = updateDraftAction.bind(null, jdId);
 
   return (
-    <RecruiterShell activeNav="jds" companyName={session.companyName}>
+    <RecruiterShell activeNav="jds" companyName={session.companyName} accountMenu={<RecruiterAccountMenu companyName={session.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <a href="/recruiter/jds" style={backLink}>← All JDs</a>

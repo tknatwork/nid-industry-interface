@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { headers } from 'next/headers';
 import { RecruiterShell, StatusPill } from '@nid/ui';
 import { listApiKeys } from '@nid/module-admin-accountability';
@@ -32,7 +33,7 @@ export default async function IntegrationsPage() {
   const scopes = key?.scope ?? 'cycle:current:read me:read me:history:read';
 
   return (
-    <RecruiterShell activeNav="integrations" companyName={DEMO_RECRUITER.companyName}>
+    <RecruiterShell activeNav="integrations" companyName={DEMO_RECRUITER.companyName} accountMenu={<RecruiterAccountMenu companyName={DEMO_RECRUITER.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <header style={{ marginBottom: 'var(--space-6)' }}>

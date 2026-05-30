@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell, StatusPill, type StatusTone } from '@nid/ui';
 import { listForRecruiter } from '@nid/module-jd-posting';
 import { listOffers } from '@nid/module-offer-cascade';
@@ -48,7 +49,7 @@ export default async function RecruiterStatsPage() {
     detail ? detail.events.filter((x) => x.event === e).length : 0;
 
   return (
-    <RecruiterShell activeNav="stats" companyName={companyName}>
+    <RecruiterShell activeNav="stats" companyName={companyName} accountMenu={<RecruiterAccountMenu companyName={companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>

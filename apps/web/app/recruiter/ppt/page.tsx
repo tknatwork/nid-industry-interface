@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell, Button, StatusPill } from '@nid/ui';
 import { listPptWindows, listPptBookings, type PptWindow } from '@nid/module-recruiter-engagement';
 import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
@@ -18,7 +19,7 @@ export default async function PptPage({ searchParams }: { searchParams: Promise<
   const open = windows.filter((w) => w.status === 'open' && !bookedWindowIds.has(w.id));
 
   return (
-    <RecruiterShell companyName={companyName}>
+    <RecruiterShell companyName={companyName} accountMenu={<RecruiterAccountMenu companyName={companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <header style={{ marginBottom: 'var(--space-6)' }}>

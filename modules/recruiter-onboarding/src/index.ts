@@ -4,8 +4,18 @@
 // (e.g. ./store.js) from outside the module. This is enforced by the
 // dependency-cruiser harness at the root.
 
-export { submit, lookup, outboxFor, listAll, listOutboxAll, advance, pay } from './actions';
-export type { SubmitApplyResult, SubmitOutcome, SubmitFailure } from './actions';
+export {
+  submit,
+  lookup,
+  outboxFor,
+  listAll,
+  listOutboxAll,
+  advance,
+  pay,
+  updateContactDetails,
+  getCompanyRecord,
+} from './actions';
+export type { SubmitApplyResult, SubmitOutcome, SubmitFailure, UpdateContactResult } from './actions';
 export {
   applyFormSchema,
   recruiterStatusSchema,

@@ -299,6 +299,50 @@ export function advanceTicketStatus(input: {
   return updated;
 }
 
+/**
+ * Recruiter self-service edit of the editable contact fields (plan §L). Only the
+ * corporate email, primary contact phone, and the mock phone-verified flag may
+ * change here — identity/registration fields (GST, company name, registration
+ * number) are immutable post-application. Keeps the current status and appends a
+ * history entry so the change is auditable in the tracker.
+ *
+ * `recruiterId === ticketId` in this demo (the recruiter is identified by the
+ * application ticket until real auth lands). Returns null if the ticket is
+ * missing.
+ */
+export function updateContactDetails(input: {
+  ticketId: string;
+  corporateEmail?: string | undefined;
+  contactPhone?: string | undefined;
+  phoneVerified?: boolean | undefined;
+}): ApplicationTicketRecord | null {
+  const state = loadState();
+  const current = state.tickets[input.ticketId];
+  if (!current) return null;
+
+  const updated: ApplicationTicketRecord = {
+    ...current,
+    ...(input.corporateEmail !== undefined ? { corporateEmail: input.corporateEmail } : {}),
+    ...(input.contactPhone !== undefined ? { contactPhone: input.contactPhone } : {}),
+    ...(input.phoneVerified !== undefined ? { phoneVerified: input.phoneVerified } : {}),
+    statusHistory: [
+      ...current.statusHistory,
+      {
+        status: current.status,
+        at: new Date().toISOString(),
+        note: 'Contact details updated.',
+      },
+    ],
+  };
+
+  persist({
+    ...state,
+    tickets: { ...state.tickets, [current.ticketId]: updated },
+  });
+
+  return updated;
+}
+
 export interface PayResult {
   readonly record: ApplicationTicketRecord;
   readonly receipt: PaymentReceipt;
