@@ -207,28 +207,42 @@ export function buildInterviewWorkspaceVM(jd: JdRecord, recruiterId: string): In
   }));
 
   // ── During: candidates eligible in the current round ──────────────────────
-  // The current round is the lowest round that still has un-advanced candidates;
-  // default to round 1. Each row targets the next round for its outcome form.
+  // The roster for the CURRENT round comes from the interview ROSTER, not the
+  // outcome LEDGER. Round 1 is every shortlisted entrant — they have no recorded
+  // outcome yet, so reading `roundProgress` (the ledger) would show nobody right
+  // after the plan is locked. That is the Before→During break: we source round 1
+  // from the shortlist cohort so the planned students appear ready to be scored.
+  // Round N>1 narrows to those advanced through the prior round (ledger-driven).
+  // Each student's recorded outcomes, if any, are overlaid from `roundProgress`.
   const progress = listRoundProgressForJd(jdId);
   const currentRound = deriveCurrentRound(progress, finalRound);
-  const eligible = candidatesForRound(jdId, currentRound);
-  const during: DuringRowVM[] = eligible.map((p) => {
-    const latest = p.perRound[p.perRound.length - 1];
+  const progressByStudent = new Map(progress.map((p) => [p.studentId, p] as const));
+  const rosterIds: readonly string[] =
+    currentRound <= 1
+      ? // Round 1 entrants = the shortlist cohort, unioned with any student who
+        // already has a progress record (e.g. seeded demo data), de-duplicated.
+        [...new Set([...candidates.map((c) => c.studentId), ...progress.map((p) => p.studentId)])]
+      : candidatesForRound(jdId, currentRound).map((p) => p.studentId);
+  const during: DuringRowVM[] = rosterIds.map((studentId) => {
+    const p = progressByStudent.get(studentId);
+    const perRound = p?.perRound ?? [];
+    const latest = perRound[perRound.length - 1];
+    const baseRound = p?.currentRound ?? currentRound;
     const nextRound =
-      latest === undefined ? currentRound : latest.outcome === 'advance' ? p.currentRound + 1 : p.currentRound;
-    const c = nameById.get(p.studentId);
+      latest === undefined ? currentRound : latest.outcome === 'advance' ? baseRound + 1 : baseRound;
+    const c = nameById.get(studentId);
     return {
-      studentId: p.studentId,
-      name: c?.name ?? p.studentId,
+      studentId,
+      name: c?.name ?? studentId,
       disciplineName: c?.disciplineName ?? '',
       nextRound: Math.min(Math.max(nextRound, 1), finalRound),
-      perRound: p.perRound.map((rr) => ({
+      perRound: perRound.map((rr) => ({
         round: rr.round,
         outcome: rr.outcome,
         ...(rr.score !== undefined ? { score: rr.score } : {}),
         ...(rr.note !== undefined ? { note: rr.note } : {}),
       })),
-      decision: p.decision,
+      decision: p?.decision ?? 'pending',
     };
   });
 
