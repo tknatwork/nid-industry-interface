@@ -80,18 +80,10 @@ export function PageShell({ children, activeNav }: PageShellProps) {
             gap: 'var(--space-4)',
           }}
         >
-          <a href="/" style={{ textDecoration: 'none', color: 'var(--text-strong)', display: 'inline-flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
-            <span
-              style={{
-                fontSize: 'var(--fs-12)',
-                fontWeight: 'var(--fw-600)',
-                color: 'var(--text-secondary)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-              }}
-            >
-              National Institute of Design
-            </span>
+          {/* Header masthead: the Industry Interface logo only — matching the
+              official site, which carries no "National Institute of Design"
+              wordmark above the logo. */}
+          <a href="/" style={{ textDecoration: 'none', color: 'var(--text-strong)', display: 'inline-flex', alignItems: 'center' }}>
             <Logo height={32} />
           </a>
           <nav
