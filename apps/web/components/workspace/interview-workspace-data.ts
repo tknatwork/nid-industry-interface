@@ -89,6 +89,8 @@ export interface TallyVM {
   readonly total: number;
   readonly reachedFinal: boolean;
   readonly decision: RoundProgress['decision'];
+  /** Pre-interview task score, if recorded — already folded into `total`. */
+  readonly taskScore?: number;
 }
 
 export interface LetterVM {
@@ -120,6 +122,10 @@ export interface InterviewWorkspaceVM {
   readonly tally: readonly TallyVM[];
   readonly selectedCount: number;
   readonly transport: TransportMode;
+  /** True when this JD carries a pre-interview take-home / evaluation task. */
+  readonly hasTask: boolean;
+  /** The evaluation task's title, when present. */
+  readonly taskTitle?: string;
   readonly letter?: LetterVM;
 }
 
@@ -158,6 +164,10 @@ export function buildInterviewWorkspaceVM(jd: JdRecord, recruiterId: string): In
   const stage = getStage(jdId);
   const planEditable = isPlanEditable(jdId);
   const interviewsComplete = getInterviewsComplete(jdId);
+  // A pre-interview take-home / evaluation task on the JD enables the After-tally
+  // task-score input; its score folds into each candidate's total (computeTally).
+  const hasTask = jd.evaluationTask?.required === true;
+  const taskTitle = jd.evaluationTask?.title;
 
   const roundLabels = jd.interviewRounds.map((r) => r.focus);
   const finalRound = Math.max(roundLabels.length, 1);
@@ -259,6 +269,7 @@ export function buildInterviewWorkspaceVM(jd: JdRecord, recruiterId: string): In
       total: row.total,
       reachedFinal: row.reachedFinal,
       decision: decisionByStudent.get(row.studentId) ?? 'pending',
+      ...(row.taskScore !== undefined ? { taskScore: row.taskScore } : {}),
     };
   });
 
@@ -292,6 +303,8 @@ export function buildInterviewWorkspaceVM(jd: JdRecord, recruiterId: string): In
     tally,
     selectedCount: listSelected(jdId).length,
     transport: getTransportMode(recruiterId),
+    hasTask,
+    ...(taskTitle ? { taskTitle } : {}),
     ...(letterVM ? { letter: letterVM } : {}),
   };
 }

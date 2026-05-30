@@ -10,6 +10,7 @@ import {
   advanceRound,
   recordRoundOutcome,
   setCandidateDecision,
+  setTaskScore,
   setInterviewsComplete,
   getInterviewsComplete,
   writeLetter,
@@ -275,6 +276,43 @@ export async function lockSelectionAction(formData: FormData): Promise<void> {
     action: 'candidates-selected',
     summary: `${selected.size} selected · ${considered.length - selected.size} rejected`,
   });
+  back(jdId, 'after');
+}
+
+/**
+ * Record pre-interview task scores (0–10) for the JD's evaluation/take-home task.
+ * Each finalist row submits a paired `taskStudentId` + `taskScore`; blanks are
+ * skipped. The score folds into the candidate's tally total (computeTally).
+ * Frozen once interviews are complete, like the rest of the After phase.
+ */
+export async function recordTaskScoresAction(formData: FormData): Promise<void> {
+  const jdId = str(formData, 'jdId');
+  if (!jdId) back('');
+  const actor = await guard(jdId);
+
+  // Linearity: task scores feed the tally that drives selection — frozen once
+  // the decision letter is sent (interviews complete).
+  if (getInterviewsComplete(jdId)) back(jdId, 'after');
+
+  const ids = formData.getAll('taskStudentId').map((v) => String(v).trim());
+  const scores = formData.getAll('taskScore').map((v) => String(v).trim());
+  let count = 0;
+  for (let i = 0; i < ids.length; i += 1) {
+    const id = ids[i];
+    const raw = scores[i];
+    if (id === undefined || id === '' || raw === undefined || raw === '') continue;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n < 0 || n > 10) continue;
+    setTaskScore(jdId, id, n);
+    count += 1;
+  }
+  if (count > 0) {
+    audit(jdId, {
+      actorRecruiterId: actor,
+      action: 'round-recorded',
+      summary: `Recorded ${count} pre-interview task score${count === 1 ? '' : 's'}`,
+    });
+  }
   back(jdId, 'after');
 }
 

@@ -35,12 +35,14 @@ afterAll(() => {
 
 import {
   advanceRound,
+  computeTally,
   getCandidateRounds,
   getInterviewPlan,
   lockInterviewPlan,
   overridePlanAssignment,
   recordRoundOutcome,
   seedPlanFromJd,
+  setTaskScore,
 } from '../src/index';
 
 let jdSeq = 0;
@@ -98,5 +100,34 @@ describe('plan override — day-of reassignment is a POST-lock path only', () =>
 
     // The plan stays locked — the override did not silently unfreeze it.
     expect(getInterviewPlan(jdId)?.locked).toBe(true);
+  });
+});
+
+describe('pre-interview task score folds into the tally total', () => {
+  it('adds the task score to the candidate total and surfaces it on the row', () => {
+    const jdId = freshJd();
+    // Single-round JD: stuA scores 7 at round 1 (the final round) + a task score of 5.
+    recordRoundOutcome(jdId, 'stuA', { round: 1, outcome: 'advance', score: 7 });
+    setTaskScore(jdId, 'stuA', 5);
+
+    const row = computeTally(jdId, 1).find((r) => r.studentId === 'stuA');
+    expect(row?.taskScore).toBe(5);
+    expect(row?.total).toBe(12); // 7 (round) + 5 (task)
+  });
+
+  it('omits taskScore and leaves the total unchanged when none is recorded', () => {
+    const jdId = freshJd();
+    recordRoundOutcome(jdId, 'stuB', { round: 1, outcome: 'advance', score: 6 });
+    const row = computeTally(jdId, 1).find((r) => r.studentId === 'stuB');
+    expect(row?.taskScore).toBeUndefined();
+    expect(row?.total).toBe(6);
+  });
+
+  it('can score a shortlisted candidate who has no round outcome yet (creates the record)', () => {
+    const jdId = freshJd();
+    const progress = setTaskScore(jdId, 'stuC', 8);
+    expect(progress.taskScore).toBe(8);
+    expect(progress.perRound).toEqual([]);
+    expect(getCandidateRounds(jdId, 'stuC').taskScore).toBe(8);
   });
 });
