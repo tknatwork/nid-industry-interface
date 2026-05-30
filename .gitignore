@@ -70,3 +70,6 @@ coverage/
 # locally, deliberately NOT committed to the repo. This also keeps them out of
 # the Vercel upload, which falls back to .gitignore when no .vercelignore exists.
 apps/web/app/showcase/
+
+# Fork-only presentation artifacts — never commit to the repo
+/presentation/
