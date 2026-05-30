@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell, Button, StatusPill } from '@nid/ui';
-import { getJd } from '@nid/module-jd-posting';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 import { listShortlist } from '@nid/module-candidate-browse';
 import { listOpenSlots, listAssignmentsForJd, type Slot } from '@nid/module-slot-booking';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
-import { assignSlotAction } from './actions';
+import { readRecruiterSession } from '~/lib/recruiter-session';
+import { subRolesForRecruiter, subRoleLabel } from '~/lib/recruiter-subroles';
+import { InterviewerPicker, type SubRoleOption } from '~/components/InterviewerPicker';
+import { assignSlotAction, assignInterviewersAction } from './actions';
 
 export const metadata: Metadata = {
   title: 'Interview slots · Recruiter · NID Industry Interface',
@@ -20,17 +22,33 @@ export default async function RecruiterSlotsPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { jdId } = await params;
-  const jd = getJd(jdId);
-  if (!jd) notFound();
+  const jd = await requireOwnedJd(jdId);
+  const recruiter = await readRecruiterSession();
   const error = (await searchParams).error;
 
   const shortlist = listShortlist(jdId);
   const slots = listOpenSlots(jd.cycleId);
   const assignments = listAssignmentsForJd(jdId);
   const assignedSlotByStudent = new Map(assignments.map((a) => [a.studentId, a.slotId]));
+  // Expected interviewers per candidate are stored on the assignment as label
+  // strings (e.g. "Priya Menon · HR Director"); the picker round-trips them back
+  // to sub-role ids for its checkboxes (plan §P).
+  const interviewerLabelsByStudent = new Map(assignments.map((a) => [a.studentId, a.interviewers]));
+
+  // The company's named sub-roles (HR Director / Hiring Manager / Interviewer)
+  // are the interviewer options. Map by label so stored assignments resolve to
+  // ids; build the picker option list once.
+  const subRoles = subRolesForRecruiter(recruiter.recruiterId);
+  const subRoleOptions: SubRoleOption[] = subRoles.map((r) => ({
+    id: r.id,
+    label: subRoleLabel(r),
+    title: r.title,
+    phone: r.phone,
+  }));
+  const subRoleIdByLabel = new Map(subRoles.map((r) => [subRoleLabel(r), r.id]));
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName}>
+    <RecruiterShell activeNav="jds" companyName={recruiter.companyName} accountMenu={<RecruiterAccountMenu companyName={recruiter.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <a href={`/recruiter/jds/${jdId}/applicants`} style={backLink}>← Applicants</a>
@@ -54,53 +72,76 @@ export default async function RecruiterSlotsPage({
             <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
               {shortlist.map(({ candidate }) => {
                 const assignedSlotId = assignedSlotByStudent.get(candidate.studentId);
+                const selectedInterviewerIds = (interviewerLabelsByStudent.get(candidate.studentId) ?? [])
+                  .map((lbl) => subRoleIdByLabel.get(lbl))
+                  .filter((id): id is string => id !== undefined);
                 return (
-                  <form
+                  <div
                     key={candidate.studentId}
-                    action={assignSlotAction}
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
+                      display: 'grid',
                       gap: 'var(--space-4)',
-                      flexWrap: 'wrap',
                       backgroundColor: 'var(--surface-card)',
                       border: '1px solid var(--card-border)',
                       borderRadius: 'var(--card-radius)',
                       padding: 'var(--card-padding)',
                     }}
                   >
-                    <input type="hidden" name="jdId" value={jdId} />
-                    <input type="hidden" name="studentId" value={candidate.studentId} />
-                    <div style={{ minWidth: '200px' }}>
-                      <p style={{ fontSize: 'var(--fs-16)', fontWeight: 'var(--fw-600)', color: 'var(--text-strong)' }}>
-                        {candidate.name}
-                      </p>
-                      <p style={{ fontSize: 'var(--fs-12)', color: 'var(--text-secondary)' }}>{candidate.disciplineName}</p>
-                    </div>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <select
-                        name="slotId"
-                        defaultValue={assignedSlotId ?? ''}
-                        style={selectStyle}
-                        aria-label={`Slot for ${candidate.name}`}
-                      >
-                        <option value="" disabled>
-                          Choose a slot…
-                        </option>
-                        {assignedSlotId && <option value="__unassign__">— Unassign —</option>}
-                        {slots.map((s) => (
-                          <option key={s.id} value={s.id} disabled={s.booked >= s.capacity && s.id !== assignedSlotId}>
-                            {slotLabel(s)} {s.booked >= s.capacity && s.id !== assignedSlotId ? '(full)' : `(${s.booked}/${s.capacity})`}
+                    <form
+                      action={assignSlotAction}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 'var(--space-4)',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <input type="hidden" name="jdId" value={jdId} />
+                      <input type="hidden" name="studentId" value={candidate.studentId} />
+                      <div style={{ minWidth: '200px' }}>
+                        <p style={{ fontSize: 'var(--fs-16)', fontWeight: 'var(--fw-600)', color: 'var(--text-strong)' }}>
+                          {candidate.name}
+                        </p>
+                        <p style={{ fontSize: 'var(--fs-12)', color: 'var(--text-secondary)' }}>{candidate.disciplineName}</p>
+                      </div>
+                      <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <select
+                          name="slotId"
+                          defaultValue={assignedSlotId ?? ''}
+                          style={selectStyle}
+                          aria-label={`Slot for ${candidate.name}`}
+                        >
+                          <option value="" disabled>
+                            Choose a slot…
                           </option>
-                        ))}
-                      </select>
-                      {assignedSlotId && <StatusPill tone="success">Scheduled</StatusPill>}
-                      <Button type="submit" size="sm" variant={assignedSlotId ? 'secondary' : 'primary'}>
-                        {assignedSlotId ? 'Update' : 'Assign'}
-                      </Button>
+                          {assignedSlotId && <option value="__unassign__">— Unassign —</option>}
+                          {slots.map((s) => (
+                            <option key={s.id} value={s.id} disabled={s.booked >= s.capacity && s.id !== assignedSlotId}>
+                              {slotLabel(s)} {s.booked >= s.capacity && s.id !== assignedSlotId ? '(full)' : `(${s.booked}/${s.capacity})`}
+                            </option>
+                          ))}
+                        </select>
+                        {assignedSlotId && <StatusPill tone="success">Scheduled</StatusPill>}
+                        <Button type="submit" size="sm" variant={assignedSlotId ? 'secondary' : 'primary'}>
+                          {assignedSlotId ? 'Update' : 'Assign'}
+                        </Button>
+                      </div>
+                    </form>
+
+                    {/* Per-candidate expected interviewers, drawn from the company's sub-roles (§P). */}
+                    <div style={{ borderTop: '1px solid var(--card-border)', paddingTop: 'var(--space-3)' }}>
+                      <InterviewerPicker
+                        jdId={jdId}
+                        studentId={candidate.studentId}
+                        candidateName={candidate.name}
+                        options={subRoleOptions}
+                        selectedIds={selectedInterviewerIds}
+                        hasSlot={assignedSlotId !== undefined}
+                        action={assignInterviewersAction}
+                      />
                     </div>
-                  </form>
+                  </div>
                 );
               })}
             </div>

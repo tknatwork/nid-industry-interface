@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell, Button, StatusPill } from '@nid/ui';
 import {
   listMeetingSlots,
@@ -6,7 +7,7 @@ import {
   DEFAULT_MEETING_AGENDA,
   type MeetingSlot,
 } from '@nid/module-recruiter-engagement';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 import { bookMeetingAction } from './actions';
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MeetingsPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { recruiterId, companyName } = DEMO_RECRUITER;
+  const { recruiterId, companyName } = await readRecruiterSession();
   const error = (await searchParams).error;
   const slots = listMeetingSlots();
   const meetings = listMeetings(recruiterId);
@@ -23,7 +24,7 @@ export default async function MeetingsPage({ searchParams }: { searchParams: Pro
   const open = slots.filter((s) => s.status === 'open' && !bookedSlotIds.has(s.id));
 
   return (
-    <RecruiterShell companyName={companyName}>
+    <RecruiterShell companyName={companyName} accountMenu={<RecruiterAccountMenu companyName={companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '820px', margin: '0 auto' }}>
           <header style={{ marginBottom: 'var(--space-6)' }}>

@@ -21,15 +21,32 @@ export type AdminNav =
   | 'student-conduct'
   | 'slots'
   | 'engagement'
-  | 'content';
+  | 'content'
+  // Coordinator-scoped surfaces (RBAC subset of /admin — plan §Q).
+  | 'coordinator-companies'
+  | 'coordinator-interviews'
+  | 'coordinator-rounds';
+
+/**
+ * Admin actor role. `full-admin` is the placement-cell staff with the complete
+ * nav (today's behaviour, the default). `coordinator` is a student coordinator
+ * who sees a reduced, scoped nav (their assigned-companies dashboard plus the
+ * interview / round-progress surfaces only) — plan §Q.
+ */
+export type AdminRole = 'full-admin' | 'coordinator';
 
 export interface AdminShellProps {
   readonly children: ReactNode;
   readonly activeNav?: AdminNav;
   readonly roleLabel?: string; // e.g. 'Placement head — NID Ahmedabad'
+  /**
+   * Which nav the chrome renders. Defaults to `'full-admin'` so existing admin
+   * pages are unchanged. `'coordinator'` renders the reduced scoped nav.
+   */
+  readonly role?: AdminRole;
 }
 
-const adminNavItems: ReadonlyArray<{ key: AdminNav; href: string; label: string }> = [
+const fullAdminNavItems: ReadonlyArray<{ key: AdminNav; href: string; label: string }> = [
   { key: 'queue', href: '/admin/recruiters/queue', label: 'Recruiter queue' },
   { key: 'jds', href: '/admin/jds', label: 'JDs' },
   { key: 'cycles', href: '/admin/cycles', label: 'Cycles' },
@@ -45,7 +62,22 @@ const adminNavItems: ReadonlyArray<{ key: AdminNav; href: string; label: string 
   { key: 'content', href: '/admin/content', label: 'Content' },
 ];
 
-export function AdminShell({ children, activeNav, roleLabel }: AdminShellProps) {
+// Coordinator's reduced nav: assigned-companies dashboard + interview/round
+// surfaces only. No moderation, payment, blacklist, or content surfaces — those
+// stay with full-admin (plan §Q: deny everything outside assigned companies).
+const coordinatorNavItems: ReadonlyArray<{ key: AdminNav; href: string; label: string }> = [
+  { key: 'coordinator-companies', href: '/admin/coordinator', label: 'My companies' },
+  { key: 'coordinator-interviews', href: '/admin/coordinator/interviews', label: 'Interviews' },
+  { key: 'coordinator-rounds', href: '/admin/coordinator/rounds', label: 'Round progress' },
+];
+
+const NAV_BY_ROLE: Record<AdminRole, ReadonlyArray<{ key: AdminNav; href: string; label: string }>> = {
+  'full-admin': fullAdminNavItems,
+  coordinator: coordinatorNavItems,
+};
+
+export function AdminShell({ children, activeNav, roleLabel, role = 'full-admin' }: AdminShellProps) {
+  const navItems = NAV_BY_ROLE[role];
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <header
@@ -68,7 +100,7 @@ export function AdminShell({ children, activeNav, roleLabel }: AdminShellProps) 
             gap: 'var(--space-4)',
           }}
         >
-          <a href="/admin" style={{ textDecoration: 'none', color: 'var(--grey-0)', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+          <a href={role === 'coordinator' ? '/admin/coordinator' : '/admin'} style={{ textDecoration: 'none', color: 'var(--grey-0)', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)' }}>
             <Logo height={30} />
             <span
               style={{
@@ -81,7 +113,7 @@ export function AdminShell({ children, activeNav, roleLabel }: AdminShellProps) 
                 borderLeft: '1px solid var(--grey-700)',
               }}
             >
-              Placement Cell · Admin
+              {role === 'coordinator' ? 'Placement Cell · Coordinator' : 'Placement Cell · Admin'}
             </span>
           </a>
           {roleLabel && (
@@ -121,7 +153,7 @@ export function AdminShell({ children, activeNav, roleLabel }: AdminShellProps) 
             overflowX: 'auto',
           }}
         >
-          {adminNavItems.map((item) => {
+          {navItems.map((item) => {
             const isActive = item.key === activeNav;
             return (
               <a

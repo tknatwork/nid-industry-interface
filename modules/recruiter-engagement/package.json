@@ -13,7 +13,8 @@
     "test": "echo 'no tests yet'"
   },
   "dependencies": {
-    "zod": "3.23.8"
+    "zod": "3.23.8",
+    "@nid/db": "workspace:*"
   },
   "devDependencies": {
     "typescript": "5.6.3"

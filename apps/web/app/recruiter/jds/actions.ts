@@ -1,7 +1,15 @@
 'use server';
 
-import { createDraft, submitForModeration, type GateFailure } from '@nid/module-jd-posting';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import {
+  createDraft,
+  submitForModeration,
+  discardDraft,
+  type GateFailure,
+} from '@nid/module-jd-posting';
+import { readRecruiterSession } from '~/lib/recruiter-session';
+import { requireOwnedJd } from '~/lib/recruiter-jd-guard';
 
 export interface JdActionOk {
   readonly ok: true;
@@ -37,22 +45,43 @@ export interface JdWizardPayload {
   readonly gpFeeAcknowledged: boolean;
 }
 
-function withContext(payload: JdWizardPayload) {
+async function withContext(payload: JdWizardPayload) {
+  const session = await readRecruiterSession();
   return {
     ...payload,
-    recruiterId: DEMO_RECRUITER.recruiterId,
-    cycleId: DEMO_RECRUITER.cycleId,
+    recruiterId: session.recruiterId,
+    cycleId: session.cycleId,
   };
 }
 
 export async function saveDraftAction(payload: JdWizardPayload): Promise<JdActionResult> {
-  const result = createDraft(withContext(payload));
+  const result = createDraft(await withContext(payload));
   if (!result.ok) return { ok: false, failure: result.failure };
   return { ok: true, jdId: result.jd.id, status: result.jd.status };
 }
 
 export async function submitJdAction(payload: JdWizardPayload): Promise<JdActionResult> {
-  const result = submitForModeration(withContext(payload));
+  const result = submitForModeration(await withContext(payload));
   if (!result.ok) return { ok: false, failure: result.failure };
   return { ok: true, jdId: result.jd.id, status: result.jd.status };
+}
+
+/**
+ * Discard a draft from the JD list (plan §M). Only `draft`-status JDs are
+ * discardable — the module rejects anything that has entered moderation or
+ * been published. On failure we bounce back to the list with the reason in a
+ * query param (same convention as the close/withdraw actions); on success we
+ * revalidate the list so the card disappears.
+ */
+export async function discardDraftAction(formData: FormData): Promise<void> {
+  const jdId = (formData.get('jdId') as string | null)?.trim() ?? '';
+  // Ownership guard: a forged cross-branch discard (another branch's draft id)
+  // is rejected with 404 before the destructive discard runs.
+  await requireOwnedJd(jdId);
+  const result = discardDraft(jdId);
+  if (!result.ok) {
+    redirect(`/recruiter/jds?error=${encodeURIComponent(result.reason ?? 'Discard failed')}`);
+  }
+  revalidatePath('/recruiter/jds');
+  redirect('/recruiter/jds');
 }

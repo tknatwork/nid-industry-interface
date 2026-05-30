@@ -1,19 +1,19 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { PageShell, Button, Field } from '@nid/ui';
-import { parseTokenId } from '@nid/module-recruiter-onboarding';
+import { parseTicketId } from '@nid/module-recruiter-onboarding';
 
 export const metadata: Metadata = {
   title: 'Track your application · NID Industry Interface',
-  description: 'Enter your application token to see live status.',
+  description: 'Enter your application ticket to see live status.',
 };
 
 async function lookupAction(formData: FormData) {
   'use server';
-  const raw = formData.get('token');
+  const raw = formData.get('ticket');
   if (typeof raw !== 'string') redirect('/track?error=missing');
   const cleaned = raw.trim().toUpperCase();
-  if (!parseTokenId(cleaned)) redirect('/track?error=invalid');
+  if (!parseTicketId(cleaned)) redirect('/track?error=invalid');
   redirect(`/track/${cleaned}`);
 }
 
@@ -25,9 +25,9 @@ export default async function TrackEntryPage({
   const params = await searchParams;
   const errorMessage =
     params.error === 'missing'
-      ? 'Enter your token to continue.'
+      ? 'Enter your ticket to continue.'
       : params.error === 'invalid'
-        ? 'That token doesn’t look right. Format: NID-YYYY-A-NNNN.'
+        ? 'That ticket doesn’t look right. Format: NID-YYYY-A-NNNN.'
         : undefined;
 
   return (
@@ -71,8 +71,8 @@ export default async function TrackEntryPage({
               marginBottom: 'var(--space-8)',
             }}
           >
-            Paste the token we emailed you. The tracker page never expires &mdash; revisit any time
-            for a history of every step.
+            Paste the ticket we emailed and texted you. The tracker page never expires &mdash; revisit
+            any time for a history of every step.
           </p>
 
           <form
@@ -88,9 +88,9 @@ export default async function TrackEntryPage({
             }}
           >
             <Field
-              id="token"
-              name="token"
-              label="Application token"
+              id="ticket"
+              name="ticket"
+              label="Application ticket"
               placeholder="NID-2026-A-0042"
               required
               autoComplete="off"
@@ -113,7 +113,7 @@ export default async function TrackEntryPage({
               lineHeight: 1.6,
             }}
           >
-            Lost your token? Email{' '}
+            Lost your ticket? Email{' '}
             <a href="mailto:industry@nid.edu" style={{ color: 'var(--accent)' }}>
               industry@nid.edu
             </a>{' '}

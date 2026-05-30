@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability (private)
+    url: https://github.com/tknatwork/nid-industry-interface/security/policy
+    about: >-
+      Do NOT open a public issue for security problems. Read SECURITY.md and
+      report privately via GitHub Security Advisories (or the owner email there).
+  - name: Question or discussion
+    url: https://github.com/tknatwork/nid-industry-interface/discussions
+    about: >-
+      For open-ended questions, ideas, or walkthrough help, start a discussion
+      instead of filing an issue.

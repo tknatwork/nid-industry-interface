@@ -4,6 +4,8 @@
 
 export {
   createDraft,
+  updateDraft,
+  discardDraft,
   submitForModeration,
   listForRecruiter,
   getJd,
@@ -17,6 +19,10 @@ export {
   type SubmitResult,
   type CreateDraftResult,
   type ValidationFailure,
+  type UpdateDraftResult,
+  type EditDraftResult,
+  type DiscardDraftResult,
+  type ActionFailure,
   type PublishResult,
 } from './actions';
 
@@ -29,13 +35,25 @@ export {
 export {
   jdDraftSchema,
   jdModerationSchema,
+  programmeCompSchema,
+  evaluationTaskSchema,
   type JdRecord,
   type JdDraftInput,
+  type ProgrammeComp,
+  type EvaluationTask,
   type GateFailure,
   type GateReport,
 } from './types';
 
 export { DISCIPLINES_REF, disciplineName, type DisciplineRef } from './disciplines-ref';
+
+export {
+  ROLE_WORK_REF,
+  expectedWorkFor,
+  isInternshipRoleType,
+  type ExpectedWorkRef,
+  type InternshipRoleType,
+} from './role-work-ref';
 
 export {
   CANONICAL_SKILLS,

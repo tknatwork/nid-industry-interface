@@ -1,18 +1,150 @@
 import type { Metadata } from 'next';
-import { RecruiterShell, Button, StatusPill, type StatusTone } from '@nid/ui';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
+import {
+  RecruiterShell,
+  Button,
+  StatusPill,
+  SidePanel,
+  type StatusTone,
+  type SidePanelSection,
+} from '@nid/ui';
 import { listForRecruiter, skillLabel, type JdRecord } from '@nid/module-jd-posting';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
+import { discardDraftAction } from './actions';
 
 export const metadata: Metadata = {
   title: 'Job descriptions · Recruiter · NID Industry Interface',
   robots: { index: false, follow: false },
 };
 
-export default function RecruiterJdsPage() {
-  const jds = listForRecruiter(DEMO_RECRUITER.recruiterId);
+// ── Filter taxonomy (plan §M) ────────────────────────────────────────────────
+// The rail segments by TYPE (Full-time vs Internship = vacation + during-course)
+// and by STATUS (Drafts / In moderation / Published / Closed). Each facet is a
+// `?filter=` value; `all` (or no param) shows everything.
+
+type FilterId =
+  | 'all'
+  | 'full-time'
+  | 'internship'
+  | 'draft'
+  | 'in-moderation'
+  | 'published'
+  | 'closed';
+
+const FILTER_IDS: readonly FilterId[] = [
+  'all',
+  'full-time',
+  'internship',
+  'draft',
+  'in-moderation',
+  'published',
+  'closed',
+];
+
+function isFilterId(value: string | undefined): value is FilterId {
+  return value !== undefined && (FILTER_IDS as readonly string[]).includes(value);
+}
+
+function isInternship(jd: JdRecord): boolean {
+  return jd.roleType === 'vacation-internship' || jd.roleType === 'during-course-internship';
+}
+
+function matchesFilter(jd: JdRecord, filter: FilterId): boolean {
+  switch (filter) {
+    case 'all':
+      return true;
+    case 'full-time':
+      return jd.roleType === 'full-time';
+    case 'internship':
+      return isInternship(jd);
+    case 'draft':
+    case 'in-moderation':
+    case 'published':
+    case 'closed':
+      return jd.status === filter;
+  }
+}
+
+const FILTER_LABEL: Record<FilterId, string> = {
+  all: 'All job descriptions',
+  'full-time': 'Full-time roles',
+  internship: 'Internships',
+  draft: 'Drafts',
+  'in-moderation': 'In moderation',
+  published: 'Published',
+  closed: 'Closed',
+};
+
+export default async function RecruiterJdsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string; error?: string }>;
+}) {
+  const sp = await searchParams;
+  const filter: FilterId = isFilterId(sp.filter) ? sp.filter : 'all';
+  const error = sp.error;
+
+  const session = await readRecruiterSession();
+  const jds = listForRecruiter(session.recruiterId);
+  const visible = jds.filter((jd) => matchesFilter(jd, filter));
+
+  const countFor = (id: FilterId) => jds.filter((jd) => matchesFilter(jd, id)).length;
+
+  const sections: readonly SidePanelSection[] = [
+    {
+      id: 'type',
+      label: 'Type',
+      options: [
+        { id: 'all', label: 'All', href: '/recruiter/jds', count: jds.length, active: filter === 'all' },
+        {
+          id: 'full-time',
+          label: 'Full-time',
+          href: '/recruiter/jds?filter=full-time',
+          count: countFor('full-time'),
+          active: filter === 'full-time',
+          disabled: countFor('full-time') === 0,
+        },
+        {
+          id: 'internship',
+          label: 'Internship',
+          href: '/recruiter/jds?filter=internship',
+          count: countFor('internship'),
+          active: filter === 'internship',
+          disabled: countFor('internship') === 0,
+        },
+      ],
+    },
+    {
+      id: 'status',
+      label: 'Status',
+      options: (['draft', 'in-moderation', 'published', 'closed'] as const).map((id) => ({
+        id,
+        label: statusLabel(id),
+        href: `/recruiter/jds?filter=${id}`,
+        count: countFor(id),
+        active: filter === id,
+        disabled: countFor(id) === 0,
+      })),
+    },
+  ];
+
+  const railHeader =
+    filter === 'all' ? undefined : (
+      <a
+        href="/recruiter/jds"
+        style={{
+          fontSize: 'var(--fs-12)',
+          fontWeight: 'var(--fw-600)',
+          color: 'var(--accent)',
+          textDecoration: 'none',
+        }}
+      >
+        ← Clear filter
+      </a>
+    );
 
   return (
-    <RecruiterShell activeNav="jds" companyName={DEMO_RECRUITER.companyName}>
+    <RecruiterShell activeNav="jds" companyName={session.companyName} accountMenu={<RecruiterAccountMenu companyName={session.companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div
@@ -36,7 +168,8 @@ export default function RecruiterJdsPage() {
                   marginBottom: 'var(--space-2)',
                 }}
               >
-                {jds.length} {jds.length === 1 ? 'job description' : 'job descriptions'}
+                {visible.length} {visible.length === 1 ? 'job description' : 'job descriptions'}
+                {filter !== 'all' ? ` · ${FILTER_LABEL[filter]}` : ''}
               </p>
               <h1
                 style={{
@@ -54,13 +187,46 @@ export default function RecruiterJdsPage() {
             </a>
           </div>
 
+          {error && (
+            <div
+              role="alert"
+              style={{
+                marginBottom: 'var(--space-6)',
+                padding: 'var(--space-3) var(--space-4)',
+                borderRadius: 'var(--radius-2)',
+                backgroundColor: 'var(--pill-danger-bg)',
+                color: 'var(--pill-danger-fg)',
+                fontSize: 'var(--fs-14)',
+              }}
+            >
+              {error}
+            </div>
+          )}
+
           {jds.length === 0 ? (
             <EmptyState />
           ) : (
-            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
-              {jds.map((jd) => (
-                <JdCard key={jd.id} jd={jd} />
-              ))}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(200px, 240px) minmax(0, 1fr)',
+                gap: 'var(--space-6)',
+                alignItems: 'start',
+              }}
+            >
+              <div style={{ position: 'sticky', top: 'var(--space-6)' }}>
+                <SidePanel sections={sections} ariaLabel="Filter job descriptions" header={railHeader} />
+              </div>
+
+              {visible.length === 0 ? (
+                <FilteredEmptyState filter={filter} />
+              ) : (
+                <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                  {visible.map((jd) => (
+                    <JdCard key={jd.id} jd={jd} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -93,7 +259,32 @@ function EmptyState() {
   );
 }
 
+function FilteredEmptyState({ filter }: { filter: FilterId }) {
+  return (
+    <div
+      style={{
+        backgroundColor: 'var(--surface-card)',
+        border: '1px dashed var(--border-emphasized)',
+        borderRadius: 'var(--card-radius)',
+        padding: 'var(--space-10)',
+        textAlign: 'center',
+      }}
+    >
+      <p style={{ fontSize: 'var(--fs-16)', color: 'var(--text-strong)', marginBottom: 'var(--space-2)' }}>
+        No JDs match “{FILTER_LABEL[filter]}”
+      </p>
+      <p style={{ fontSize: 'var(--fs-14)', color: 'var(--text-secondary)' }}>
+        <a href="/recruiter/jds" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+          Clear the filter
+        </a>{' '}
+        to see all of your job descriptions.
+      </p>
+    </div>
+  );
+}
+
 function JdCard({ jd }: { jd: JdRecord }) {
+  const isDraft = jd.status === 'draft';
   return (
     <article
       style={{
@@ -126,6 +317,47 @@ function JdCard({ jd }: { jd: JdRecord }) {
               .join(' · ')}
             {jd.skills.length > 6 ? ` +${jd.skills.length - 6} more` : ''}
           </p>
+        )}
+        {isDraft && (
+          <div
+            style={{
+              display: 'flex',
+              gap: 'var(--space-3)',
+              alignItems: 'center',
+              marginTop: 'var(--space-4)',
+            }}
+          >
+            <a
+              href={`/recruiter/jds/${jd.id}/edit`}
+              style={{
+                color: 'var(--accent)',
+                fontWeight: 'var(--fw-600)',
+                fontSize: 'var(--fs-14)',
+                textDecoration: 'none',
+              }}
+            >
+              Edit draft →
+            </a>
+            <form action={discardDraftAction}>
+              <input type="hidden" name="jdId" value={jd.id} />
+              <button
+                type="submit"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  fontFamily: 'var(--ff-sans)',
+                  fontSize: 'var(--fs-14)',
+                  fontWeight: 'var(--fw-600)',
+                  color: 'var(--pill-danger-fg)',
+                  textDecoration: 'none',
+                }}
+              >
+                Discard
+              </button>
+            </form>
+          </div>
         )}
       </div>
       <div style={{ textAlign: 'right', fontSize: 'var(--fs-12)', color: 'var(--text-secondary)' }}>

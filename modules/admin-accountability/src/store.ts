@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { syncKv } from '@nid/db';
 import { dirname, resolve } from 'node:path';
 import type {
   ApiKey,
@@ -219,6 +220,9 @@ function persist(state: StoreState): void {
   const file = dataFilePath();
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, JSON.stringify(state, null, 2), 'utf8');
+  // Durable write-through (no-op without DATABASE_URL): mirror the full
+  // state blob to Postgres so it survives serverless cold starts.
+  syncKv('admin-accountability', state);
 }
 
 // ── reads ────────────────────────────────────────────────────────────────────

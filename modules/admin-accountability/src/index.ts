@@ -25,7 +25,12 @@ export {
   decideOfferAdjustment,
   listApiKeys,
   revokeApiKey,
+  verifiedStrikeCount,
+  listVerifiedStrikes,
+  meetsBlacklistStrikeThreshold,
+  BLACKLIST_STRIKE_THRESHOLD,
   type RecruiterScoreDetail,
+  type VerifiedStrikeRow,
 } from './actions';
 
 export type {

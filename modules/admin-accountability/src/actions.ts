@@ -221,6 +221,22 @@ export function fileRedressal(input: unknown): ActionResult {
   return { ok: true };
 }
 
+/**
+ * The two redressal outcomes that count as *institution-verified*: the
+ * authority upheld the student's report. `warning` and `dismissed` are NOT
+ * upheld; `open` is still pending review and never counts (plan §K, §Q —
+ * "becomes a strike only when the authority upholds it"). Single source of
+ * truth so the transparency tab and the strike count never drift apart.
+ */
+const UPHELD_REDRESSAL_STATUSES: ReadonlySet<RedressalStatus> = new Set([
+  'upheld-score',
+  'upheld-revoke',
+]);
+
+function isUpheld(c: RedressalCase): boolean {
+  return UPHELD_REDRESSAL_STATUSES.has(c.status);
+}
+
 /** Anonymised redressal stats for a company's public transparency tab (Phase 5.7). */
 export function transparencyFor(companyName: string): {
   total: number;
@@ -232,9 +248,77 @@ export function transparencyFor(companyName: string): {
   let upheld = 0;
   for (const c of cases) {
     byCategory[c.category] = (byCategory[c.category] ?? 0) + 1;
-    if (c.status === 'upheld-score' || c.status === 'upheld-revoke') upheld += 1;
+    if (isUpheld(c)) upheld += 1;
   }
   return { total: cases.length, byCategory, upheld };
+}
+
+// ── Institution-verified strikes (plan §K, §Q) ───────────────────────────────
+
+/**
+ * Demo rule: **3 verified strikes → blacklist**. A "verified strike" is an
+ * admin-UPHELD redressal — open/pending student reports do NOT count, and
+ * neither do `warning` or `dismissed` outcomes. The recruiter dashboard shows
+ * this as a `0/3` tag (plan §K "strike tag", §Q "verified-strike count").
+ */
+export const BLACKLIST_STRIKE_THRESHOLD = 3;
+
+/**
+ * Count of institution-verified strikes for one recruiter = number of
+ * admin-upheld redressals against them. Pending (`open`) student reports are
+ * excluded by design: a report only becomes a strike once the placement cell
+ * upholds it. Does not touch the health-score math — it reads the same
+ * redressal ledger from a different angle.
+ */
+export function verifiedStrikeCount(recruiterId: string): number {
+  return allRedressal().filter((c) => c.recruiterId === recruiterId && isUpheld(c)).length;
+}
+
+export interface VerifiedStrikeRow {
+  readonly recruiterId: string;
+  readonly companyName: string;
+  /** Admin-upheld redressals (pending reports excluded). */
+  readonly strikes: number;
+  /** The demo blacklist trigger — `BLACKLIST_STRIKE_THRESHOLD` (3). */
+  readonly threshold: number;
+  /** `true` once `strikes >= threshold` — eligible for the blacklist trigger. */
+  readonly meetsThreshold: boolean;
+}
+
+/**
+ * One verified-strike row per recruiter that has at least one redressal on
+ * file, worst (most strikes) first. Lets a dashboard render a `0/3`-style tag
+ * without re-deriving the upheld rule itself. Recruiters with zero redressals
+ * are omitted (they have nothing to show); the UI renders `0/3` for them from
+ * `verifiedStrikeCount` directly.
+ */
+export function listVerifiedStrikes(): readonly VerifiedStrikeRow[] {
+  const byRecruiter = new Map<string, { companyName: string; strikes: number }>();
+  for (const c of allRedressal()) {
+    const row = byRecruiter.get(c.recruiterId) ?? { companyName: c.companyName, strikes: 0 };
+    row.companyName = c.companyName;
+    if (isUpheld(c)) row.strikes += 1;
+    byRecruiter.set(c.recruiterId, row);
+  }
+  return [...byRecruiter.entries()]
+    .map(([recruiterId, { companyName, strikes }]) => ({
+      recruiterId,
+      companyName,
+      strikes,
+      threshold: BLACKLIST_STRIKE_THRESHOLD,
+      meetsThreshold: strikes >= BLACKLIST_STRIKE_THRESHOLD,
+    }))
+    .sort((a, b) => b.strikes - a.strikes);
+}
+
+/**
+ * The 3-verified-strikes → blacklist demo rule, as a predicate. `true` when the
+ * recruiter has accrued at least `BLACKLIST_STRIKE_THRESHOLD` admin-upheld
+ * redressals. This is the *trigger* signal only — it does not itself blacklist
+ * (that stays an explicit, logged admin action via `addToBlacklist`).
+ */
+export function meetsBlacklistStrikeThreshold(recruiterId: string): boolean {
+  return verifiedStrikeCount(recruiterId) >= BLACKLIST_STRIKE_THRESHOLD;
 }
 
 // ── Student conduct (Phase 5.10) ─────────────────────────────────────────────

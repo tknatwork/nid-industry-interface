@@ -167,6 +167,100 @@ export const PAST_RECRUITERS: readonly PastRecruiter[] = [
   { name: 'Godrej', sector: 'Auto', year: 2021, disciplines: ['Industrial Design', 'Furniture & Interior Design'] },
 ];
 
+export interface RecruiterLogo {
+  /** Display name, used for the alt text and the wordmark-tile fallback. */
+  readonly name: string;
+  /**
+   * simple-icons slug (lowercase brand id, e.g. `microsoft`, `ibm`). The
+   * RecruiterLogo component resolves this against the offline `simple-icons`
+   * package at render time; any slug not present in the installed set (a brand
+   * simple-icons doesn't carry, or a renamed slug) degrades gracefully to a
+   * monochrome wordmark tile built from `name` — so this list never breaks the
+   * wall, it just picks the fallback for the few that miss.
+   */
+  readonly slug: string;
+}
+
+/**
+ * ~50 logos for the homepage recruiter logo wall (Round 2 §B). Builds on the
+ * PAST_RECRUITERS names above and adds well-known firms that recruit from NID
+ * across its design disciplines (auto/mobility, tech & product, FMCG/retail,
+ * consulting, media/animation, electronics, and Indian design-led startups).
+ * Presentation-only and non-contractual — the same posture as PAST_RECRUITERS.
+ * Slugs follow the simple-icons convention (lowercase, no spaces/punctuation).
+ */
+export const RECRUITER_LOGOS: readonly RecruiterLogo[] = [
+  // — from PAST_RECRUITERS —
+  { name: 'Tata Motors', slug: 'tatamotors' },
+  { name: 'Microsoft', slug: 'microsoft' },
+  { name: 'Myntra', slug: 'myntra' },
+  { name: 'Titan', slug: 'titan' },
+  { name: 'Infosys', slug: 'infosys' },
+  { name: 'Hero MotoCorp', slug: 'heromotocorp' },
+  { name: 'BookMyShow', slug: 'bookmyshow' },
+  { name: 'Flipkart', slug: 'flipkart' },
+  { name: 'Mahindra', slug: 'mahindra' },
+  { name: 'Deloitte', slug: 'deloitte' },
+  { name: 'Zomato', slug: 'zomato' },
+  { name: 'Wipro', slug: 'wipro' },
+  { name: 'ITC', slug: 'itchotel' },
+  { name: 'Godrej', slug: 'godrej' },
+  // — tech & product —
+  { name: 'IBM', slug: 'ibm' },
+  { name: 'Oracle', slug: 'oracle' },
+  { name: 'SAP', slug: 'sap' },
+  { name: 'Adobe', slug: 'adobe' },
+  { name: 'Google', slug: 'google' },
+  { name: 'Apple', slug: 'apple' },
+  { name: 'Amazon', slug: 'amazon' },
+  { name: 'Samsung', slug: 'samsung' },
+  { name: 'Intel', slug: 'intel' },
+  { name: 'Cisco', slug: 'cisco' },
+  { name: 'Dell', slug: 'dell' },
+  { name: 'Accenture', slug: 'accenture' },
+  // — electronics & industrial —
+  { name: 'Philips', slug: 'philips' },
+  { name: 'Sony', slug: 'sony' },
+  { name: 'Panasonic', slug: 'panasonic' },
+  { name: 'LG', slug: 'lg' },
+  { name: 'Bosch', slug: 'bosch' },
+  { name: 'Siemens', slug: 'siemens' },
+  { name: 'General Electric', slug: 'generalelectric' },
+  { name: 'Dyson', slug: 'dyson' },
+  // — auto & mobility —
+  { name: 'BMW', slug: 'bmw' },
+  { name: 'Audi', slug: 'audi' },
+  { name: 'Mercedes-Benz', slug: 'mercedes' },
+  { name: 'Volkswagen', slug: 'volkswagen' },
+  { name: 'Toyota', slug: 'toyota' },
+  { name: 'Honda', slug: 'honda' },
+  { name: 'Hyundai', slug: 'hyundai' },
+  { name: 'Kia', slug: 'kia' },
+  { name: 'Renault', slug: 'renault' },
+  { name: 'Royal Enfield', slug: 'royalenfield' },
+  // — retail, FMCG & lifestyle —
+  { name: 'Unilever', slug: 'unilever' },
+  { name: 'Decathlon', slug: 'decathlon' },
+  { name: 'IKEA', slug: 'ikea' },
+  { name: 'Nike', slug: 'nike' },
+  { name: 'Adidas', slug: 'adidas' },
+  { name: 'Puma', slug: 'puma' },
+  { name: 'Lego', slug: 'lego' },
+  { name: 'Muji', slug: 'muji' },
+  // — media, design-led & Indian startups —
+  { name: 'Netflix', slug: 'netflix' },
+  { name: 'Spotify', slug: 'spotify' },
+  { name: 'Airbnb', slug: 'airbnb' },
+  { name: 'Swiggy', slug: 'swiggy' },
+  { name: 'Paytm', slug: 'paytm' },
+  { name: 'PhonePe', slug: 'phonepe' },
+  { name: 'Razorpay', slug: 'razorpay' },
+  { name: 'Zoho', slug: 'zoho' },
+  { name: 'Freshworks', slug: 'freshworks' },
+  { name: 'Canva', slug: 'canva' },
+  { name: 'Figma', slug: 'figma' },
+];
+
 export interface PlacementHead {
   readonly campus: string;
   readonly name: string;
@@ -199,9 +293,24 @@ export const PLACEMENT_HEADS: readonly PlacementHead[] = [
   },
 ];
 
+export interface Coordinator {
+  /** Stable id (`COORD-<campus-letter>-<n>`). Survives across cycles for demo linking. */
+  readonly id: string;
+  readonly name: string;
+  /** The recruiting company this coordinator is assigned to for the cycle. */
+  readonly company: string;
+  /**
+   * Recruiter id of the assigned company, when that company exists as a seeded
+   * recruiter (matches MICROSITES.recruiterId / the onboarding ids). Lets the
+   * dashboard resolve "who is my coordinator?" by recruiter id. Omitted for
+   * past/illustrative companies that have no live recruiter record.
+   */
+  readonly recruiterId?: string;
+}
+
 export interface CampusCoordinators {
   readonly campus: string;
-  readonly coordinators: readonly { name: string; company: string }[];
+  readonly coordinators: readonly Coordinator[];
 }
 
 /** Student coordinators per campus, each assigned to a recruiting company for the cycle. */
@@ -209,27 +318,50 @@ export const COORDINATORS: readonly CampusCoordinators[] = [
   {
     campus: 'Ahmedabad',
     coordinators: [
-      { name: 'Kabir Shah', company: 'Tata Motors' },
-      { name: 'Ira Sharma', company: 'Microsoft' },
-      { name: 'Devansh Patel', company: 'Myntra' },
+      // Acme Design Studio is the seeded primary recruiter (NID-2026-A-0001,
+      // Ahmedabad) — give it an assigned coordinator so the dashboard Contacts
+      // section (§K) can resolve one. (Fills the earlier data gap.)
+      { id: 'COORD-A-1', name: 'Aanya Kulkarni', company: 'Acme Design Studio', recruiterId: 'NID-2026-A-0001' },
+      { id: 'COORD-A-2', name: 'Kabir Shah', company: 'Tata Motors' },
+      { id: 'COORD-A-3', name: 'Ira Sharma', company: 'Microsoft' },
+      { id: 'COORD-A-4', name: 'Devansh Patel', company: 'Myntra' },
     ],
   },
   {
     campus: 'Gandhinagar',
     coordinators: [
-      { name: 'Meera Iyer', company: 'Titan' },
-      { name: 'Aryan Gupta', company: 'Infosys' },
+      { id: 'COORD-G-1', name: 'Meera Iyer', company: 'Titan' },
+      { id: 'COORD-G-2', name: 'Aryan Gupta', company: 'Infosys' },
     ],
   },
   {
     campus: 'Bengaluru',
     coordinators: [
-      { name: 'Sara Thomas', company: 'BookMyShow' },
-      { name: 'Nikhil Rao', company: 'Hero MotoCorp' },
-      { name: 'Tara Krishnan', company: 'Flipkart' },
+      { id: 'COORD-B-1', name: 'Sara Thomas', company: 'BookMyShow' },
+      { id: 'COORD-B-2', name: 'Nikhil Rao', company: 'Hero MotoCorp' },
+      { id: 'COORD-B-3', name: 'Tara Krishnan', company: 'Flipkart' },
     ],
   },
 ];
+
+export interface CoordinatorWithCampus extends Coordinator {
+  readonly campus: string;
+}
+
+/** Flat view of every coordinator with its campus, for lookups. */
+export const ALL_COORDINATORS: readonly CoordinatorWithCampus[] = COORDINATORS.flatMap((c) =>
+  c.coordinators.map((coord) => ({ ...coord, campus: c.campus })),
+);
+
+/**
+ * Resolve the student coordinator assigned to a given recruiter id.
+ * Used by the recruiter dashboard Contacts section (§K) to show "your
+ * coordinator" alongside the campus placement head. Returns `null` when the
+ * recruiter has no assigned coordinator in this cycle's seed.
+ */
+export function coordinatorForRecruiter(recruiterId: string): CoordinatorWithCampus | null {
+  return ALL_COORDINATORS.find((c) => c.recruiterId === recruiterId) ?? null;
+}
 
 /** Escalation chain for any unresolved recruiter or student concern. */
 export const ESCALATION: readonly string[] = [
@@ -296,3 +428,27 @@ export const MICROSITES: Readonly<Record<string, MicrositeRecord>> = {
 export function micrositeBySlug(slug: string): MicrositeRecord | null {
   return MICROSITES[slug] ?? null;
 }
+
+// ── Multi-branch parent companies (plan Round 3 §D) ─────────────────────────
+//
+// One company can run MULTIPLE branches, each a SEPARATE recruiter account with
+// its OWN GST / registration / contacts / credentials / dashboard, grouped under
+// a parent company for the institution. The grouping id + branch label live on
+// each onboarding ticket (ApplicationTicketRecord.parentCompanyId / branchLabel);
+// the parent's human-facing name lives here so surfaces can render "Acme Design
+// Studio — Bengaluru" without reaching into the onboarding store for the name.
+
+export interface ParentCompany {
+  readonly id: string;
+  readonly name: string;
+}
+
+/** Registry of parent companies, keyed by the id stored on each branch ticket. */
+export const PARENT_COMPANIES: Readonly<Record<string, ParentCompany>> = {
+  acme: { id: 'acme', name: 'Acme Design Studio' },
+};
+
+// `parentCompanyFor` + `branchLabelFor` live in ./recruiter-branch (server-only):
+// they read the onboarding store (node:fs), which must NOT enter this
+// client-imported, store-free module. PARENT_COMPANIES (above) stays here as it
+// is pure presentation data.

@@ -16,6 +16,12 @@ export interface SlotAssignment {
   readonly slotId: string;
   readonly studentId: string;
   readonly meetingLinkUrl?: string | undefined;
+  /**
+   * Expected interviewers for this candidate's slot, drawn from the company's
+   * named sub-roles (HR Director / Hiring Manager / Interviewer — plan §P).
+   * Surfaced on the recruiter slots page and the interview-day console.
+   */
+  readonly interviewers: readonly string[];
   readonly assignedAt: string;
 }
 
@@ -33,6 +39,12 @@ export const assignSchema = z.object({
   slotId: z.string().min(1),
   studentId: z.string().min(1),
   meetingLinkUrl: z.string().optional(),
+});
+
+export const assignInterviewersSchema = z.object({
+  jdId: z.string().min(1),
+  studentId: z.string().min(1),
+  interviewers: z.array(z.string().min(1)).max(10),
 });
 
 export interface ActionResult {

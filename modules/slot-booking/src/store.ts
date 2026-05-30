@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { syncKv } from '@nid/db';
 import { dirname, resolve } from 'node:path';
 import type { Slot, SlotAssignment } from './types';
 
@@ -17,7 +18,12 @@ function loadState(): StoreState {
   if (!existsSync(file)) return seedInitialState();
   try {
     const p = JSON.parse(readFileSync(file, 'utf8')) as Partial<StoreState>;
-    return { slots: p.slots ?? {}, assignments: p.assignments ?? [], counter: p.counter ?? 0 };
+    // Normalize assignments persisted before `interviewers` existed.
+    const assignments = (p.assignments ?? []).map((a) => ({
+      ...a,
+      interviewers: a.interviewers ?? [],
+    }));
+    return { slots: p.slots ?? {}, assignments, counter: p.counter ?? 0 };
   } catch {
     return seedInitialState();
   }
@@ -27,6 +33,9 @@ function persist(state: StoreState): void {
   const file = dataFilePath();
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, JSON.stringify(state, null, 2), 'utf8');
+  // Durable write-through (no-op without DATABASE_URL): mirror the full
+  // state blob to Postgres so it survives serverless cold starts.
+  syncKv('slot-booking', state);
 }
 
 /** Admin-published slots across the two interview days for Spring 2026. */
@@ -50,7 +59,23 @@ function seedInitialState(): StoreState {
     make(6, '2026-06-02', '15:00', '17:00'),
   ];
   for (const s of seeded) slots[s.id] = s;
-  const state: StoreState = { slots, assignments: [], counter: 6 };
+  // Seed one assignment so the interview-day "During" queue and the
+  // recruiter↔coordinator sync demo work out of the box (Round 2 §P/§Q). The
+  // recruiter (Acme) has already shortlisted Aanya Roy (stu_0005) against the
+  // published jd_00001, so book her into the first slot with an expected
+  // interviewer. Without an assignment, buildInterviewDayView falls back to the
+  // sandboxed DEMO day until a slot is booked, which makes the "open both
+  // consoles and watch the queue sync" demo look broken.
+  const assignments: SlotAssignment[] = [
+    {
+      jdId: 'jd_00001',
+      slotId: 'slot_0001',
+      studentId: 'stu_0005',
+      interviewers: ['Rhea Nair · Hiring Manager'],
+      assignedAt: '2026-05-28T10:00:00.000Z',
+    },
+  ];
+  const state: StoreState = { slots, assignments, counter: 6 };
   persist(state);
   return state;
 }
@@ -107,4 +132,22 @@ export function removeAssignment(jdId: string, studentId: string): void {
     ...state,
     assignments: state.assignments.filter((a) => !(a.jdId === jdId && a.studentId === studentId)),
   });
+}
+
+/** Set the expected interviewers on an existing (jd, student) assignment. */
+export function setInterviewers(
+  jdId: string,
+  studentId: string,
+  interviewers: readonly string[],
+): { ok: boolean; reason?: string } {
+  const state = loadState();
+  const existing = state.assignments.find((a) => a.jdId === jdId && a.studentId === studentId);
+  if (!existing) return { ok: false, reason: 'No slot booked for this candidate' };
+  persist({
+    ...state,
+    assignments: state.assignments.map((a) =>
+      a.jdId === jdId && a.studentId === studentId ? { ...a, interviewers } : a,
+    ),
+  });
+  return { ok: true };
 }

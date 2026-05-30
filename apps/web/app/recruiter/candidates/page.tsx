@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import { RecruiterAccountMenu } from '~/components/RecruiterAccountMenu';
 import { RecruiterShell } from '@nid/ui';
 import { listForRecruiter } from '@nid/module-jd-posting';
 import { listEligibleCandidates, type CandidateView } from '@nid/module-candidate-browse';
-import { DEMO_RECRUITER } from '~/lib/demo-recruiter';
+import { readRecruiterSession } from '~/lib/recruiter-session';
 
 export const metadata: Metadata = {
   title: 'Candidates · Recruiter · NID Industry Interface',
@@ -18,8 +19,8 @@ const ACCENT: Record<CandidateView['accent'], string> = {
   navy: 'var(--navy-500)',
 };
 
-export default function CrossJdCandidatesPage() {
-  const { recruiterId, cycleId, companyName } = DEMO_RECRUITER;
+export default async function CrossJdCandidatesPage() {
+  const { recruiterId, cycleId, companyName } = await readRecruiterSession();
   const published = listForRecruiter(recruiterId).filter((jd) => jd.status === 'published');
   const disciplineIds = [...new Set(published.flatMap((jd) => jd.targetDisciplineIds))];
 
@@ -36,7 +37,7 @@ export default function CrossJdCandidatesPage() {
   }
 
   return (
-    <RecruiterShell activeNav="candidates" companyName={companyName}>
+    <RecruiterShell activeNav="candidates" companyName={companyName} accountMenu={<RecruiterAccountMenu companyName={companyName} />}>
       <section style={{ paddingInline: 'var(--layout-page-x)', paddingBlock: 'var(--space-10)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <header style={{ marginBottom: 'var(--space-6)' }}>

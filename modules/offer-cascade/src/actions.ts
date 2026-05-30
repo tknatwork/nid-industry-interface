@@ -11,7 +11,6 @@ import {
   type OfferRecord,
 } from './types';
 import {
-  currentMaxWave,
   hasActiveOffer,
   hasDeclined,
   insertOffer,
@@ -41,7 +40,7 @@ function toCoreOffers(records: readonly OfferRecord[]): readonly CoreOffer[] {
   );
 }
 
-function stateFor(jdId: string, positions: number, shortlistRemaining: number) {
+function stateFor(jdId: string, positions: number, shortlistRemaining: number, currentWave: number) {
   const offers = offersForJd(jdId);
   let outstanding = 0;
   let accepted = 0;
@@ -51,7 +50,22 @@ function stateFor(jdId: string, positions: number, shortlistRemaining: number) {
     else if (o.status === 'accepted') accepted += 1;
     else declinedOrExpired += 1;
   }
-  return { positions, outstanding, accepted, declinedOrExpired, shortlistRemaining };
+  return { positions, outstanding, accepted, declinedOrExpired, shortlistRemaining, currentWave };
+}
+
+/**
+ * The wave this issuance joins (Round 2 §S). A wave is a batch: a new wave
+ * starts only once the prior wave has no pending offers left (declines/expires
+ * reopened slots). While a wave still has pending offers, further issuances
+ * join that same wave. This keeps the 3-wave cap counting batches, not
+ * individual offers.
+ */
+function targetWaveFor(jdId: string): number {
+  const offers = offersForJd(jdId);
+  if (offers.length === 0) return 1;
+  const maxWave = offers.reduce((max, o) => Math.max(max, o.wave), 0);
+  const hasPendingInMaxWave = offers.some((o) => o.wave === maxWave && o.status === 'pending');
+  return hasPendingInMaxWave ? maxWave : maxWave + 1;
 }
 
 /** Issue one offer — gated by @nid/core canIssueOffers (the position cap). */
@@ -67,12 +81,13 @@ export function issueOffer(input: unknown): ActionResult {
     return { ok: false, reason: 'This candidate already has an active offer.' };
   }
 
-  const gate = canIssueOffers(stateFor(jdId, positions, shortlistRemaining), 1);
+  // A wave is a batch: this issuance joins the current wave while it still has
+  // pending offers, else it opens the next wave. Passing `currentWave = wave - 1`
+  // to the gate makes the 3-wave cap block exactly when this would open Wave 4+.
+  const wave = targetWaveFor(jdId);
+  const gate = canIssueOffers(stateFor(jdId, positions, shortlistRemaining, wave - 1), 1);
   if (!gate.allowed) return { ok: false, reason: gate.reason ?? 'Cap reached' };
 
-  // Wave = next wave number if this issuance starts a new batch; simplest: max+1
-  // only when no pending offers remain, else same wave. Keep it simple: bump per call.
-  const wave = currentMaxWave(jdId) + 1;
   insertOffer({
     jdId,
     studentId,

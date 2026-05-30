@@ -1,14 +1,72 @@
 ---
 name: nid-industry-interface-session-memory
 project: nid-industry-interface
-last_updated: 2026-05-29
-status: demo-complete — all discussed plan flows functioning on mock data
-current_module: (whole 4-portal demo end-to-end on mock data)
+last_updated: 2026-05-30
+status: Round 3 SHIPPED — built GREEN, DEMO_RECRUITER cleanup done, branch pushed (d9f8310), deployed to prod (vercel --prod READY at nid-industry-interface.vercel.app); PR #2 open feat→main (MERGEABLE/CLEAN) awaiting OWNER merge + main ruleset
+current_module: (Round 3 finalization — session cleanup, push, prod redeploy, feat→main PR)
 ---
 
 # Session Memory — NID Industry Interface (project-local)
 
 Project-local session memory. Fully isolated from any global GCC layer.
+
+## Round 3 — recruiter account lifecycle + multi-branch + repo governance (2026-05-30)
+
+**Branch:** `feat/recruiter-portal-round2`. Built via dynamic multi-agent Workflows (user directed "build using dynamic workflows"). Commits: `e491ef5` (E1+A+B) · `bfc7087` (C) · `cfec101` (D + isolation fixes) · `cdc5461` (E3 deps) · + this docs commit.
+
+> **Plan-mode gotcha (learned):** workflow SUBAGENTS inherit the main session's plan mode — the first Round-3 workflow returned 5 plans + ZERO edits (agents were read-only). Approving the plan (ExitPlanMode) is the ONLY switch from planning→building; a fresh re-run then actually wrote code. If a workflow returns "here is my plan" instead of file changes, you're still in plan mode.
+
+- **E1 governance + A account self-service + B tutorials:** `.github/{CODEOWNERS,PULL_REQUEST_TEMPLATE,ISSUE_TEMPLATE/*,dependabot.yml}` + `CONTRIBUTING.md` + `SECURITY.md`; recruiter **Log Out** (`account-actions.ts` + `RecruiterAccountMenu` + a `RecruiterShell.accountMenu` slot wired into ~20 recruiter pages); **profile editing** (`/recruiter/profile/edit`, email + phone reusing `MobileVerify` with re-verify only on change; `updateContactDetails`/`getCompanyRecord` on recruiter-onboarding); first-time **DashboardTour** (Overlay, localStorage-gated, re-runnable via "Take a tour").
+- **C cycle wind-down + account lock:** account-activation state on recruiter-onboarding (`getAccountState`/`isAccountLocked`/`windDownCycle`/`reactivateForCycle`); admin "Wind down current cycle" on `/admin/cycles`; locked recruiter dashboard + `/recruiter/reactivate` re-pay flow (same creds → unlock next cycle). Lock authoritative on writes (guards on submitNewJdAction/saveNewDraftAction/issueOfferAction). Adversarial-passed.
+- **D multi-branch companies:** `parentCompanyId`+`branchLabel` on ApplicationTicketRecord; `PARENT_COMPANIES` + a 2nd seeded branch (Acme · Ahmedabad `NID-2026-A-0002`, own GST/creds, no JDs) + dual `DEMO_LOGINS`; apply branch-select; admin queue grouped by parent; profile branch chip; login picker. **Two adversarial passes:** the first caught (1) a client/server BOUNDARY break (branch helpers pulled the onboarding store into client-imported `recruiter-public.ts` → moved to server-only `apps/web/lib/recruiter-branch.ts`) and (2) a HIGH branch-isolation leak (hardcoded `DEMO_RECRUITER` + no JD-ownership checks → Ahmedabad could read/mutate Bengaluru's JDs). Fixed with a shared `requireOwnedJd(jdId)` guard (`apps/web/lib/recruiter-jd-guard.ts`) on every `/recruiter/jds` list + `[jdId]` page + write action (incl. the draft-discard the first pass missed); re-trace confirmed isolation closed.
+- **E3 dependency advisories:** `pnpm audit --prod` **25 → 0**. `next` 15.1.0→**15.5.18** (2 critical + 6 high Next CVEs), `drizzle-orm` 0.38.4→0.45.2, `eslint-config-next`→15.5.18, `postcss`→8.5.10 + root `pnpm.overrides.postcss ^8.5.10` (Next's transitive build-time copy). Remaining 7 are dev/build-only (vitest/vite/esbuild/@eslint/plugin-kit) — accepted + documented in `SECURITY.md`. `dependabot.yml` keeps them flowing through reviewed PRs.
+- **E2 repo hardening:** `docs/repo-hardening.md` runbook for the OWNER — branch protection (require PR + Code Owner review on `main`, block force-push/deletion), collaborator-write restriction, Dependabot/secret-scanning/push-protection. I authored the runbook; the owner applies the access-control toggles (an agent does NOT change repo access settings).
+
+**~~KNOWN residual~~ RESOLVED (commit `d9f8310`):** the 16 `/recruiter/*` surfaces that still read `DEMO_RECRUITER` for shell **companyName** + per-recruiter config (sub-roles, transport pref, coordinator, API key, draft owner) now read `readRecruiterSession()` (the logged-in branch). Fanned out across 3 subagents, verified centrally (tsc 14 projects · vitest · boundaries · contracts · next build 67 routes). Two sync Server Components → async; the shared `withContext()` draft helper → async. `DEMO_RECRUITER` now survives ONLY in the session/login/demo-data layer (`demo-recruiter.ts`, `recruiter-session.ts`, `recruiter-subroles.ts` data, `login/credentials.ts`, `student/report-company`).
+
+**Demo-posture decision:** durable Postgres KV stays OFF (no DATABASE_URL) — personal-project demo "feel"; wire durability only if the institution adopts.
+
+**Next step (agent done — remaining are OWNER actions):** Round 3 is SHIPPED — `DEMO_RECRUITER` cleanup committed (`d9f8310`), branch pushed to origin, deployed to prod (`vercel --prod` READY at `nid-industry-interface.vercel.app`, JSON-fallback posture). **PR #2** (`feat/recruiter-portal-round2 → main`, MERGEABLE/CLEAN, 9 commits / 178 files) is open to bring `main` current — merging it clears `main`'s 55 dependency advisories + lands governance/CODEOWNERS. OWNER to: (1) merge PR #2; (2) apply the `main` branch ruleset per `docs/repo-hardening.md` §1 — **do NOT tick "Include administrators"** or you lock yourself out of merging your own PRs. Already done (verified read-only): secret scanning + push protection + Dependabot enabled; collaborators = owner-only; Dependabot PR #1 open. Vercel prod is a manual `vercel --prod` (decoupled from `main`). Do NOT auto-continue.
+
+---
+
+## Round 2 — recruiter-portal redesign + Wave 2 adversarial fix-loop (2026-05-30)
+
+**Branch:** `feat/recruiter-portal-round2` (106 changed files — all of Round 2; committed in Wave 3).
+**Drove from:** a deep walkthrough of the live app → a punch list across pre-login + post-login surfaces (plan Round 2 §A–S). Built via a dynamic multi-agent Workflow: Wave 0 froze shared contracts, Waves 1/1b fanned out the surfaces, Wave 2 = adversarial verification + fix-loop, Wave 3 = docs + commit.
+
+**What shipped (Waves 0/1/1b):**
+- **Pre-login:** nav relabel (Process · Timeline · Disciplines · Contact · Login); nid.edu-style footer; new `Overlay`/`Accordion`/`Tabs`/`Marquee`/`ProgressTracker`/`VoiceInput` atoms; homepage 2-col hero + auto-scrolling `RecruiterLogoWall` (simple-icons); Process guidelines section; Timeline (dual fee ₹15k + ₹5k GP, per-activity start/end, add-to-calendar, academic-calendar overlay, ghost Login); Disciplines→20 (tabbed brochure + bento hover); Contact simplified; **Apply** (asterisks + mock OTP + Token→**Ticket** rename + pay→receipt→track overlay); **Login** + demo session; Resources overlays keep logged-in recruiters in the dashboard.
+- **Dashboard:** live `cycle-phase` tag + rolling banner; brochure overlay; in-dashboard contacts (placement head + coordinator); institution-verified strike tag (0/3); profile/"your setup"; Stats+Analytics merge (`/analytics`→`/stats`); JD list side-panel + draft edit/discard; **JD wizard upgrade** — upload→parse→autofill, sticky gamified progress, voice, **split B.Des/M.Des compensation**, salary-predictor nudge, role-type→expected-work, evaluation task.
+- **Interview ops:** real per-round outcomes + coordination signals (`interview-console` round-progress store); per-candidate slot interviewers; scoped **student-coordinator** `/admin/coordinator/*` (first RBAC) with recruiter↔coordinator shared-store sync; Interview tab Before/During/After; gated **Offers** (locked until "Done & Dusted") + 3-wave cascade cap.
+
+**Wave 2 — adversarial verification + fix-loop (all confirmed findings fixed):**
+- **Split-compensation floor gate (HIGH+MEDIUM+LOW) — the crux.** Client predictor and server gate disagreed in opposite directions. Unified onto ONE invariant — **each programme gated against its OWN floor** — via a shared `evaluateProgrammeFloors` helper (server: `runStipendGate` + `buildGateReport`; admin report gains `perProgramme`) and a per-programme client `computePrediction`/`worsePrediction`. A 2nd re-verify pass caught a subtler gap: the client's `< 0.9×floor` block boundary ≠ the server's `< floor`. Fixed via an explicit `Prediction.blocks` flag — **the client now blocks at exactly the server's boundary**; mild/severe is message tone only. Regression test: `modules/jd-posting/test/stipend-split.test.ts` (4 cases). The M.Des→top-level mirror is now display-only (gate ignores it in split mode).
+- **Offers write-lock (§S):** `issueOfferAction` re-checks `getInterviewsComplete(jdId)` server-side (lock authoritative on the write path, not just render).
+- **Coordinator RBAC (§Q):** new `apps/web/middleware.ts` confines a coordinator (`NID_DEMO_ADMIN_ROLE=coordinator`) to `/admin/coordinator/*` — a layout can't read the path; middleware can. Reuses `isCoordinator()` (single role source of truth). Documented in `.env.example`.
+- **Demo-fidelity:** receipt now queues email **+ SMS**; stale `etaBack` cleared when conflict clears (runningLateMin independent); one slot assignment seeded (`jd_00001`/`slot_0001`/`stu_0005`) so the During-tab sync demo works out of the box; coordinator name aligned to the directory ('Aanya Kulkarni'); footer drops removed `/contact/*` links + "Brochures"; `activeNav` on Timeline/Disciplines; `stats` reads `readRecruiterSession()`.
+
+**Verification (green):** `tsc` 14 projects ✓ · vitest `@nid/core` 29/29 + `@nid/module-jd-posting` 4/4 ✓ · boundaries (14 pkgs) ✓ · contracts (10 modules) ✓ · residual renamed-`token` identifiers 0 ✓ · `next build` 67/67 + Middleware registered ✓. Two re-verify rounds (4 adversarial verifiers each); offers-lock + RBAC + demo-fidelity passed exhaustive tracing; the only blocking finding (client/server boundary) is fixed + numerically reconfirmed.
+
+**GOTCHA (carry forward):** the split-comp floor invariant lives in `evaluateProgrammeFloors` — the client predictor MUST mirror its boundary (`offered < adjustedFloor` blocks). If you touch one side, touch the other; the test pins the server side. New vitest surface: jd-posting now runs `vitest run` (devDep added) — `pnpm -r test` covers both core + jd-posting.
+
+**Next step:** Round 2 + the JD take-home/whiteboarding rule + the durable-KV swap are all committed on `feat/recruiter-portal-round2`. Await the user for push/Vercel deploy or the remaining deferred efforts (auth, SDK packages, Playwright E2E, production FastAPI ML, Langfuse). Do NOT auto-continue.
+
+## Durable demo persistence — Postgres KV store (2026-05-30)
+
+User picked the durable-KV approach (over a full relational remodel) to fix the `/tmp`-JSON single-instance caveat. **Done + verified.**
+
+- **Seam (low-risk, no async ripple):** the 10 module JSON stores stay synchronous + remain the in-instance cache; each `persist()` adds one `syncKv('<store-key>', state)` fire-and-forget write-through into a single `kv_store` table (full state blob per store). `apps/web/instrumentation.ts` → `instrumentation-hydrate.ts` hydrates `/tmp` from `kv_store` on cold start, BEFORE requests are served. Actions/pages unchanged.
+- **Edge-safety:** the instrumentation ENTRY only imports the node-only hydrate file inside a `process.env.NEXT_RUNTIME === 'nodejs'` branch — Next inlines NEXT_RUNTIME so the `node:fs` import is dead-code-eliminated from the Edge middleware bundle (the first build attempt failed with `UnhandledSchemeError: node:fs` until this split).
+- **`@nid/db` additions:** `kv.ts` (`kvEnabled`/`kvGetAll`/`kvSet`/`syncKv`) exported from the index. Lazy connection (never opens at import), **self-creating `kv_store` table** (raw `CREATE TABLE IF NOT EXISTS` on first use → no migration; a fresh hosted Postgres just needs the URL). All 10 store modules now depend on `@nid/db` (boundary check confirms modules→@nid/db is allowed, no cycle; only `@nid/core` must stay db-free).
+- **Gated on `DATABASE_URL`:** unset → every kv fn is a no-op and the stores fall back to JSON (the live demo never breaks). Set → durable + shared across instances.
+- **To make the VERCEL demo durable:** provision a hosted Postgres (Supabase/Neon/Vercel marketplace) + set `DATABASE_URL` in the Vercel project env + redeploy. The code + JSON fallback are ready; I can't create the DB account. Locally: `DATABASE_URL=postgres://nid:nid@localhost:5433/nid_industry_interface` against the `nid-pg-throwaway` docker container.
+- **Verified:** live KV round-trip through the docker Postgres (table auto-creates, blob round-trips with full fidelity); `next build` green WITH the wired stores AND WITHOUT a DB (fallback path); tsc (14 projects), boundaries, contracts all green.
+- **GOTCHA:** write-through is best-effort fire-and-forget (a sync `persist` can't await Postgres); because each write ships the FULL blob, a dropped write self-heals on the next mutation. Fine for a demo; for hard durability, await the write in the action layer.
+
+---
+
+### Prior milestone (2026-05-29) — demo-complete on mock data
 
 ## Last session
 
@@ -47,8 +105,9 @@ Project-local session memory. Fully isolated from any global GCC layer.
 - **Editable admin** (11th module `@nid/module-admin-cms`): persisted cycle config + 6 CMS content
   blocks. `/admin/cycles` edit form + `/admin/content` editable blocks; edits persist (verified).
 
-GOTCHA: module STORES are still JSON `.dev-data` — the live Postgres powers Studio/tooling only;
-a full Postgres-backed store swap across modules is still future (NOT done).
+GOTCHA (superseded 2026-05-30): module STORES were JSON `.dev-data` only at this point. The
+durable Postgres KV swap is now DONE — stores write through to a `kv_store` table when
+`DATABASE_URL` is set (see "Durable demo persistence" section near the top).
 
 ## Latest round (federation + publishing + a11y + tests)
 

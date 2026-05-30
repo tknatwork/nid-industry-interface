@@ -19,6 +19,18 @@ export interface CandidateView {
   readonly portfolioUrl: string;
   readonly portfolioHost: string;
   readonly cvAvailable: boolean;
+  /**
+   * Optional direct CV link. When present the recruiter can open the CV from the
+   * Interview "Before" phase (§R); absent for students whose CV hasn't been
+   * supplied yet (`cvAvailable` may still be true once the ingest lands).
+   */
+  readonly cvUrl?: string;
+  /**
+   * Optional presentation deck for interview rounds (§R). "Presentations" reuse
+   * the candidate portfolio; this is the extra deck link a student attaches for
+   * the interview, surfaced in the Interview Before/After phases. Link-out, not embed.
+   */
+  readonly presentationUrl?: string;
   readonly statementOfIntent?: string;
   // NOTE: no gender / region / caste / religion / cgpa / fitScore fields. Intentional.
 }
